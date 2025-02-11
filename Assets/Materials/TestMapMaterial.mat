@@ -75,7 +75,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LightCount: 2
+    - _LightCount: 12
     - _LightFalloff: 0.8
     - _LightRadii: 0
     - _MaxBrightness: 1

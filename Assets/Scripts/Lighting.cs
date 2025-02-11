@@ -6,9 +6,9 @@ using UnityEngine;
 public class Lighting : MonoBehaviour
 {
     [Range(-10, 30)] public float Radius = 5f;
-
-    
-    
+    public int LightNodesAffected;
+    public int DarkNodesAffected;
+ 
     void OnEnable()
     {
         LightingManager.RegisterLight(this);
@@ -21,12 +21,27 @@ public class Lighting : MonoBehaviour
     }
 
 
-    public void ApplyLighting()
+    public int ApplyLighting()
     {
         Vector2 position = new Vector2(transform.position.x, transform.position.z);
-        LightingManager.tree.MarkIlluminatedArea(position, Radius);
+        int count = LightingManager.tree.MarkIlluminatedArea(position, Radius);
+        ResetCounters();
+        if (Radius < 0)
+        {
+            DarkNodesAffected += count;
+        }
+        else
+        {
+            LightNodesAffected += count;
+        }
+        return count;
     }
 
+    public void ResetCounters()
+    {
+        LightNodesAffected = 0;
+        DarkNodesAffected = 0;
+    }
 
     private void OnDrawGizmosSelected()
     {

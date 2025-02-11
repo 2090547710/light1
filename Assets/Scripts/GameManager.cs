@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         // 生成100个实例
-        objects = new GameObject[100];
+        objects = new GameObject[10];
         for (int i = 0; i < objects.Length; i++)
         {
             Vector3 position = new Vector3(
@@ -67,11 +67,37 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // if(Input.GetKeyDown(KeyCode.Space)){
-        //     check();
-        // }
+        if(Input.GetKeyDown(KeyCode.Space)){
+            TestNeighborDetection();
+        }
     }
 
+    private void TestNeighborDetection()
+    {
+        // 获取玩家对象（需要场景中有Player标签的对象）
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if(player == null)
+        {
+            Debug.LogWarning("未找到玩家对象，请创建带有Player标签的对象");
+            return;
+        }
+
+        // 获取邻近节点
+        List<QuadTree.QuadTreeNode> neighbors = tree.GetNeighborLeafNodes(
+            player.transform.position, 
+            5f // 检测半径
+        );
+
+        Debug.Log($"找到 {neighbors.Count} 个邻近节点");
+        
+        // 在场景视图中可视化
+        foreach(var node in neighbors)
+        {
+            Vector3 center = new Vector3(node.Center.x, 0, node.Center.y);
+            Vector3 size = new Vector3(node.Size.x, 0.1f, node.Size.y);
+            Debug.DrawLine(player.transform.position, center, Color.green, 2f);
+        }
+    }
 
     // 查询区域（示例区域）
    
@@ -92,17 +118,6 @@ public class GameManager : MonoBehaviour
             Debug.Log($"找到对象：{obj.name} 位置：X={pos.x}, Z={pos.z}");
         }
 
-        //删除对象
-        // foreach (var obj in foundObjects)
-        // {
-        //     tree.Remove(obj);
-        //     //隐藏对象
-        //     obj.SetActive(false);
-        //     //删除信息
-        //     Vector3 pos = obj.transform.position;
-        //     Debug.Log($"删除对象：{obj.name} 位置：X={pos.x}, Z={pos.z}");
-
-        // }
 
     }
 
@@ -110,12 +125,24 @@ public class GameManager : MonoBehaviour
 
     void OnDrawGizmos()
     {        
-        
-        // if (queryBounds != null)
+        // 绘制当前发光节点的邻近节点
+        // if (tree != null && tree.GetIlluminatedLeafNodes() != null)
         // {
-        //     Gizmos.color = Color.magenta;
-        //     Gizmos.DrawWireCube(queryBounds.center, queryBounds.size);
+        //     foreach (var node in tree.GetIlluminatedLeafNodes())
+        //     {
+        //         // 绘制当前节点
+        //         Gizmos.color = Color.yellow;
+        //         Vector3 center = new Vector3(node.Center.x, 0, node.Center.y);
+        //         Gizmos.DrawWireCube(center, new Vector3(node.Size.x, 0, node.Size.y));
+                
+        //         // 绘制邻近节点
+        //         Gizmos.color = Color.blue;
+        //         foreach (var neighbor in tree.GetDirectNeighbors(node))
+        //         {
+        //             Vector3 neighborCenter = new Vector3(neighbor.Center.x, 0, neighbor.Center.y);
+        //             Gizmos.DrawWireCube(neighborCenter, new Vector3(neighbor.Size.x, 0, neighbor.Size.y));
+        //         }
+        //     }
         // }
-  
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 
 public class QuadTree
@@ -24,8 +25,13 @@ public class QuadTree
         // 简化为光照可见状态
         public bool IsIlluminated = false;
 
-        // 新增障碍标志（默认true）
-        public bool IsObstacle = true;
+        // 添加邻近节点列表属性
+        [System.NonSerialized] 
+        public List<QuadTreeNode> Neighbors = new List<QuadTreeNode>();
+
+        // 添加父节点引用
+        [System.NonSerialized]
+        public QuadTreeNode Parent;
 
         public QuadTreeNode(Vector2 center, Vector2 size, int capacity)
         {
@@ -57,6 +63,31 @@ public class QuadTree
             Children[3] = new QuadTreeNode(
                 new Vector2(Center.x + halfSize.x, Center.y - halfSize.y),
                 quarterSize, Capacity);
+
+            // 建立子节点之间的邻近关系
+            Children[0].AddNeighbor(Children[1]);
+            Children[0].AddNeighbor(Children[3]);
+            Children[1].AddNeighbor(Children[0]);
+            Children[1].AddNeighbor(Children[2]);
+            Children[2].AddNeighbor(Children[1]);
+            Children[2].AddNeighbor(Children[3]);
+            Children[3].AddNeighbor(Children[2]);
+            Children[3].AddNeighbor(Children[0]);
+
+            foreach (var child in Children)
+            {
+                child.Parent = this; // 设置父节点引用
+            }
+        }
+
+        // 添加邻近节点的方法
+        public void AddNeighbor(QuadTreeNode neighbor)
+        {
+            if (!Neighbors.Contains(neighbor))
+            {
+                Neighbors.Add(neighbor);
+                neighbor.Neighbors.Add(this);
+            }
         }
 
         // 检查点是否在节点范围内
@@ -74,8 +105,14 @@ public class QuadTree
     private QuadTreeNode root;
     private int maxDepth;
 
+    // 新增根节点尺寸访问属性
+    public Vector2 RootSize { get; private set; }
+    public int MaxDepth { get; private set; }
+
     public QuadTree(Vector2 center, Vector2 size, int capacity, int maxDepth = 5, bool preSplit = false)
     {
+        RootSize = size; // 记录根节点尺寸
+        MaxDepth = maxDepth; // 记录最大深度
         root = new QuadTreeNode(center, size, capacity);
         this.maxDepth = maxDepth;
         
@@ -288,15 +325,15 @@ public class QuadTree
         return false;
     }
 
-    // 修改后的光照标记方法
-    public void MarkIlluminatedArea(Vector2 center, float radius)
+    // 修改后的光照标记方法（返回影响节点数）
+    public int MarkIlluminatedArea(Vector2 center, float radius)
     {
         bool isSubtractive = radius < 0;
-        bool isSquare = isSubtractive; // 负半径时使用正方形检测
-        MarkIlluminatedRecursive(root, center, Mathf.Abs(radius), isSubtractive, isSquare);
+        bool isSquare = isSubtractive;
+        return MarkIlluminatedRecursive(root, center, Mathf.Abs(radius), isSubtractive, isSquare, 0);
     }
 
-    private void MarkIlluminatedRecursive(QuadTreeNode node, Vector2 center, float size, bool isSubtractive, bool isSquare)
+    private int MarkIlluminatedRecursive(QuadTreeNode node, Vector2 center, float size, bool isSubtractive, bool isSquare, int currentDepth = 0)
     {
         Rect nodeRect = new Rect(
             node.Center.x - node.Size.x/2,
@@ -309,29 +346,43 @@ public class QuadTree
             SquareRectOverlap(center, size, nodeRect) : 
             CircleRectOverlap(center, size, nodeRect);
         
-        if (!overlap) return;
+        if (!overlap) return 0;
 
-        // 只在叶子节点进行标记
-        if (node.Children == null)
+        int count = 0;
+
+        // 强制分裂直到达到最大深度
+        if (currentDepth < maxDepth)
         {
-            // 根据是否是减操作设置光照状态
-            node.IsIlluminated = isSubtractive ? false : true;
-            // 同步更新障碍状态
-            node.IsObstacle = false;
+            // 如果还没有子节点则分裂
+            if (node.Children == null)
+            {
+                node.Split();
+                RedistributeObjects(node);
+            }
+            
+            // 继续递归子节点
+            foreach (var child in node.Children)
+            {
+                count += MarkIlluminatedRecursive(child, center, size, isSubtractive, isSquare, currentDepth + 1);
+            }
         }
         else
         {
-            // 非叶子节点继续向下传播
-            foreach (var child in node.Children)
+            // 仅当状态改变时计数
+            bool newState = isSubtractive ? false : true;
+            if(node.IsIlluminated != newState)
             {
-                MarkIlluminatedRecursive(child, center, size, isSubtractive, isSquare);
+                node.IsIlluminated = newState;
+                count = 1;
             }
         }
+        return count;
     }
 
     // 圆形与矩形碰撞检测
     private bool CircleRectOverlap(Vector2 circlePos, float radius, Rect rect)
     {
+        // 先进行快速排除
         float dx = Mathf.Abs(circlePos.x - rect.center.x);
         float dy = Mathf.Abs(circlePos.y - rect.center.y);
 
@@ -371,7 +422,6 @@ public class QuadTree
     private void ResetIlluminationRecursive(QuadTreeNode node)
     {
         node.IsIlluminated = false;
-        node.IsObstacle = true; // 重置障碍状态
         if (node.Children != null)
         {
             foreach (var child in node.Children)
@@ -433,6 +483,64 @@ public class QuadTree
             }
         }
         return false;
+    }
+
+    // 获取指定位置周围邻近的叶子节点
+    public List<QuadTreeNode> GetNeighborLeafNodes(Vector3 position, float radius)
+    {
+        Vector2 pos = new Vector2(position.x, position.z);
+        List<QuadTreeNode> result = new List<QuadTreeNode>();
+        FindNeighborLeafNodes(root, pos, radius, result);
+        return result;
+    }
+
+    private void FindNeighborLeafNodes(QuadTreeNode node, Vector2 position, float radius, List<QuadTreeNode> result)
+    {
+        if (node == null) return;
+
+        Rect nodeRect = new Rect(
+            node.Center.x - node.Size.x/2,
+            node.Center.y - node.Size.y/2,
+            node.Size.x,
+            node.Size.y);
+
+        if (!CircleRectOverlap(position, radius, nodeRect)) return;
+
+        if (node.Children == null)
+        {
+            result.Add(node);
+        }
+        else
+        {
+            foreach (var child in node.Children)
+            {
+                FindNeighborLeafNodes(child, position, radius, result);
+            }
+        }
+    }
+
+    // 获取直接相邻的节点（包括对角线）
+    public List<QuadTreeNode> GetDirectNeighbors(QuadTreeNode node)
+    {
+        List<QuadTreeNode> neighbors = new List<QuadTreeNode>();
+        if (node == null) return neighbors;
+
+        // 添加已建立的邻近关系
+        neighbors.AddRange(node.Neighbors);
+
+        // 添加父级邻近关系
+        if (node.Parent != null)
+        {
+            foreach (var parentNeighbor in node.Parent.Neighbors)
+            {
+                if (parentNeighbor.Children != null)
+                {
+                    neighbors.AddRange(parentNeighbor.Children);
+                }
+            }
+        }
+
+        return neighbors.Distinct().ToList();
     }
 }
 
