@@ -33,7 +33,7 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         // 鼠标右键拖动旋转
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(1))
         {
             rotation.x += Input.GetAxis("Mouse Y") * rotationSpeed;
             rotation.y += Input.GetAxis("Mouse X") * rotationSpeed;

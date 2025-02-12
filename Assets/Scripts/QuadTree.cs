@@ -25,13 +25,16 @@ public class QuadTree
         // 简化为光照可见状态
         public bool IsIlluminated = false;
 
-        // 添加邻近节点列表属性
-        [System.NonSerialized] 
-        public List<QuadTreeNode> Neighbors = new List<QuadTreeNode>();
-
         // 添加父节点引用
         [System.NonSerialized]
         public QuadTreeNode Parent;
+
+        // 新增路径规划属性
+        public float GCost = Mathf.Infinity;
+        public float HCost;
+        public float FCost => GCost + HCost;
+        public QuadTreeNode ParentNode;
+        public bool IsWalkable => IsIlluminated; // 复用光照状态
 
         public QuadTreeNode(Vector2 center, Vector2 size, int capacity)
         {
@@ -64,15 +67,6 @@ public class QuadTree
                 new Vector2(Center.x + halfSize.x, Center.y - halfSize.y),
                 quarterSize, Capacity);
 
-            // 建立子节点之间的邻近关系
-            Children[0].AddNeighbor(Children[1]);
-            Children[0].AddNeighbor(Children[3]);
-            Children[1].AddNeighbor(Children[0]);
-            Children[1].AddNeighbor(Children[2]);
-            Children[2].AddNeighbor(Children[1]);
-            Children[2].AddNeighbor(Children[3]);
-            Children[3].AddNeighbor(Children[2]);
-            Children[3].AddNeighbor(Children[0]);
 
             foreach (var child in Children)
             {
@@ -80,15 +74,7 @@ public class QuadTree
             }
         }
 
-        // 添加邻近节点的方法
-        public void AddNeighbor(QuadTreeNode neighbor)
-        {
-            if (!Neighbors.Contains(neighbor))
-            {
-                Neighbors.Add(neighbor);
-                neighbor.Neighbors.Add(this);
-            }
-        }
+    
 
         // 检查点是否在节点范围内
         public bool Contains(Vector2 point)
@@ -519,28 +505,190 @@ public class QuadTree
         }
     }
 
-    // 获取直接相邻的节点（包括对角线）
-    public List<QuadTreeNode> GetDirectNeighbors(QuadTreeNode node)
+    // 新增路径规划方法
+    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, float searchRadius = 5f)
     {
-        List<QuadTreeNode> neighbors = new List<QuadTreeNode>();
-        if (node == null) return neighbors;
-
-        // 添加已建立的邻近关系
-        neighbors.AddRange(node.Neighbors);
-
-        // 添加父级邻近关系
-        if (node.Parent != null)
+        var startNode = FindLeafNode(startPos);
+        var targetNode = FindLeafNode(targetPos);
+        
+        // 如果目标节点不可行走，直接返回null
+        if (targetNode == null || !targetNode.IsWalkable)
         {
-            foreach (var parentNeighbor in node.Parent.Neighbors)
+            // 在目标位置周围寻找最近的可行走节点
+            targetNode = FindNearestWalkableNode(targetPos, searchRadius);
+            if (targetNode == null) return null;
+        }
+        
+        var openList = new List<QuadTreeNode>();
+        var closedSet = new HashSet<QuadTreeNode>();
+
+        // 初始化节点数据
+        ResetPathfindingData();
+        
+        startNode.GCost = 0;
+        startNode.HCost = Heuristic(startNode, targetNode);
+        openList.Add(startNode);
+
+        while (openList.Count > 0)
+        {
+            var currentNode = openList.OrderBy(n => n.FCost).First();
+            
+            if (currentNode == targetNode)
+                return RetracePath(startNode, targetNode);
+
+            openList.Remove(currentNode);
+            closedSet.Add(currentNode);
+
+            foreach (var neighbor in GetNeighbors(currentNode))
             {
-                if (parentNeighbor.Children != null)
+                if (!neighbor.IsWalkable || closedSet.Contains(neighbor))
+                    continue;
+
+                float tentativeGCost = currentNode.GCost + Heuristic(currentNode, neighbor);
+                
+                // Theta*核心优化
+                if (currentNode.ParentNode != null && 
+                    HasLineOfSight(currentNode.ParentNode, neighbor))
                 {
-                    neighbors.AddRange(parentNeighbor.Children);
+                    float alternativeCost = currentNode.ParentNode.GCost + 
+                                          Heuristic(currentNode.ParentNode, neighbor);
+                    if (alternativeCost < tentativeGCost)
+                    {
+                        tentativeGCost = alternativeCost;
+                        neighbor.ParentNode = currentNode.ParentNode;
+                    }
+                }
+
+                if (tentativeGCost < neighbor.GCost)
+                {
+                    neighbor.GCost = tentativeGCost;
+                    neighbor.HCost = Heuristic(neighbor, targetNode);
+                    neighbor.ParentNode = currentNode;
+
+                    if (!openList.Contains(neighbor))
+                        openList.Add(neighbor);
                 }
             }
         }
+        return null;
+    }
 
-        return neighbors.Distinct().ToList();
+    // 新增私有辅助方法
+    private QuadTreeNode FindLeafNode(Vector3 position)
+    {
+        Vector2 pos = new Vector2(position.x, position.z);
+        return FindLeafRecursive(root, pos);
+    }
+
+    private QuadTreeNode FindLeafRecursive(QuadTreeNode node, Vector2 pos)
+    {
+        if (!node.Contains(pos)) return null;
+        return node.Children == null ? 
+            node : 
+            node.Children.Select(child => FindLeafRecursive(child, pos))
+                         .FirstOrDefault(result => result != null);
+    }
+
+    private List<QuadTreeNode> GetNeighbors(QuadTreeNode node)
+    {
+        Vector3 center = new Vector3(node.Center.x, 0, node.Center.y);
+        float radius = Mathf.Max(node.Size.x, node.Size.y) * 1.5f;
+        return GetNeighborLeafNodes(center, radius)
+            .Where(n => n.IsWalkable).ToList();
+    }
+
+    private bool HasLineOfSight(QuadTreeNode from, QuadTreeNode to)
+    {
+        Vector2 start = from.Center;
+        Vector2 end = to.Center;
+        float step = Mathf.Min(from.Size.x, from.Size.y) * 0.5f;
+        float distance = Vector2.Distance(start, end);
+        
+        for (float t = 0; t <= 1; t += step / distance)
+        {
+            Vector2 point = Vector2.Lerp(start, end, t);
+            var node = FindLeafNode(new Vector3(point.x, 0, point.y));
+            if (node == null || !node.IsWalkable) return false;
+        }
+        return true;
+    }
+
+    private List<Vector3> RetracePath(QuadTreeNode startNode, QuadTreeNode endNode)
+    {
+        List<Vector3> path = new List<Vector3>();
+        var currentNode = endNode;
+
+        while (currentNode != null && currentNode != startNode)
+        {
+            path.Add(new Vector3(currentNode.Center.x, 0, currentNode.Center.y));
+            currentNode = currentNode.ParentNode;
+        }
+        path.Reverse();
+        return SimplifyPath(path);
+    }
+
+    private List<Vector3> SimplifyPath(List<Vector3> path)
+    {
+        if (path.Count < 3) return path;
+        
+        List<Vector3> simplified = new List<Vector3> { path[0] };
+        for (int i = 1; i < path.Count - 1; i++)
+        {
+            if (!HasDirectPath(simplified.Last(), path[i + 1]))
+                simplified.Add(path[i]);
+        }
+        simplified.Add(path.Last());
+        return simplified;
+    }
+
+    private bool HasDirectPath(Vector3 a, Vector3 b)
+    {
+        Vector2 start = new Vector2(a.x, a.z);
+        Vector2 end = new Vector2(b.x, b.z);
+        float step = 0.5f;
+        float distance = Vector2.Distance(start, end);
+        
+        for (float t = 0; t <= 1; t += step / distance)
+        {
+            Vector2 point = Vector2.Lerp(start, end, t);
+            var node = FindLeafNode(new Vector3(point.x, 0, point.y));
+            if (node == null || !node.IsWalkable) return false;
+        }
+        return true;
+    }
+
+    private float Heuristic(QuadTreeNode a, QuadTreeNode b)
+    {
+        return Vector2.Distance(a.Center, b.Center);
+    }
+
+    private void ResetPathfindingData()
+    {
+        ResetNodeDataRecursive(root);
+    }
+
+    private void ResetNodeDataRecursive(QuadTreeNode node)
+    {
+        node.GCost = Mathf.Infinity;
+        node.HCost = 0;
+        node.ParentNode = null;
+        
+        if (node.Children != null)
+        {
+            foreach (var child in node.Children)
+                ResetNodeDataRecursive(child);
+        }
+    }
+
+    private QuadTreeNode FindNearestWalkableNode(Vector3 position, float radius)
+    {
+        var candidates = GetNeighborLeafNodes(position, radius)
+            .Where(n => n.IsWalkable)
+            .OrderBy(n => Vector3.Distance(
+                new Vector3(n.Center.x, 0, n.Center.y), 
+                position));
+        
+        return candidates.FirstOrDefault();
     }
 }
 

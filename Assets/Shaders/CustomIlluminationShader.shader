@@ -37,8 +37,8 @@ Shader "Custom/CustomIlluminationShader"
         fixed4 _Color;
 
         float _LightCount;
-        float4 _LightPositions[30];
-        float _LightRadii[30];
+        float4 _LightPositions[1000];
+        float _LightRadii[1000];
 
         half _MinBrightness;
         half _MaxBrightness;
@@ -75,9 +75,15 @@ Shader "Custom/CustomIlluminationShader"
                     continue;
                 }
 
+                 
+                
                 float3 lightPos = _LightPositions[i].xyz;
                 // 计算XZ平面距离（适合俯视角2D光照）
                 float distanceToLight = length(worldPos.xz - lightPos.xz);
+                if (distanceToLight <= _LightRadii[i]) 
+                {
+                        isInDark = false; // 标记在光明区域
+                }
                 // 使用平滑过渡（80%-100%半径范围渐变）
                 float falloff = 1.0 - smoothstep(_LightRadii[i] * _LightFalloff, _LightRadii[i], distanceToLight);
                 illumination = max(illumination, falloff * _MaxBrightness);
