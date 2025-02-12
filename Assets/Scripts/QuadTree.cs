@@ -36,6 +36,9 @@ public class QuadTree
         public QuadTreeNode ParentNode;
         public bool IsWalkable => IsIlluminated; // 复用光照状态
 
+        // 新增高度属性
+        public float Height { get; private set; }
+
         public QuadTreeNode(Vector2 center, Vector2 size, int capacity)
         {
             Center = center;
@@ -83,6 +86,14 @@ public class QuadTree
                    Mathf.Abs(point.y - Center.y) <= Size.y * 0.5f;
         }
        
+        // 新增高度更新方法
+        public void UpdateHeight(float newHeight)
+        {
+            if (newHeight > Height)
+            {
+                Height = newHeight;
+            }
+        }
     }
 
     ////////////////////////////////////////////////////////////////
@@ -95,10 +106,15 @@ public class QuadTree
     public Vector2 RootSize { get; private set; }
     public int MaxDepth { get; private set; }
 
+    // 添加最小节点尺寸属性
+    public Vector2 MinNodeSize { get; private set; }
+
     public QuadTree(Vector2 center, Vector2 size, int capacity, int maxDepth = 5, bool preSplit = false)
     {
-        RootSize = size; // 记录根节点尺寸
-        MaxDepth = maxDepth; // 记录最大深度
+        RootSize = size;
+        MaxDepth = maxDepth;
+        // 计算最小节点尺寸
+        MinNodeSize = size / Mathf.Pow(2, maxDepth);
         root = new QuadTreeNode(center, size, capacity);
         this.maxDepth = maxDepth;
         
@@ -121,12 +137,48 @@ public class QuadTree
         }
     }
 
-    // 插入对象到四叉树
+    // 修改后的插入方法
     public bool Insert(GameObject obj, int currentDepth = 0)
     {
-        Vector3 objPosition = obj.transform.position;
-        Vector2 position = new Vector2(objPosition.x, objPosition.z);
-        return InsertRecursive(root, position, obj, currentDepth);
+        // 计算理论最终节点中心
+        Vector2 targetCenter = CalculateFinalNodeCenter(obj.transform.position);
+        
+        // 调整对象坐标到节点中心
+        Vector3 newPos = new Vector3(
+            targetCenter.x, 
+            obj.transform.position.y, 
+            targetCenter.y
+        );
+        obj.transform.position = newPos;
+
+        // 使用调整后的坐标进行插入
+        return InsertRecursive(root, targetCenter, obj, currentDepth);
+    }
+
+    // 新增方法：计算理论最终节点中心
+    private Vector2 CalculateFinalNodeCenter(Vector3 worldPosition)
+    {
+        Vector2 currentCenter = root.Center;
+        Vector2 currentSize = root.Size;
+        Vector2 position = new Vector2(worldPosition.x, worldPosition.z);
+        
+        // 遍历到最大深度
+        for (int depth = 0; depth < maxDepth; depth++)
+        {
+            currentSize *= 0.5f; // 每层尺寸减半
+            Vector2 offset = position - currentCenter;
+            
+            // 确定象限
+            int quadrant = (offset.x > 0 ? 0 : 1) + (offset.y > 0 ? 0 : 2);
+            
+            // 更新中心点坐标
+            currentCenter += new Vector2(
+                (quadrant % 2 == 0 ? 1 : -1) * currentSize.x * 0.5f,
+                (quadrant < 2 ? 1 : -1) * currentSize.y * 0.5f
+            );
+        }
+        
+        return currentCenter;
     }
 
     private bool InsertRecursive(QuadTreeNode node, Vector2 position, GameObject obj, int depth)
@@ -265,9 +317,17 @@ public class QuadTree
         //     style);
 
         // 根据光照状态改变颜色
-         // 半透明填充（alpha值0.2）
         Gizmos.color = node.IsIlluminated ? new Color(1, 0.9f, 0.5f, 1.0f) : new Color(0,0,0,0.1f);
         Gizmos.DrawWireCube(center, size * 1.0f);
+
+        // 新增碰撞体显示（蓝色线框）
+        if (node.Height > MinNodeSize.x)
+        {
+            Gizmos.color = new Color(0, 0.5f, 1f, 0.3f); // 半透明蓝色
+            Gizmos.DrawCube(center, new Vector3(node.Size.x, node.Height, node.Size.y));
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireCube(center, new Vector3(node.Size.x, 0, node.Size.y));
+        }
 
         // 递归绘制子节点
         if (node.Children != null)
@@ -311,58 +371,183 @@ public class QuadTree
         return false;
     }
 
-    // 修改后的光照标记方法（返回影响节点数）
-    public int MarkIlluminatedArea(Vector2 center, float radius)
+    // 修改后的光照标记方法
+    public int MarkIlluminatedArea(Bounds bounds, bool isSubtractive)
     {
-        bool isSubtractive = radius < 0;
-        bool isSquare = isSubtractive;
-        return MarkIlluminatedRecursive(root, center, Mathf.Abs(radius), isSubtractive, isSquare, 0);
+        // 根据区域类型获取参数
+        Vector2 center = new Vector2(bounds.center.x, bounds.center.z);
+        float lightHeight = bounds.size.y;
+        
+        if (isSubtractive)
+        {
+            // 方形区域：使用XZ尺寸
+            Vector2 size = new Vector2(bounds.size.x, bounds.size.z);
+            PreSplitForLighting(root, center, size, isSubtractive, 0);
+            UpdateNodeHeightsInArea(center, size, isSubtractive);
+            return FinalizeIlluminationMarking(center, size, lightHeight, isSubtractive);
+        }
+        else
+        {
+            // 圆形区域：半径取size.x的一半
+            float radius = bounds.size.x * 0.5f;
+            Vector2 size = new Vector2(radius, 0);
+            PreSplitForLighting(root, center, size, isSubtractive, 0);
+            UpdateNodeHeightsInArea(center, size, isSubtractive);
+            return FinalizeIlluminationMarking(center, size, lightHeight, isSubtractive);
+        }
     }
 
-    private int MarkIlluminatedRecursive(QuadTreeNode node, Vector2 center, float size, bool isSubtractive, bool isSquare, int currentDepth = 0)
+    // 修改预分裂方法参数
+    private void PreSplitForLighting(QuadTreeNode node, Vector2 center, Vector2 size, 
+                                   bool isSubtractive, int currentDepth)
     {
         Rect nodeRect = new Rect(
             node.Center.x - node.Size.x/2,
             node.Center.y - node.Size.y/2,
             node.Size.x,
             node.Size.y);
-        
-        // 根据检测类型选择碰撞判断方法
-        bool overlap = isSquare ? 
-            SquareRectOverlap(center, size, nodeRect) : 
-            CircleRectOverlap(center, size, nodeRect);
-        
-        if (!overlap) return 0;
 
-        int count = 0;
+        bool overlap = isSubtractive ? 
+            RectangleRectOverlap(center, size, nodeRect) : // 修改为矩形检测
+            CircleRectOverlap(center, size.x, nodeRect);   // size.x存储半径
+        
+        if (!overlap) return;
 
-        // 强制分裂直到达到最大深度
         if (currentDepth < maxDepth)
         {
-            // 如果还没有子节点则分裂
             if (node.Children == null)
             {
                 node.Split();
                 RedistributeObjects(node);
             }
             
-            // 继续递归子节点
             foreach (var child in node.Children)
             {
-                count += MarkIlluminatedRecursive(child, center, size, isSubtractive, isSquare, currentDepth + 1);
+                PreSplitForLighting(child, center, size, isSubtractive, currentDepth + 1);
+            }
+        }
+    }
+
+    // 遍历区域内的所有节点
+    private void ForEachNodeInArea(Vector2 center, Vector2 size, System.Action<QuadTreeNode> action)
+    {
+        ForEachNodeInAreaRecursive(root, center, size, action);
+    }
+
+    // 更新单个collider影响的所有节点高度（添加尺寸判断）
+    private void UpdateHeightForCollider(CustomCollider collider)
+    {
+        if (collider == null) return;
+
+        Bounds bounds = collider.Bounds;
+        Vector3 worldCenter = bounds.center;
+        
+        // 使用XZ平面尺寸作为碰撞区域，Y轴尺寸作为高度
+        Vector2 centerXZ = new Vector2(worldCenter.x, worldCenter.z);
+        Vector2 sizeXZ = new Vector2(bounds.size.x, bounds.size.z); // 取XZ平面尺寸
+        float colliderHeight = bounds.size.y; // 使用Y轴尺寸作为高度
+
+        ForEachNodeInArea(centerXZ, sizeXZ, node => 
+        {
+            // 仅更新尺寸等于最小节点尺寸的节点
+            if (node.Size == MinNodeSize && node.Height < colliderHeight)
+            {
+                node.UpdateHeight(colliderHeight);
+            }
+        });
+    }
+
+    private void ForEachNodeInAreaRecursive(QuadTreeNode node, Vector2 center, Vector2 size, System.Action<QuadTreeNode> action)
+    {
+        Rect nodeRect = new Rect(
+            node.Center.x - node.Size.x/2,
+            node.Center.y - node.Size.y/2,
+            node.Size.x,
+            node.Size.y);
+
+        Rect colliderRect = new Rect(
+            center.x - size.x/2,
+            center.y - size.y/2,
+            size.x,
+            size.y);
+
+        if (!nodeRect.Overlaps(colliderRect)) return;
+
+        action(node);
+
+        if (node.Children != null)
+        {
+            foreach (var child in node.Children)
+            {
+                ForEachNodeInAreaRecursive(child, center, size, action);
+            }
+        }
+    }
+
+    // 更新区域高度方法参数调整
+    private void UpdateNodeHeightsInArea(Vector2 center, Vector2 size, bool isSquare)
+    {
+        // 遍历所有对象，更新其影响范围内的节点高度
+        foreach (var obj in GetAllObjectsInArea(center, size, isSquare))
+        {
+            UpdateHeightForCollider(obj.GetComponent<CustomCollider>());
+        }
+    }
+
+    // 获取区域对象方法参数调整
+    private List<GameObject> GetAllObjectsInArea(Vector2 center, Vector2 size, bool isSquare)
+    {
+        List<GameObject> results = new List<GameObject>();
+        var areaBounds = isSquare ? 
+            new Bounds(new Vector3(center.x, 0, center.y), new Vector3(size.x, 0, size.y)) :
+            new Bounds(new Vector3(center.x, 0, center.y), new Vector3(size.x * 2, 0, size.x * 2));
+        
+        QueryAreaRecursive(root, areaBounds, ref results);
+        return results;
+    }
+
+    // 修改后的最终标记方法（添加计数）
+    private int FinalizeIlluminationMarking(Vector2 center, Vector2 size, float lightHeight, 
+                                          bool isSubtractive)
+    {
+        int count = 0;
+        FinalMarkRecursive(root, center, size, lightHeight, isSubtractive, 0, ref count);
+        return count;
+    }
+
+    private void FinalMarkRecursive(QuadTreeNode node, Vector2 center, Vector2 size, 
+                                  float lightHeight, bool isSubtractive, 
+                                  int depth, ref int count)
+    {
+        Rect nodeRect = new Rect(
+            node.Center.x - node.Size.x/2,
+            node.Center.y - node.Size.y/2,
+            node.Size.x,
+            node.Size.y);
+
+        bool overlap = isSubtractive ? 
+            RectangleRectOverlap(center, size, nodeRect) : // 矩形检测
+            CircleRectOverlap(center, size.x, nodeRect);   // size.x存储半径
+        
+        if (!overlap) return;
+
+        if (node.Children != null)
+        {
+            foreach (var child in node.Children)
+            {
+                FinalMarkRecursive(child, center, size, lightHeight, isSubtractive, depth + 1, ref count);
             }
         }
         else
-        {
-            // 仅当状态改变时计数
-            bool newState = isSubtractive ? false : true;
-            if(node.IsIlluminated != newState)
+        { 
+            // 仅当节点高度低于光源高度时才考虑修改状态
+            if (node.Height <= lightHeight)
             {
-                node.IsIlluminated = newState;
-                count = 1;
+                node.IsIlluminated = !isSubtractive;
+                count++;
             }
+            
         }
-        return count;
     }
 
     // 圆形与矩形碰撞检测
@@ -384,19 +569,17 @@ public class QuadTree
         return cornerDistSq <= (radius * radius);
     }
 
-    // 新增正方形与矩形碰撞检测
-    private bool SquareRectOverlap(Vector2 squareCenter, float squareSize, Rect rect)
+    // 修改正方形检测为矩形检测
+    private bool RectangleRectOverlap(Vector2 rectCenter, Vector2 rectSize, Rect targetRect)
     {
-        // 计算正方形边界（边长为两倍squareSize）
-        float halfSize = squareSize; // 因为总边长是2*squareSize，半长就是squareSize
-        Rect squareRect = new Rect(
-            squareCenter.x - halfSize,
-            squareCenter.y - halfSize,
-            squareSize * 2,  // 实际边长为两倍传入值
-            squareSize * 2);
+        // 构造源矩形
+        Rect sourceRect = new Rect(
+            rectCenter.x - rectSize.x/2,
+            rectCenter.y - rectSize.y/2,
+            rectSize.x,
+            rectSize.y);
         
-        // 矩形相交检测
-        return rect.Overlaps(squareRect);
+        return targetRect.Overlaps(sourceRect);
     }
 
     // 重置光照状态
@@ -506,7 +689,7 @@ public class QuadTree
     }
 
     // 新增路径规划方法
-    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, float searchRadius = 5f)
+    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, float searchRadius = 0.5f)
     {
         var startNode = FindLeafNode(startPos);
         var targetNode = FindLeafNode(targetPos);
@@ -690,5 +873,7 @@ public class QuadTree
         
         return candidates.FirstOrDefault();
     }
+
+    
 }
 

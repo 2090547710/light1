@@ -28,14 +28,8 @@ public class LightingManager : MonoBehaviour
 
     void Start()
     {
-        // 计算四叉树叶子节点的实际尺寸
-        float leafNodeSize = tree.RootSize.x / Mathf.Pow(2, tree.MaxDepth);
-        
-        // 圆形光照范围误差设为叶子节点对角线的一半（覆盖整个节点）
-        LightRadiusVariance = leafNodeSize * 0.7071f / 2f; // 0.7071 ≈ 1/√2
-        
-        // 方形暗区误差设为叶子节点边长的一半（精确匹配网格）
-        DarkRadiusVariance = leafNodeSize / 2f;
+        LightRadiusVariance = tree.MinNodeSize.x*0.7f;//根号二除以二
+        DarkRadiusVariance = tree.MinNodeSize.x / 4f;
     }
 
     void LateUpdate()
@@ -57,19 +51,18 @@ public class LightingManager : MonoBehaviour
 
     public static void UpdateLighting(){
         tree.ResetIllumination();
+        // 保持原有的四叉树光照逻辑
+        foreach (var light in activeLights)
+        {
+            light.ApplyLighting();
+        }
         
         // 调用数据提供者更新光照数据
         instance.dataProvider.UpdateLightingData(
             activeLights, 
             LightRadiusVariance, 
             DarkRadiusVariance
-        );
-
-        // 保持原有的四叉树光照逻辑
-        foreach (var light in activeLights)
-        {
-            light.ApplyLighting();
-        }
+        );     
     }
     
     public static void UnregisterLight(Lighting light)

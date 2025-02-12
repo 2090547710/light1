@@ -38,7 +38,7 @@ Shader "Custom/CustomIlluminationShader"
 
         float _LightCount;
         float4 _LightPositions[1000];
-        float _LightRadii[1000];
+        float2 _LightSizes[1000];
 
         half _MinBrightness;
         half _MaxBrightness;
@@ -57,36 +57,40 @@ Shader "Custom/CustomIlluminationShader"
         float IsIlluminated(float3 worldPos)
         {
             float illumination = 0.0;
-            bool isInDark = false; // 新增黑暗区域标记
-            
+            bool isInDark = false;
+
             for (int i = 0; i < _LightCount; i++)
             {
-                // 处理负半径（正方形黑暗区域）
-                if (_LightRadii[i] < 0) 
+                // 处理矩形黑暗区域（y != 0）
+                if (_LightSizes[i].y != 0) 
                 {
-                    float halfSize = abs(_LightRadii[i]);
+            
                     float2 lightXZ = _LightPositions[i].xz;
+                    float halfWidth = _LightSizes[i].x * 0.5;
+                    float halfHeight = _LightSizes[i].y * 0.5;
                     
-                    if (abs(worldPos.x - lightXZ.x) <= halfSize && 
-                        abs(worldPos.z - lightXZ.y) <= halfSize) 
+                    if (abs(worldPos.x - lightXZ.x) <= halfWidth && 
+                        abs(worldPos.z - lightXZ.y) <= halfHeight) 
                     {
                         isInDark = true; // 标记在黑暗区域
                     }
                     continue;
                 }
 
-                 
-                
+                // 处理圆形光明区域（y == 0）
                 float3 lightPos = _LightPositions[i].xyz;
-                // 计算XZ平面距离（适合俯视角2D光照）
+                float lightHeight = lightPos.y;
                 float distanceToLight = length(worldPos.xz - lightPos.xz);
-                if (distanceToLight <= _LightRadii[i]) 
+                float radius = _LightSizes[i].x;
+                
+                if(worldPos.y > lightHeight && isInDark) continue;
+                
+                float falloff = 1.0 - smoothstep(radius * _LightFalloff, radius, distanceToLight);
+                if(falloff > 0) 
                 {
-                        isInDark = false; // 标记在光明区域
+                    isInDark = false; // 新增：当处于光明区域时强制取消黑暗标记
+                    illumination = max(illumination, falloff * _MaxBrightness);
                 }
-                // 使用平滑过渡（80%-100%半径范围渐变）
-                float falloff = 1.0 - smoothstep(_LightRadii[i] * _LightFalloff, _LightRadii[i], distanceToLight);
-                illumination = max(illumination, falloff * _MaxBrightness);
             }
             
             // 最终亮度处理：如果在黑暗区域则衰减亮度

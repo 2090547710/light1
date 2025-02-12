@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class QuadTreeTester : MonoBehaviour
@@ -8,6 +9,8 @@ public class QuadTreeTester : MonoBehaviour
 
     public static QuadTree quadTree;
     private Camera mainCamera;
+
+    private List<GameObject> objects = new List<GameObject>();
 
     void Start()
     {
@@ -34,11 +37,15 @@ public class QuadTreeTester : MonoBehaviour
                     position,
                     Quaternion.identity
                 );
-
+                objects.Add(newObj);
                 // 插入四叉树
+                CustomCollider collider = newObj.GetComponent<CustomCollider>();
                 bool success = quadTree.Insert(newObj);
-                Debug.Log($"插入{(success ? "成功" : "失败")}，位置：{position}");
+                Debug.Log($"插入{(success ? "成功" : "失败")} | " +
+                         $"位置：{position} | " +
+                         $"尺寸：{collider.Bounds.size}");
     } 
+
 
    
 } 

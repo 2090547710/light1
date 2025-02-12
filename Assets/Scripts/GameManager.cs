@@ -13,7 +13,8 @@ public class GameManager : MonoBehaviour
     public Vector2 size=new Vector2(100,100);  
     public Vector2 center=Vector2.zero;
     public GameObject prefab; 
-    
+    public static Vector2 MinNodeSize;
+
     void Awake()
     {
         Instance = this;
@@ -25,7 +26,7 @@ public class GameManager : MonoBehaviour
             maxDepth: maxDepth,
             preSplit: preSplit  // 启用预分裂
         );
-
+        MinNodeSize=tree.MinNodeSize;
         // 将四叉树实例赋给光照系统
         LightingManager.tree = tree;
         PlayerPathfinding.quadTree = tree;
