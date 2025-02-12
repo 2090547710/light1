@@ -816,7 +816,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -3582919312834819655, guid: e5197edb35f99004db261bc4506ba1e5, type: 3}
       propertyPath: _heightY
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -3582919312834819655, guid: e5197edb35f99004db261bc4506ba1e5, type: 3}
       propertyPath: _sizeXZ.x

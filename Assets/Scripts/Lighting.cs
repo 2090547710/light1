@@ -44,7 +44,8 @@ public class Lighting : MonoBehaviour
             
             // 恢复原始尺寸
             customCollider.UnitSizeXZ = originalSize;
-           
+            
+            ResetCounters();
             int count = LightingManager.tree.MarkIlluminatedArea(bounds,isDark);
             if (isDark)
             {
@@ -54,7 +55,7 @@ public class Lighting : MonoBehaviour
             {
                 LightNodesAffected += count;
             }
-            ResetCounters();
+            
             return count;
         }else
         {
