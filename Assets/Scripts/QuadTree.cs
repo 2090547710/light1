@@ -34,7 +34,7 @@ public class QuadTree
         public float HCost;
         public float FCost => GCost + HCost;
         public QuadTreeNode ParentNode;
-        public bool IsWalkable => IsIlluminated; // 复用光照状态
+        public bool IsWalkable => Height == 0 ? true : IsIlluminated; // 高度为0时可行走，其他情况复用光照状态
 
         // 新增高度属性
         public float Height { get; private set; }
@@ -44,6 +44,7 @@ public class QuadTree
             Center = center;
             Size = size;
             Capacity = capacity;
+            Height = 0.01f;
         }
 
         // 分裂节点为四个子节点

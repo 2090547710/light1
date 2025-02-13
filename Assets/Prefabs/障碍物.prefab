@@ -100,7 +100,7 @@ MonoBehaviour:
   areaSizeZ: 2
   areaHeight: 0.11
   areaShape: 1
-  areaType: 2
+  areaType: 1
   lightHeight: 0.769
   LightNodesAffected: 0
   DarkNodesAffected: 0
