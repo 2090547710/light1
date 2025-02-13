@@ -33,12 +33,12 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         // 鼠标右键拖动旋转
-        if (Input.GetMouseButton(1))
-        {
-            rotation.x += Input.GetAxis("Mouse Y") * rotationSpeed;
-            rotation.y += Input.GetAxis("Mouse X") * rotationSpeed;
-            rotation.x = Mathf.Clamp(rotation.x, -80, 80); // 限制垂直旋转角度
-        }
+        // if (Input.GetMouseButton(1))
+        // {
+        //     rotation.x += Input.GetAxis("Mouse Y") * rotationSpeed;
+        //     rotation.y += Input.GetAxis("Mouse X") * rotationSpeed;
+        //     rotation.x = Mathf.Clamp(rotation.x, -80, 80); // 限制垂直旋转角度
+        // }
 
         // 鼠标滚轮缩放
         float scroll = Input.GetAxis("Mouse ScrollWheel");

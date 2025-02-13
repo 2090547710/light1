@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
             size: size,
             capacity: capacity,
             maxDepth: maxDepth,
-            preSplit: preSplit  // 启用预分裂
+            preSplit: preSplit // 启用预分裂
         );
         // 将四叉树实例赋给光照系统
         LightingManager.tree = tree;

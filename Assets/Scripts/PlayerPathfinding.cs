@@ -37,7 +37,8 @@ public class PlayerPathfinding : MonoBehaviour
                 }
                 
                 // 请求路径
-                var path = quadTree.FindPath(transform.position, targetPos,0.5f);
+                var path = quadTree.FindPath(transform.position, targetPos, 0.1f);
+                // Debug.Log(path.Count);
                 if (path != null && path.Count > 0)
                 {
                     // 转换路径点为世界坐标（保持高度）
