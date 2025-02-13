@@ -1,68 +1,104 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
+
+// 新增枚举类型
+public enum AreaShape { Circle, Rectangle }
+public enum AreaType { Light, Seed, Dark } // 新增区域类型枚举
 
 // 光照组件
-[RequireComponent(typeof(CustomCollider))]
 public class Lighting : MonoBehaviour
 {
-    [Range(-10, 30)] public float Radius = 5f;
+    [Header("区域设置")]
+    [Tooltip("圆形会以area.size.x作为直径")]
+    [Range(0,100)]public float areaSizeX = 0f;
+    [Range(0,100)]public float areaSizeZ = 0f;
+    [Range(-1,1)]public float areaHeight = 0f;
+    public AreaShape areaShape = AreaShape.Rectangle;
+     public AreaType areaType = AreaType.Light;
+    [Tooltip("光照影响高度（不能小于区域高度）")]
+    [Range(0,1)]public float lightHeight = 0f; 
+
+    [Header("节点影响")]
     public int LightNodesAffected;
     public int DarkNodesAffected;
-    [Range(0, 30)] public float LightHeight = 1.0f;
-    public bool isDark = false;
-    public CustomCollider customCollider;
+
+
+   
+ 
+    private Bounds area;
+
+    // 新增线宽控制参数（在类开头添加）
+    public static float GizmoLineWidth = 2.0f;
 
     void OnEnable()
     {
         LightingManager.RegisterLight(this);
     }
 
-
     void OnDisable()
     {
         LightingManager.UnregisterLight(this);
     }
 
-    void Start()
-    {
-        customCollider = GetComponent<CustomCollider>(); 
-        LightHeight = customCollider.UnitHeightY;
-    }
-
     public int ApplyLighting()
     {
-        if(!isDark || Radius <= 0){
-            // 保存原始尺寸
-            Vector2 originalSize = customCollider.UnitSizeXZ;
-            
-            // 临时修改碰撞体尺寸用于计算边界
-            customCollider.UnitSizeXZ = new Vector2(Mathf.Abs(Radius)*2, Mathf.Abs(Radius)*2);
-            customCollider.UnitHeightY = LightHeight;
-            
-            Bounds bounds= customCollider.Bounds;
-            
-            // 恢复原始尺寸
-            customCollider.UnitSizeXZ = originalSize;
-            
-            ResetCounters();
-            int count = LightingManager.tree.MarkIlluminatedArea(bounds,isDark);
-            if (isDark)
-            {
-                DarkNodesAffected += count;
-            }
-            else
-            {
-                LightNodesAffected += count;
-            }
-            
-            return count;
-        }else
+        ResetCounters();
+        bool isRect = (areaShape == AreaShape.Rectangle);
+        bool isDark = (areaType != AreaType.Light );
+        
+        // 根据区域类型设置参数限制
+        switch (areaType)
         {
-            LightingManager.tree.MarkIlluminatedArea(customCollider.Bounds,isDark);
-            return 0;
+            case AreaType.Seed:
+                areaHeight = 0f;
+                lightHeight = 0f;
+                break;
+            case AreaType.Light:
+                lightHeight = Mathf.Clamp(lightHeight, 0.01f, 1f);
+                areaHeight = Mathf.Clamp(areaHeight, -1f, -0.01f);
+                break;
+            case AreaType.Dark:
+                areaHeight = Mathf.Clamp(areaHeight, 0.01f, 1f);
+                lightHeight = areaHeight; // 强制同步lightHeight
+                break;
         }
-                 
+
+        // 仅在area未初始化时设置默认值
+        Vector3 size = new Vector3(areaSizeX, areaHeight, areaSizeZ);
+        if (size == Vector3.zero)
+        {
+         // 初始化设置
+            area.size = Vector3.one;
+        }else{
+            area.size = size;
+        }
+        area.center = new Vector3(transform.position.x, 0, transform.position.z);
+
+
+        int count = LightingManager.tree.MarkIlluminatedArea(
+            area,
+            isRect,
+            isDark,
+            lightHeight
+        );
+
+        switch (areaType)
+        {
+            case AreaType.Light:
+                LightNodesAffected += count;
+                break;
+            case AreaType.Seed:
+                DarkNodesAffected += count;
+                break;
+            case AreaType.Dark:
+                DarkNodesAffected += count;
+                break;
+        }
+
+        
+        return count;
     }
 
     public void ResetCounters()
@@ -71,61 +107,58 @@ public class Lighting : MonoBehaviour
         DarkNodesAffected = 0;
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
-        // 根据光照类型设置颜色
-        Gizmos.color = isDark ? 
-           new Color(0, 0, 0) : new Color(0, 1, 0);//表示黑暗矩形，绿色表示光明区域
+#if UNITY_EDITOR
+        // 根据状态设置颜色（同步到Handles）
+        Color stateColor = (areaType == AreaType.Dark) ? 
+            new Color(0, 0, 0) : new Color(0, 1, 0);
+        Gizmos.color = stateColor;
+        Handles.color = stateColor;
 
-        // 确保在编辑器模式下也能获取collider
-        if (!Application.isPlaying)
-        {
-            customCollider = GetComponent<CustomCollider>();
-        }
-
-        Vector3 center = transform.position;
-        float theta = 0;
-        int segments = 36;
+        Vector3 center = area.center;
         
-        if (isDark)
+        if (areaShape == AreaShape.Rectangle)
         {
-            float size = Radius > 0 ? 
-                customCollider.UnitSizeXZ.x * customCollider.MinNodeSize.x : 
-                Mathf.Abs(Radius) * customCollider.MinNodeSize.x * 2;
-
-            // 绘制矩形（当Radius>0）或正方形（当Radius<=0）
-            float halfSize = size / 2;
+            // 修改矩形绘制方式支持线宽
+            float halfX = area.size.x * 0.5f;
+            float halfZ = area.size.z * 0.5f;
             Vector3[] points = new Vector3[4]
             {
-                center + new Vector3(-halfSize, 0, -halfSize),
-                center + new Vector3(halfSize, 0, -halfSize),
-                center + new Vector3(halfSize, 0, halfSize),
-                center + new Vector3(-halfSize, 0, halfSize)
+                center + new Vector3(-halfX, 0, -halfZ),
+                center + new Vector3(halfX, 0, -halfZ),
+                center + new Vector3(halfX, 0, halfZ),
+                center + new Vector3(-halfX, 0, halfZ)
             };
             
-            Gizmos.DrawLine(points[0], points[1]);
-            Gizmos.DrawLine(points[1], points[2]);
-            Gizmos.DrawLine(points[2], points[3]);
-            Gizmos.DrawLine(points[3], points[0]);
+            // 使用Handles绘制带线宽的线段
+            Handles.DrawLine(points[0], points[1], GizmoLineWidth);
+            Handles.DrawLine(points[1], points[2], GizmoLineWidth);
+            Handles.DrawLine(points[2], points[3], GizmoLineWidth);
+            Handles.DrawLine(points[3], points[0], GizmoLineWidth);
         }
         else
         {
-            // 光明区域保持圆形，使用绝对半径值
-            float drawRadius = Mathf.Abs(Radius) * customCollider.MinNodeSize.x;
+            // 修改圆形绘制方式支持线宽
+            float radius = area.size.x * 0.5f;
+            int segments = 36;
+            float theta = 0;
+            
             for(int i = 0; i < segments; i++){
                 Vector3 pos1 = center + new Vector3(
-                    Mathf.Cos(theta) * drawRadius,
+                    Mathf.Cos(theta) * radius,
                     0,
-                    Mathf.Sin(theta) * drawRadius
+                    Mathf.Sin(theta) * radius
                 );
                 theta += (2f * Mathf.PI) / segments;
                 Vector3 pos2 = center + new Vector3(
-                    Mathf.Cos(theta) * drawRadius,
+                    Mathf.Cos(theta) * radius,
                     0,
-                    Mathf.Sin(theta) * drawRadius
+                    Mathf.Sin(theta) * radius
                 );
-                Gizmos.DrawLine(pos1, pos2);
+                Handles.DrawLine(pos1, pos2, GizmoLineWidth);
             }
         }
+#endif
     }
 }

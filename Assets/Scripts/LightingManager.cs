@@ -7,29 +7,17 @@ public class LightingManager : MonoBehaviour
 {
     private static LightingManager instance;
     
-    // 根据四叉树叶子节点尺寸自动计算误差范围
-    private static float LightRadiusVariance { get; set;} // 圆形光照范围误差
-    private static float DarkRadiusVariance { get; set;} // 方形暗区范围误差
-
-    
-    public static  int LightCount = Shader.PropertyToID("_LightCount");
-    public static  int LightPositions = Shader.PropertyToID("_LightPositions");
-    public static  int LightRadii = Shader.PropertyToID("_LightRadii");
-    
     public static QuadTree tree { get; set; }
     public static List<Lighting> activeLights = new List<Lighting>();
     
     // 新增数据提供者引用
     [SerializeField] private LightingDataProvider dataProvider;
     
-    void Awake() {
-        instance = this;
-    }
+    void Awake() => instance = this;
 
     void Start()
     {
-        LightRadiusVariance = tree.MinNodeSize.x*0.7f;//根号二除以二
-        DarkRadiusVariance = tree.MinNodeSize.x / 4f;
+        
     }
 
     void LateUpdate()
@@ -38,8 +26,6 @@ public class LightingManager : MonoBehaviour
             UpdateLighting();
         }
     }
-
-    
 
     public static void RegisterLight(Lighting light)
     {
@@ -57,12 +43,8 @@ public class LightingManager : MonoBehaviour
             light.ApplyLighting();
         }
         
-        // 调用数据提供者更新光照数据
-        instance.dataProvider.UpdateLightingData(
-            activeLights, 
-            LightRadiusVariance, 
-            DarkRadiusVariance
-        );     
+        // 移除误差参数传递
+        instance.dataProvider.UpdateLightingData(activeLights);     
     }
     
     public static void UnregisterLight(Lighting light)

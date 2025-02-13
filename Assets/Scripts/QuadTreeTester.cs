@@ -39,11 +39,9 @@ public class QuadTreeTester : MonoBehaviour
                 );
                 objects.Add(newObj);
                 // 插入四叉树
-                CustomCollider collider = newObj.GetComponent<CustomCollider>();
                 bool success = quadTree.Insert(newObj);
                 Debug.Log($"插入{(success ? "成功" : "失败")} | " +
-                         $"位置：{position} | " +
-                         $"尺寸：{collider.Bounds.size}");
+                         $"位置：{position} | " );
     } 
 
 

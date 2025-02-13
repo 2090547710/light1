@@ -38,7 +38,7 @@ Shader "Custom/CustomIlluminationShader"
 
         float _LightCount;
         float4 _LightPositions[1000];
-        float2 _LightSizes[1000];
+        float4 _LightSizes[1000];
 
         half _MinBrightness;
         half _MaxBrightness;
@@ -54,48 +54,73 @@ Shader "Custom/CustomIlluminationShader"
         UNITY_INSTANCING_BUFFER_END(Props)
 
         // 在surf函数之前添加光照判断函数
+        //光照过滤（按光源插入顺序计算）
+        
+        //第二层：光源高度低于当前区域高度光源
         float IsIlluminated(float3 worldPos)
         {
             float illumination = 0.0;
-            bool isInDark = false;
+            float currentHeight = -2;
 
             for (int i = 0; i < _LightCount; i++)
             {
-                // 处理矩形黑暗区域（y != 0）
-                if (_LightSizes[i].y != 0) 
-                {
-            
-                    float2 lightXZ = _LightPositions[i].xz;
-                    float halfWidth = _LightSizes[i].x * 0.5;
-                    float halfHeight = _LightSizes[i].y * 0.5;
-                    
-                    if (abs(worldPos.x - lightXZ.x) <= halfWidth && 
-                        abs(worldPos.z - lightXZ.y) <= halfHeight) 
-                    {
-                        isInDark = true; // 标记在黑暗区域
-                    }
-                    continue;
-                }
+                float4 lightPos = _LightPositions[i];
+                float4 lightSize = _LightSizes[i];
+                
+                // 解析参数
+                bool isRect = lightPos.w > 0.5;    // 形状标识
+                bool isDark = lightSize.z > 0.5;   // 区域类型
+                float lightHeight = lightPos.y;    // 光照高度
+                float areaHeight = lightSize.w;    // 区域高度
 
-                // 处理圆形光明区域（y == 0）
-                float3 lightPos = _LightPositions[i].xyz;
-                float lightHeight = lightPos.y;
-                float distanceToLight = length(worldPos.xz - lightPos.xz);
-                float radius = _LightSizes[i].x;
+                            
                 
-                if(worldPos.y > lightHeight && isInDark) continue;
-                
-                float falloff = 1.0 - smoothstep(radius * _LightFalloff, radius, distanceToLight);
-                if(falloff > 0) 
+                //第一层：区域外光源
+                // 区域判断逻辑，如果不在区域内，则跳过
+                if (isRect)
                 {
-                    isInDark = false; // 新增：当处于光明区域时强制取消黑暗标记
+                    // 使用完整尺寸计算半宽高
+                    float halfWidth = lightSize.x * 0.5; // 现在lightSize.x存储的是完整宽度
+                    float halfHeight = lightSize.y * 0.5; // lightSize.y存储的是完整长度
+                    
+                    if(abs(worldPos.x - lightPos.x) > halfWidth || 
+                       abs(worldPos.z - lightPos.z) > halfHeight) 
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    // 圆形区域判断（使用lightSize.x作为直径）
+                    float distanceToCenter = length(worldPos.xz - lightPos.xz);
+                    if (distanceToCenter > lightSize.x*0.5f)
+                    {
+                        continue;
+                    }
+                }
+                //比较区域高度并更新
+                if (areaHeight > currentHeight) 
+                {
+                    currentHeight = areaHeight;
+                }
+                // 高度过滤，过滤来自低高度光源的光照
+                if(currentHeight > lightHeight) continue;
+                // 高度层叠处理
+               
+                    
+                // 根据光源类型处理亮度
+                 if (isDark) 
+                {
+                    illumination *= _DarknessFactor;
+                }
+                else 
+                {
+                    
+                    float distanceToCenter = length(worldPos.xz - lightPos.xz);
+                    float falloff = 1.0 - smoothstep(lightSize.x * _LightFalloff, lightSize.x, distanceToCenter);
                     illumination = max(illumination, falloff * _MaxBrightness);
                 }
-            }
-            
-            // 最终亮度处理：如果在黑暗区域则衰减亮度
-            if(isInDark) {
-                illumination *= _DarknessFactor; // 使用0-1的系数控制黑暗区域亮度
+
             }
             
             return saturate(illumination);

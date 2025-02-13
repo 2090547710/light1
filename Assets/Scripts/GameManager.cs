@@ -13,7 +13,6 @@ public class GameManager : MonoBehaviour
     public Vector2 size=new Vector2(100,100);  
     public Vector2 center=Vector2.zero;
     public GameObject prefab; 
-    public static Vector2 MinNodeSize;
 
     void Awake()
     {
@@ -26,7 +25,6 @@ public class GameManager : MonoBehaviour
             maxDepth: maxDepth,
             preSplit: preSplit  // 启用预分裂
         );
-        MinNodeSize=tree.MinNodeSize;
         // 将四叉树实例赋给光照系统
         LightingManager.tree = tree;
         PlayerPathfinding.quadTree = tree;
@@ -41,26 +39,25 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         // 生成N个实例
-        objects = new GameObject[50];
-        for (int i = 0; i < objects.Length; i++)
-        {
-            Vector3 position = new Vector3(
-                Random.Range(-50f, 50f),
-                1f,
-                Random.Range(-50f, 50f)
-            );
-            objects[i] = Instantiate(prefab, position, Quaternion.identity, transform);
-            objects[i].GetComponent<Lighting>().Radius=Random.Range(0,5);
-        }
+        // objects = new GameObject[50];
+        // for (int i = 0; i < objects.Length; i++)
+        // {
+        //     Vector3 position = new Vector3(
+        //         Random.Range(-50f, 50f),
+        //         1f,
+        //         Random.Range(-50f, 50f)
+        //     );
+        //     objects[i] = Instantiate(prefab, position, Quaternion.identity, transform);
+        // }
 
         // 重置光照状态
         tree.ResetIllumination();
 
         // 插入对象
-        foreach (var obj in objects)
-        {
-            tree.Insert(obj);
-        }
+        // foreach (var obj in objects)
+        // {
+        //     tree.Insert(obj);
+        // }
 
     }
 
