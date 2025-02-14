@@ -46,11 +46,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 801302af557be1048a2eb17174804a56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  areaSizeX: 15.2
-  areaSizeZ: 13.1
+  areaSizeX: 18.6
+  areaSizeZ: 9.7
   areaHeight: 0.1
   areaShape: 1
-  areaType: 0
+  areaType: 3
   lightHeight: 0.8
   LightNodesAffected: 0
   DarkNodesAffected: 0

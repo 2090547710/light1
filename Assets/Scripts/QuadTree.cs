@@ -34,10 +34,11 @@ public class QuadTree
         public float HCost;
         public float FCost => GCost + HCost;
         public QuadTreeNode ParentNode;
-        public bool IsWalkable => Height == 0 ? true : IsIlluminated; // 高度为0时可行走，其他情况复用光照状态
+        public bool IsWalkable => AreaType != AreaType.Dark;
 
         // 新增高度属性
         public float Height { get; private set; }
+        public AreaType AreaType { get; private set; }
 
         public QuadTreeNode(Vector2 center, Vector2 size, int capacity)
         {
@@ -87,13 +88,35 @@ public class QuadTree
                    Mathf.Abs(point.y - Center.y) <= Size.y * 0.5f;
         }
        
-        // 新增高度更新方法
+        // 修改后的高度更新方法
         public void UpdateHeight(float newHeight)
         {
-            if (newHeight > Height)
+            var newType = GetAreaType(newHeight);
+            var currentTypePriority = (int)AreaType;
+            var newTypePriority = (int)newType;
+
+            // 优先级判断规则
+            if (newTypePriority > currentTypePriority || 
+               (newType == AreaType && newHeight > Height))
             {
                 Height = newHeight;
+                AreaType = newType;
             }
+        }
+
+        // 根据高度值获取区域类型
+        private AreaType GetAreaType(float height)
+        {
+            if (height >= 0.11f && height <= 1f) 
+                return AreaType.Obstacle;
+            if (height >= -1f && height <= -0.01f) 
+                return AreaType.Light;
+            if (height >= 0.01f && height <= 0.1f) 
+                return AreaType.Dark;
+            if (Mathf.Approximately(height, 0f)) 
+                return AreaType.Seed;
+            
+            return AreaType.Dark; // 默认处理
         }
     }
 

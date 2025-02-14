@@ -5,7 +5,13 @@ using UnityEditor;
 
 // 新增枚举类型
 public enum AreaShape { Circle, Rectangle }
-public enum AreaType { Light, Seed, Dark, Obstacle } // 新增区域类型枚举
+public enum AreaType
+{        
+    Seed = 1,
+    Dark = 2,
+    Light = 3,
+    Obstacle = 4, //障碍物不会被更新高度
+}
 
 // 光照组件
 public class Lighting : MonoBehaviour
@@ -53,7 +59,7 @@ public class Lighting : MonoBehaviour
                 lightHeight = 0f;
                 break;
             case AreaType.Light:
-                lightHeight = Mathf.Clamp(lightHeight, 0.01f, 1f);
+                lightHeight = Mathf.Clamp(lightHeight, 0.1f, 1f);
                 areaHeight = Mathf.Clamp(areaHeight, -1f, -0.01f);
                 break;
             case AreaType.Dark:
