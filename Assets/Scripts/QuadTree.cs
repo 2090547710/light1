@@ -110,6 +110,9 @@ public class QuadTree
     // 添加最小节点尺寸属性
     public Vector2 MinNodeSize { get; private set; }
 
+    // 修改GetNeighbors方法，添加缓存机制
+    private Dictionary<QuadTreeNode, List<QuadTreeNode>> neighborCache = new Dictionary<QuadTreeNode, List<QuadTreeNode>>();
+
     public QuadTree(Vector2 center, Vector2 size, int capacity, int maxDepth = 5, bool preSplit = false)
     {
         RootSize = size;
@@ -153,6 +156,7 @@ public class QuadTree
         obj.transform.position = newPos;
 
         // 使用调整后的坐标进行插入
+        neighborCache.Clear();
         return InsertRecursive(root, targetCenter, obj, currentDepth);
     }
 
@@ -357,6 +361,7 @@ public class QuadTree
     {
         Vector3 pos = obj.transform.position;
         Vector2 position = new Vector2(pos.x, pos.z);
+        neighborCache.Clear();
         return RemoveRecursive(root, position, obj);
     }
 
@@ -786,10 +791,16 @@ public class QuadTree
 
     private List<QuadTreeNode> GetNeighbors(QuadTreeNode node)
     {
+        if (neighborCache.TryGetValue(node, out var cached))
+            return cached;
+
         Vector3 center = new Vector3(node.Center.x, 0, node.Center.y);
         float radius = Mathf.Max(node.Size.x, node.Size.y) * 1.5f;
-        return GetNeighborLeafNodes(center, radius)
+        var neighbors = GetNeighborLeafNodes(center, radius)
             .Where(n => n.IsWalkable).ToList();
+        
+        neighborCache[node] = neighbors;
+        return neighbors;
     }
 
     private bool HasLineOfSight(QuadTreeNode from, QuadTreeNode to, float maxStepHeight = 0.2f)

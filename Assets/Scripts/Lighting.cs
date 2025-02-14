@@ -5,7 +5,7 @@ using UnityEditor;
 
 // 新增枚举类型
 public enum AreaShape { Circle, Rectangle }
-public enum AreaType { Light, Seed, Dark } // 新增区域类型枚举
+public enum AreaType { Light, Seed, Dark, Obstacle } // 新增区域类型枚举
 
 // 光照组件
 public class Lighting : MonoBehaviour
@@ -24,9 +24,6 @@ public class Lighting : MonoBehaviour
     public int LightNodesAffected;
     public int DarkNodesAffected;
 
-
-   
- 
     private Bounds area;
 
     // 新增线宽控制参数（在类开头添加）
@@ -60,7 +57,11 @@ public class Lighting : MonoBehaviour
                 areaHeight = Mathf.Clamp(areaHeight, -1f, -0.01f);
                 break;
             case AreaType.Dark:
-                areaHeight = Mathf.Clamp(areaHeight, 0.01f, 1f);
+                areaHeight = Mathf.Clamp(areaHeight, 0.01f, 0.1f); 
+                lightHeight = areaHeight; // 强制同步lightHeight
+                break;
+            case AreaType.Obstacle:
+                areaHeight = Mathf.Clamp(areaHeight, 0.11f, 1f); // 0.1f以上为障碍物
                 lightHeight = areaHeight; // 强制同步lightHeight
                 break;
         }
@@ -95,6 +96,8 @@ public class Lighting : MonoBehaviour
             case AreaType.Dark:
                 DarkNodesAffected += count;
                 break;
+            case AreaType.Obstacle:
+                break;
         }
 
         
@@ -111,7 +114,7 @@ public class Lighting : MonoBehaviour
     {
 #if UNITY_EDITOR
         // 根据状态设置颜色（同步到Handles）
-        Color stateColor = (areaType == AreaType.Dark) ? 
+        Color stateColor = (areaType != AreaType.Light) ? 
             new Color(0, 0, 0) : new Color(0, 1, 0);
         Gizmos.color = stateColor;
         Handles.color = stateColor;

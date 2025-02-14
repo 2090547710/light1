@@ -42,6 +42,10 @@ public class PlayerPathfinding : MonoBehaviour
                 if (path != null && path.Count > 0)
                 {
                     // 转换路径点为世界坐标（保持高度）
+                    Debug.Log("路径点数量：" + path.Count);
+                    foreach(var p in path){
+                        Debug.Log("路径点位置：" + p);
+                    }
                     currentPath = path.Select(p => new Vector3(p.x, transform.position.y, p.z)).ToArray();
                     currentPathIndex = 0;
                     

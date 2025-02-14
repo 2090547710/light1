@@ -68,8 +68,8 @@ public class QuadTreeTester : MonoBehaviour
         objects.Add(newObj);
         // 插入四叉树
         bool success = quadTree.Insert(newObj);
-        Debug.Log($"插入{(success ? "成功" : "失败")} | " +
-                 $"位置：{position} | " );
+        // Debug.Log($"插入{(success ? "成功" : "失败")} | " +
+        //          $"位置：{position} | " );
     } 
 
      public void TestDark(Vector3 position){
