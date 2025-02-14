@@ -79,7 +79,7 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _LightCircleFalloff: 0.8
-    - _LightCount: 16
+    - _LightCount: 2
     - _LightFalloff: 1
     - _LightRadii: 0
     - _LightRectFalloff: 0

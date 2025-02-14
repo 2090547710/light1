@@ -230,6 +230,7 @@ GameObject:
   - component: {fileID: 877133416}
   - component: {fileID: 877133417}
   - component: {fileID: 877133418}
+  - component: {fileID: 877133419}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -250,7 +251,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxDepth: 6
-  capacity: 4
+  capacity: 1
   preSplit: 0
   size: {x: 128, y: 128}
   center: {x: 0, y: 0}
@@ -323,6 +324,23 @@ MonoBehaviour:
   terrainMaterials:
   - {fileID: 2100000, guid: 6fdbbda1d9dccca4eae22225f2daae1d, type: 2}
   - {fileID: 2100000, guid: 7ea123b665d442f47854b520494278a3, type: 2}
+--- !u!114 &877133419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877133413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35f5e59c674cbb9498495cf67575e2e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectableLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  selectionRadius: 0.5
+  highlightMaterial: {fileID: 2100000, guid: c91f8bb88c5fbfa4887573142a1e2d6b, type: 2}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

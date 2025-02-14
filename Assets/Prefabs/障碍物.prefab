@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 3700434311854040377}
   - component: {fileID: 4289671542316621319}
   - component: {fileID: 2964514041171739292}
-  m_Layer: 0
+  - component: {fileID: -6355687641031468626}
+  m_Layer: 7
   m_Name: "\u969C\u788D\u7269"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -98,9 +99,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   areaSizeX: 7.4
   areaSizeZ: 7.4
-  areaHeight: 0.2
+  areaHeight: 0.26
   areaShape: 0
-  areaType: 2
+  areaType: 1
   lightHeight: 0.769
   LightNodesAffected: 0
   DarkNodesAffected: 0
+--- !u!65 &-6355687641031468626
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3803225260541865786}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
