@@ -436,7 +436,7 @@ public class QuadTree
         return FinalizeIlluminationMarking(area, isRect, isDark, lightHeight);
     }
 
-    // 预分裂方法
+    // 修改后的预分裂方法（移除高度更新）
     private void PreSplitForLighting(QuadTreeNode node, Bounds area, bool isRect, int currentDepth)
     {
         Vector2 center = new Vector2(area.center.x, area.center.z);
@@ -454,12 +454,6 @@ public class QuadTree
             CircleRectOverlap(center, radius, nodeRect);
         
         if (!overlap) return;
-
-        // 高度更新，以当前的Lighting的区域高度去比较
-        if (node.Size == MinNodeSize)
-        {
-            node.UpdateHeight(area.size.y);
-        }
 
         if (currentDepth < maxDepth)
         {
@@ -522,7 +516,7 @@ public class QuadTree
         }
     }
 
-    // 修改最终标记方法
+    // 修改后的最终标记方法（添加高度更新）
     private int FinalizeIlluminationMarking(Bounds area, bool isRect, bool isDark, float lightHeight)
     {
         int count = 0;
@@ -560,6 +554,9 @@ public class QuadTree
         { 
             if (node.Height <= lightHeight)
             {
+                // 添加高度更新逻辑
+                node.UpdateHeight(area.size.y);
+                
                 bool originalState = node.IsIlluminated;
                 node.IsIlluminated = !isDark;
                 if (originalState != node.IsIlluminated) count++;
