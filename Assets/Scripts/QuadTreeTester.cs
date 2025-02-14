@@ -19,6 +19,27 @@ public class QuadTreeTester : MonoBehaviour
 
     void Update()
     {
+        
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) 
+        && Input.GetKeyDown(KeyCode.Z))
+        {
+            if(objects.Count > 0){
+                int i = objects.Count - 1;
+                Lighting lighting = objects[i].GetComponent<Lighting>();
+                if(lighting != null){
+                    lighting.RemoveLighting();
+                }
+                quadTree.Remove(objects[i]);
+                Destroy(objects[i]);
+                LightingManager.UpdateLighting();
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            LightingManager.UpdateLighting();
+        }
+        
         // 鼠标右键插入障碍物
         if (Input.GetMouseButtonDown(1)) // 1 表示鼠标右键
         {
@@ -38,21 +59,22 @@ public class QuadTreeTester : MonoBehaviour
             }
         }
 
-        // 按C键清除
+        // 按C键清除所有对象
         if (Input.GetKeyDown(KeyCode.C))
         {
-            if (objects.Count > 1)
+            if (objects.Count >= 1)
             {
-                // 从后往前删除避免索引问题
-                for (int i = objects.Count - 1; i >= 1; i--)
+                for (int i = 0; i < objects.Count; i++)
                 {
+                    Lighting lighting = objects[i].GetComponent<Lighting>();
+                    if(lighting != null){
+                        lighting.RemoveLighting();
+                    }
                     quadTree.Remove(objects[i]);
                     Destroy(objects[i]);
                 }
-                // 保留第一个元素
-                var first = objects[0];
                 objects.Clear();
-                objects.Add(first);
+                LightingManager.UpdateLighting();
             }
         }
     }
@@ -70,10 +92,14 @@ public class QuadTreeTester : MonoBehaviour
         bool success = quadTree.Insert(newObj);
         // Debug.Log($"插入{(success ? "成功" : "失败")} | " +
         //          $"位置：{position} | " );
+
+        Lighting lighting = newObj.GetComponent<Lighting>();
+        if(lighting != null){
+            LightingManager.UpdateLighting();
+        }
     } 
 
      public void TestDark(Vector3 position){
-        // 随机选择一个预制体
         GameObject prefab = prefabToSpawn[1];
         GameObject newObj = Instantiate(
             prefab,
@@ -83,10 +109,20 @@ public class QuadTreeTester : MonoBehaviour
         objects.Add(newObj);
         // 插入四叉树
         bool success = quadTree.Insert(newObj);
-        Debug.Log($"插入{(success ? "成功" : "失败")} | " +
-                 $"位置：{position} | " );
+        // Debug.Log($"插入{(success ? "成功" : "失败")} | " +
+        //          $"位置：{position} | " );
+
+        Lighting lighting = newObj.GetComponent<Lighting>();
+        if(lighting != null){
+            LightingManager.UpdateLighting();
+        }
+        // 如果障碍物，则立马移除光照
+        if(lighting.areaType == AreaType.Obstacle){
+            lighting.RemoveLighting();
+            quadTree.Remove(newObj);
+            Destroy(newObj);
+            LightingManager.UpdateLighting();
+        }
     } 
-
-
-   
+  
 } 

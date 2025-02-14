@@ -5,8 +5,7 @@ using UnityEditor;
 
 public class QuadTree
 {
-    ////////////////////////////////////////////////////////////////
-    // 四叉树节点类
+    #region 四叉树节点类
     public class QuadTreeNode
     {
         // 节点边界（中心点 + 尺寸）
@@ -38,7 +37,7 @@ public class QuadTree
 
         // 新增高度属性
         public float Height { get; private set; }
-        public AreaType AreaType { get; private set; }
+        public AreaType AreaType => GetAreaType(Height);
 
         public QuadTreeNode(Vector2 center, Vector2 size, int capacity)
         {
@@ -95,12 +94,18 @@ public class QuadTree
             var currentTypePriority = (int)AreaType;
             var newTypePriority = (int)newType;
 
-            // 优先级判断规则
+           
+            if ( AreaType == AreaType.Obstacle && newType != AreaType.Obstacle)
+            {
+                // 障碍物会被其他类型累加高度
+                Height += newHeight;
+                return;
+            }
+                 // 优先级判断规则：Obstacle>Light>seed>Dark
             if (newTypePriority > currentTypePriority || 
-               (newType == AreaType && newHeight > Height))
+               (newType == AreaType))
             {
                 Height = newHeight;
-                AreaType = newType;
             }
         }
 
@@ -118,10 +123,17 @@ public class QuadTree
             
             return AreaType.Dark; // 默认处理
         }
+
+        // 新增设置方法
+        public void SetHeight(float newHeight)
+        {
+            Height = newHeight;
+        }
+
     }
+    #endregion
 
-    ////////////////////////////////////////////////////////////////
-
+    #region 四叉树类相关
     // 根节点和最大深度
     private QuadTreeNode root;
     private int maxDepth;
@@ -235,6 +247,40 @@ public class QuadTree
         return false;
     }
 
+       // 新增移除方法
+    public bool Remove(GameObject obj)
+    {
+        Vector3 pos = obj.transform.position;
+        Vector2 position = new Vector2(pos.x, pos.z);
+        neighborCache.Clear();
+        return RemoveRecursive(root, position, obj);
+    }
+
+    private bool RemoveRecursive(QuadTreeNode node, Vector2 position, GameObject obj)
+    {
+        if (!node.Contains(position)) return false;
+
+        // 尝试在当前节点移除
+        if (node.Objects.Remove(obj))
+        {
+            return true;
+        }
+
+        // 如果有子节点则递归查找
+        if (node.Children != null)
+        {
+            foreach (var child in node.Children)
+            {
+                if (RemoveRecursive(child, position, obj))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     // 重新分配对象到子节点
     private void RedistributeObjects(QuadTreeNode node)
     {
@@ -316,7 +362,9 @@ public class QuadTree
             }
         }
     }
+    #endregion
 
+    #region Gizmos绘制
     // 调试绘制
     public void DrawGizmos()
     {
@@ -378,40 +426,9 @@ public class QuadTree
             }
         }
     }
+    #endregion
 
-    // 新增移除方法
-    public bool Remove(GameObject obj)
-    {
-        Vector3 pos = obj.transform.position;
-        Vector2 position = new Vector2(pos.x, pos.z);
-        neighborCache.Clear();
-        return RemoveRecursive(root, position, obj);
-    }
-
-    private bool RemoveRecursive(QuadTreeNode node, Vector2 position, GameObject obj)
-    {
-        if (!node.Contains(position)) return false;
-
-        // 尝试在当前节点移除
-        if (node.Objects.Remove(obj))
-        {
-            return true;
-        }
-
-        // 如果有子节点则递归查找
-        if (node.Children != null)
-        {
-            foreach (var child in node.Children)
-            {
-                if (RemoveRecursive(child, position, obj))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
+    #region 光照标记方法
     // 修改后的光照标记方法 先预分裂，
     public int MarkIlluminatedArea(Bounds area, bool isRect, bool isDark, float lightHeight)
     {
@@ -549,15 +566,19 @@ public class QuadTree
             }
         }
     }
-
-    // 修改遍历方法
-    private void ForEachNodeInArea(Bounds area, bool isRect, System.Action<QuadTreeNode> action)
+    #endregion
+   
+    #region 光照移除方法
+    public void RemoveIlluminationEffect(Bounds area, bool isRect, AreaType areaType)
     {
-        ForEachNodeInAreaRecursive(root, area, isRect, action);
+        if (areaType == AreaType.Obstacle) return;
+        
+        RemoveIlluminationRecursive(root, area, isRect);
     }
-
-    private void ForEachNodeInAreaRecursive(QuadTreeNode node, Bounds area, bool isRect, System.Action<QuadTreeNode> action)
+   
+    private void RemoveIlluminationRecursive(QuadTreeNode node, Bounds area, bool isRect)
     {
+        // 区域重叠检测（复用现有逻辑）
         Vector2 center = new Vector2(area.center.x, area.center.z);
         Vector2 size = new Vector2(area.size.x, area.size.z);
         float radius = area.size.x * 0.5f;
@@ -568,166 +589,28 @@ public class QuadTree
             node.Size.x,
             node.Size.y);
 
-        bool overlap = isRect ?
-            RectangleRectOverlap(center, size, nodeRect) :
+        bool overlap = isRect ? 
+            RectangleRectOverlap(center, size, nodeRect) : 
             CircleRectOverlap(center, radius, nodeRect);
-
+        
         if (!overlap) return;
 
-        action(node);
-
         if (node.Children != null)
         {
             foreach (var child in node.Children)
             {
-                ForEachNodeInAreaRecursive(child, area, isRect, action);
+                RemoveIlluminationRecursive(child, area, isRect);
             }
         }
-    }
-
-
-    // 圆形与矩形碰撞检测
-    private bool CircleRectOverlap(Vector2 circlePos, float radius, Rect rect)
-    {
-        // 先进行快速排除
-        float dx = Mathf.Abs(circlePos.x - rect.center.x);
-        float dy = Mathf.Abs(circlePos.y - rect.center.y);
-
-        if (dx >= (rect.width/2 + radius)) return false;
-        if (dy >= (rect.height/2 + radius)) return false;
-
-        if (dx < (rect.width/2)) return true;
-        if (dy < (rect.height/2)) return true;
-
-        float cornerDistSq = Mathf.Pow(dx - rect.width/2, 2) +
-                           Mathf.Pow(dy - rect.height/2, 2);
-
-        return cornerDistSq <= (radius * radius);
-    }
-
-    // 矩形检测
-    private bool RectangleRectOverlap(Vector2 rectCenter, Vector2 rectSize, Rect targetRect)
-    {
-        // 构造源矩形
-        Rect sourceRect = new Rect(
-            rectCenter.x - rectSize.x/2,
-            rectCenter.y - rectSize.y/2,
-            rectSize.x,
-            rectSize.y);
-        
-        // 修改为严格重叠检测（排除边界接触）
-        return sourceRect.xMin < targetRect.xMax && 
-               sourceRect.xMax > targetRect.xMin && 
-               sourceRect.yMin < targetRect.yMax && 
-               sourceRect.yMax > targetRect.yMin;
-    }
-
-    // 重置光照状态
-    public void ResetIllumination()
-    {
-        ResetIlluminationRecursive(root);
-    }
-
-    private void ResetIlluminationRecursive(QuadTreeNode node)
-    {
-        node.IsIlluminated = false;
-        if (node.Children != null)
+        else if (node.Size == MinNodeSize) // 仅处理最小节点
         {
-            foreach (var child in node.Children)
-            {
-                ResetIlluminationRecursive(child);
-            }
+            node.SetHeight(0.01f);
+            node.IsIlluminated = false;
         }
     }
-
+    #endregion
     
-
-    // 新增方法：获取所有被光照的叶子节点
-    public List<QuadTreeNode> GetIlluminatedLeafNodes()
-    {
-        List<QuadTreeNode> result = new List<QuadTreeNode>();
-        GetLeafNodesRecursive(root, result);
-        return result;
-    }
-
-    private void GetLeafNodesRecursive(QuadTreeNode node, List<QuadTreeNode> result)
-    {
-        if (node.Children == null)
-        {
-            if (node.IsIlluminated)
-            {
-                result.Add(node);
-            }
-        }
-        else
-        {
-            foreach (var child in node.Children)
-            {
-                GetLeafNodesRecursive(child, result);
-            }
-        }
-    }
-
-    // 检查指定位置是否被照亮
-    public bool IsPositionIlluminated(Vector3 worldPos)
-    {
-        Vector2 pos = new Vector2(worldPos.x, worldPos.z);
-        return CheckIlluminationRecursive(root, pos);
-    }
-
-    private bool CheckIlluminationRecursive(QuadTreeNode node, Vector2 pos)
-    {
-        if (!node.Contains(pos)) return false;
-        
-        if (node.Children == null)
-        {
-            return node.IsIlluminated;
-        }
-
-        foreach (var child in node.Children)
-        {
-            if (CheckIlluminationRecursive(child, pos))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // 获取指定位置周围邻近的叶子节点
-    public List<QuadTreeNode> GetNeighborLeafNodes(Vector3 position, float radius)
-    {
-        Vector2 pos = new Vector2(position.x, position.z);
-        List<QuadTreeNode> result = new List<QuadTreeNode>();
-        FindNeighborLeafNodes(root, pos, radius, result);
-        return result;
-    }
-
-    private void FindNeighborLeafNodes(QuadTreeNode node, Vector2 position, float radius, List<QuadTreeNode> result)
-    {
-        if (node == null) return;
-
-        Rect nodeRect = new Rect(
-            node.Center.x - node.Size.x/2,
-            node.Center.y - node.Size.y/2,
-            node.Size.x,
-            node.Size.y);
-
-        if (!CircleRectOverlap(position, radius, nodeRect)) return;
-
-        if (node.Children == null)
-        {
-            result.Add(node);
-        }
-        else
-        {
-            foreach (var child in node.Children)
-            {
-                FindNeighborLeafNodes(child, position, radius, result);
-            }
-        }
-    }
-
+    #region 路径规划
     // 新增路径规划方法
     public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, float maxStepHeight = 0.2f)
     {
@@ -737,7 +620,7 @@ public class QuadTree
         var targetNode = FindLeafNode(targetPos);
         
         // 直接返回null如果目标节点不可行走
-        if (targetNode == null || !targetNode.IsWalkable)
+        if (targetNode == null || !targetNode.IsWalkable || targetNode.Size != MinNodeSize)
         {
             return null;
         }
@@ -943,6 +826,191 @@ public class QuadTree
         return candidates.FirstOrDefault();
     }
 
+    #endregion
+
+    #region 其他辅助方法
+    // 修改遍历方法
+    private void ForEachNodeInArea(Bounds area, bool isRect, System.Action<QuadTreeNode> action)
+    {
+        ForEachNodeInAreaRecursive(root, area, isRect, action);
+    }
+
+    private void ForEachNodeInAreaRecursive(QuadTreeNode node, Bounds area, bool isRect, System.Action<QuadTreeNode> action)
+    {
+        Vector2 center = new Vector2(area.center.x, area.center.z);
+        Vector2 size = new Vector2(area.size.x, area.size.z);
+        float radius = area.size.x * 0.5f;
+
+        Rect nodeRect = new Rect(
+            node.Center.x - node.Size.x/2,
+            node.Center.y - node.Size.y/2,
+            node.Size.x,
+            node.Size.y);
+
+        bool overlap = isRect ?
+            RectangleRectOverlap(center, size, nodeRect) :
+            CircleRectOverlap(center, radius, nodeRect);
+
+        if (!overlap) return;
+
+        action(node);
+
+        if (node.Children != null)
+        {
+            foreach (var child in node.Children)
+            {
+                ForEachNodeInAreaRecursive(child, area, isRect, action);
+            }
+        }
+    }
+
+    #region 碰撞检测
+    // 圆形与矩形碰撞检测
+    private bool CircleRectOverlap(Vector2 circlePos, float radius, Rect rect)
+    {
+        // 先进行快速排除
+        float dx = Mathf.Abs(circlePos.x - rect.center.x);
+        float dy = Mathf.Abs(circlePos.y - rect.center.y);
+
+        if (dx >= (rect.width/2 + radius)) return false;
+        if (dy >= (rect.height/2 + radius)) return false;
+
+        if (dx < (rect.width/2)) return true;
+        if (dy < (rect.height/2)) return true;
+
+        float cornerDistSq = Mathf.Pow(dx - rect.width/2, 2) +
+                           Mathf.Pow(dy - rect.height/2, 2);
+
+        return cornerDistSq <= (radius * radius);
+    }
+
+    // 矩形检测
+    private bool RectangleRectOverlap(Vector2 rectCenter, Vector2 rectSize, Rect targetRect)
+    {
+        // 构造源矩形
+        Rect sourceRect = new Rect(
+            rectCenter.x - rectSize.x/2,
+            rectCenter.y - rectSize.y/2,
+            rectSize.x,
+            rectSize.y);
+        
+        // 修改为严格重叠检测（排除边界接触）
+        return sourceRect.xMin < targetRect.xMax && 
+               sourceRect.xMax > targetRect.xMin && 
+               sourceRect.yMin < targetRect.yMax && 
+               sourceRect.yMax > targetRect.yMin;
+    }
+
+    #endregion
+
+
+    // 重置光照状态
+    public void ResetIllumination()
+    {
+        ResetIlluminationRecursive(root);
+    }
+
+    private void ResetIlluminationRecursive(QuadTreeNode node)
+    {
+        node.IsIlluminated = false;
+        if (node.Children != null)
+        {
+            foreach (var child in node.Children)
+            {
+                ResetIlluminationRecursive(child);
+            }
+        }
+    }
+
     
+
+    // 新增方法：获取所有被光照的叶子节点
+    public List<QuadTreeNode> GetIlluminatedLeafNodes()
+    {
+        List<QuadTreeNode> result = new List<QuadTreeNode>();
+        GetLeafNodesRecursive(root, result);
+        return result;
+    }
+
+    private void GetLeafNodesRecursive(QuadTreeNode node, List<QuadTreeNode> result)
+    {
+        if (node.Children == null)
+        {
+            if (node.IsIlluminated)
+            {
+                result.Add(node);
+            }
+        }
+        else
+        {
+            foreach (var child in node.Children)
+            {
+                GetLeafNodesRecursive(child, result);
+            }
+        }
+    }
+
+    // 检查指定位置是否被照亮
+    public bool IsPositionIlluminated(Vector3 worldPos)
+    {
+        Vector2 pos = new Vector2(worldPos.x, worldPos.z);
+        return CheckIlluminationRecursive(root, pos);
+    }
+
+    private bool CheckIlluminationRecursive(QuadTreeNode node, Vector2 pos)
+    {
+        if (!node.Contains(pos)) return false;
+        
+        if (node.Children == null)
+        {
+            return node.IsIlluminated;
+        }
+
+        foreach (var child in node.Children)
+        {
+            if (CheckIlluminationRecursive(child, pos))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 获取指定位置周围邻近的叶子节点
+    public List<QuadTreeNode> GetNeighborLeafNodes(Vector3 position, float radius)
+    {
+        Vector2 pos = new Vector2(position.x, position.z);
+        List<QuadTreeNode> result = new List<QuadTreeNode>();
+        FindNeighborLeafNodes(root, pos, radius, result);
+        return result;
+    }
+
+    private void FindNeighborLeafNodes(QuadTreeNode node, Vector2 position, float radius, List<QuadTreeNode> result)
+    {
+        if (node == null) return;
+
+        Rect nodeRect = new Rect(
+            node.Center.x - node.Size.x/2,
+            node.Center.y - node.Size.y/2,
+            node.Size.x,
+            node.Size.y);
+
+        if (!CircleRectOverlap(position, radius, nodeRect)) return;
+
+        if (node.Children == null)
+        {
+            result.Add(node);
+        }
+        else
+        {
+            foreach (var child in node.Children)
+            {
+                FindNeighborLeafNodes(child, position, radius, result);
+            }
+        }
+    }
+    #endregion
+
+  
 }
 

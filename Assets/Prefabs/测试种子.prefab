@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   areaSizeX: 18.6
   areaSizeZ: 9.7
-  areaHeight: 0.1
+  areaHeight: -0.39
   areaShape: 1
   areaType: 3
   lightHeight: 0.8

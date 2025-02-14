@@ -45,6 +45,7 @@ public class Lighting : MonoBehaviour
         LightingManager.UnregisterLight(this);
     }
 
+    // 应用光照
     public int ApplyLighting()
     {
         ResetCounters();
@@ -59,7 +60,7 @@ public class Lighting : MonoBehaviour
                 lightHeight = 0f;
                 break;
             case AreaType.Light:
-                lightHeight = Mathf.Clamp(lightHeight, 0.1f, 1f);
+                lightHeight = Mathf.Clamp(lightHeight, 0.11f, 1f);
                 areaHeight = Mathf.Clamp(areaHeight, -1f, -0.01f);
                 break;
             case AreaType.Dark:
@@ -116,6 +117,19 @@ public class Lighting : MonoBehaviour
         DarkNodesAffected = 0;
     }
 
+    // 移除光照
+    public void RemoveLighting()
+    {
+        
+
+        ResetCounters();
+        bool isRect = (areaShape == AreaShape.Rectangle);
+        LightingManager.tree.RemoveIlluminationEffect(area, isRect, areaType);
+        // 并调用LightingManager.UnregisterLight(this)
+        // 同时重置LightNodesAffected和DarkNodesAffected的计数
+        LightingManager.UnregisterLight(this);
+    }
+    
     private void OnDrawGizmos()
     {
 #if UNITY_EDITOR
@@ -170,4 +184,6 @@ public class Lighting : MonoBehaviour
         }
 #endif
     }
+
+
 }

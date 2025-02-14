@@ -22,9 +22,7 @@ public class LightingManager : MonoBehaviour
 
     void LateUpdate()
     {
-         if(Input.GetKeyDown(KeyCode.Space)){
-            UpdateLighting();
-        }
+
     }
 
     public static void RegisterLight(Lighting light)

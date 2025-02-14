@@ -98,9 +98,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   areaSizeX: 7.4
   areaSizeZ: 7.4
-  areaHeight: 0.14
+  areaHeight: 0.52
   areaShape: 1
-  areaType: 1
+  areaType: 4
   lightHeight: 0.769
   LightNodesAffected: 0
   DarkNodesAffected: 0
