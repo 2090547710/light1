@@ -69,15 +69,20 @@ Material:
     - _Cutoff: 0.5
     - _DarkFalloff: 0.793
     - _DarkRecoveryRange: 1.5
-    - _DarknessFactor: 0.5
+    - _DarknessCircleFalloff: 2
+    - _DarknessFactor: 0.3
+    - _DarknessFalloff: 0.3
+    - _DarknessRectFalloff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LightCount: 3
-    - _LightFalloff: 0.8
+    - _LightCircleFalloff: 0.8
+    - _LightCount: 16
+    - _LightFalloff: 1
     - _LightRadii: 0
+    - _LightRectFalloff: 0
     - _MaxBrightness: 1
     - _Metallic: 0
     - _MinBrightness: 0.2

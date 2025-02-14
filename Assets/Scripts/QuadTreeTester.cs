@@ -6,20 +6,28 @@ public class QuadTreeTester : MonoBehaviour
     [Header("测试设置")]
     public List<GameObject> prefabToSpawn; // 改为预制体列表
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private float seedCooldown = 0.5f; // 新增种子冷却时间
+    [SerializeField] private float darkCooldown = 0.5f; // 新增障碍物冷却时间
 
     public static QuadTree quadTree;
     private Camera mainCamera;
 
     private List<GameObject> objects = new List<GameObject>();
+    private float seedCooldownTimer; // 种子冷却计时器
+    private float darkCooldownTimer; // 障碍物冷却计时器
 
     void Start()
     {
         mainCamera = Camera.main;
+        LightingManager.UpdateLighting();
     }
 
     void Update()
     {
-        
+        // 更新冷却计时器
+        seedCooldownTimer -= Time.deltaTime;
+        darkCooldownTimer -= Time.deltaTime;
+
         if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) 
         && Input.GetKeyDown(KeyCode.Z))
         {
@@ -31,6 +39,7 @@ public class QuadTreeTester : MonoBehaviour
                 }
                 quadTree.Remove(objects[i]);
                 Destroy(objects[i]);
+                objects.RemoveAt(i);
                 LightingManager.UpdateLighting();
             }
         }
@@ -40,22 +49,25 @@ public class QuadTreeTester : MonoBehaviour
             LightingManager.UpdateLighting();
         }
         
-        // 鼠标右键插入障碍物
-        if (Input.GetMouseButtonDown(1)) // 1 表示鼠标右键
+        // 按键1插入Seed（添加冷却时间判断）
+        if (Input.GetKey(KeyCode.Alpha1) && seedCooldownTimer <= 0)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f, groundLayer))
             {
                 TestSeed(hit.point);
+                seedCooldownTimer = seedCooldown; // 重置冷却时间
             }
         }
 
-        if (Input.GetMouseButtonDown(2)) // 1 表示鼠标右键
+        // 按键2插入障碍物（添加冷却时间判断）
+        if (Input.GetKey(KeyCode.Alpha2) && darkCooldownTimer <= 0)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f, groundLayer))
             {
                 TestDark(hit.point);
+                darkCooldownTimer = darkCooldown; // 重置冷却时间
             }
         }
 

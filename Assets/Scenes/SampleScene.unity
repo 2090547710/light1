@@ -254,7 +254,6 @@ MonoBehaviour:
   preSplit: 0
   size: {x: 128, y: 128}
   center: {x: 0, y: 0}
-  heightThreshold: 0.1
   prefab: {fileID: 3803225260541865786, guid: f39f1086029184848907829f710e4f3a, type: 3}
   objects:
   - {fileID: 0}
@@ -307,6 +306,8 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
+  seedCooldown: 0.5
+  darkCooldown: 0.5
 --- !u!114 &877133418
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,7 +434,7 @@ MonoBehaviour:
   minZoom: 2
   maxZoom: 50
   smoothTime: 0.1
-  initialZoom: 30
+  initialZoom: 20
 --- !u!1 &1305364066
 GameObject:
   m_ObjectHideFlags: 0
