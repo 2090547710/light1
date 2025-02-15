@@ -7,10 +7,10 @@ using UnityEditor;
 public enum AreaShape { Circle, Rectangle }
 public enum AreaType
 {        
-    Dark = 1,
-    Seed = 2,
-    Light = 3,
-    Obstacle = 4, //障碍物不会被更新高度
+    Seed,
+    Dark,
+    Light,     
+    Obstacle, 
 }
 
 // 光照组件

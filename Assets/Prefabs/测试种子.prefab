@@ -50,9 +50,9 @@ MonoBehaviour:
   areaSizeX: 18.6
   areaSizeZ: 9.7
   areaHeight: -0.24
-  areaShape: 1
-  areaType: 3
-  lightHeight: 0.752
+  areaShape: 0
+  areaType: 2
+  lightHeight: 0.297
   LightNodesAffected: 0
   DarkNodesAffected: 0
 --- !u!33 &-6707501822687446620

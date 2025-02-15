@@ -30,7 +30,7 @@ Material:
     - _DarknessCircleFalloff: 2
     - _DarknessFactor: 0.1
     - _DarknessRectFalloff: 0.5
-    - _LightCount: 2
+    - _LightCount: 16
     - _LightRectFalloff: 0
     - _MinBrightness: 0.3
     m_Colors:

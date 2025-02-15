@@ -128,13 +128,5 @@ public class QuadTreeTester : MonoBehaviour
         if(lighting != null){
             LightingManager.UpdateLighting();
         }
-        // 如果障碍物，则立马移除光照
-        if(lighting.areaType == AreaType.Obstacle){
-            lighting.RemoveLighting();
-            quadTree.Remove(newObj);
-            Destroy(newObj);
-            LightingManager.UpdateLighting();
-        }
     } 
-  
 } 

@@ -22,7 +22,7 @@ public class QuadTree
         public List<GameObject> Objects = new List<GameObject>();
 
         // 简化为光照可见状态
-        public bool IsIlluminated = false;
+        public bool IsIlluminated => AreaType == AreaType.Light;
 
         // 添加父节点引用
         [System.NonSerialized]
@@ -35,9 +35,10 @@ public class QuadTree
         public QuadTreeNode ParentNode;
         public bool IsWalkable => AreaType != AreaType.Dark;
 
-        // 新增高度属性
+        // 新增高度属性,相对高度决定光照效果，绝对高度影响寻路
         public float Height { get; private set; }
-        public AreaType AreaType => GetAreaType(Height);
+        public float relativeHeight { get; private set; }
+        public AreaType AreaType;
 
         public QuadTreeNode(Vector2 center, Vector2 size, int capacity)
         {
@@ -45,6 +46,8 @@ public class QuadTree
             Size = size;
             Capacity = capacity;
             Height = 0.01f;
+            relativeHeight = 0.01f;
+            AreaType = AreaType.Dark;
         }
 
         // 分裂节点为四个子节点
@@ -91,22 +94,19 @@ public class QuadTree
         public void UpdateHeight(float newHeight)
         {
             var newType = GetAreaType(newHeight);
-            var currentTypePriority = (int)AreaType;
-            var newTypePriority = (int)newType;
-
            
-            if ( AreaType == AreaType.Obstacle && newType != AreaType.Obstacle)
+            if ( newType == AreaType.Obstacle)
             {
-                // 障碍物会被其他类型累加高度
-                Height += newHeight;
+                // 障碍物绝对高度等于相对高度
+                Height = newHeight;
+                relativeHeight = newHeight;
+                AreaType = newType;
                 return;
             }
-                 // 优先级判断规则：Obstacle>Light>seed>Dark
-            if (newTypePriority > currentTypePriority || 
-               (newType == AreaType))
-            {
-                Height = newHeight;
-            }
+            // 优先级判断规则：Obstacle>Light>seed>Dark
+            relativeHeight = newHeight;
+            AreaType = newType;
+
         }
 
         // 根据高度值获取区域类型
@@ -124,11 +124,6 @@ public class QuadTree
             return AreaType.Dark; // 默认处理
         }
 
-        // 新增设置方法
-        public void SetHeight(float newHeight)
-        {
-            Height = newHeight;
-        }
 
     }
     #endregion
@@ -552,13 +547,12 @@ public class QuadTree
         }
         else
         { 
-            if (node.Height <= lightHeight)
+            if (node.relativeHeight <= lightHeight)
             {
                 // 添加高度更新逻辑
                 node.UpdateHeight(area.size.y);
                 
                 bool originalState = node.IsIlluminated;
-                node.IsIlluminated = !isDark;
                 if (originalState != node.IsIlluminated) count++;
             }
         }
@@ -601,8 +595,7 @@ public class QuadTree
         }
         else if (node.Size == MinNodeSize) // 仅处理最小节点
         {
-            node.SetHeight(0.01f);
-            node.IsIlluminated = false;
+            node.UpdateHeight(0.01f);
         }
     }
     #endregion
@@ -909,7 +902,7 @@ public class QuadTree
 
     private void ResetIlluminationRecursive(QuadTreeNode node)
     {
-        node.IsIlluminated = false;
+        node.UpdateHeight(0.01f);
         if (node.Children != null)
         {
             foreach (var child in node.Children)
