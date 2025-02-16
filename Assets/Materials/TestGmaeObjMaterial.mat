@@ -25,12 +25,13 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _ActiveAreaCount: 0
     - _DarkFalloff: 0.2
     - _DarkRecoveryRange: 1.64
     - _DarknessCircleFalloff: 2
     - _DarknessFactor: 0.1
     - _DarknessRectFalloff: 0.5
-    - _LightCount: 16
+    - _LightCount: 65
     - _LightRectFalloff: 0
     - _MinBrightness: 0.3
     m_Colors:

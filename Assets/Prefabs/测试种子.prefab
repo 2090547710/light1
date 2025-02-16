@@ -52,7 +52,7 @@ MonoBehaviour:
   areaHeight: -0.24
   areaShape: 0
   areaType: 2
-  lightHeight: 0.297
+  lightHeight: 0.169
   LightNodesAffected: 0
   DarkNodesAffected: 0
 --- !u!33 &-6707501822687446620

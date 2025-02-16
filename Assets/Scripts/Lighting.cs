@@ -35,15 +35,77 @@ public class Lighting : MonoBehaviour
     // 新增线宽控制参数（在类开头添加）
     public static float GizmoLineWidth = 2.0f;
 
+    // 添加属性变更检测字段
+    private float cachedAreaSizeX;
+    private float cachedAreaSizeZ;
+    private float cachedAreaHeight;
+    private AreaType cachedAreaType;
+    private AreaShape cachedAreaShape;
+    private float cachedLightHeight;
+
     void OnEnable()
     {
         LightingManager.RegisterLight(this);
+        LightingManager.UpdateLighting();
     }
 
     void OnDisable()
     {
         LightingManager.UnregisterLight(this);
+        LightingManager.UpdateLighting();
     }
+
+    void Start()
+    {
+        CacheCurrentProperties();
+
+    }
+
+    void Update()
+    {
+        // 仅当关键属性变化时更新
+        if (HasPropertyChanged())
+        {
+            CacheCurrentProperties();
+            LightingManager.UpdateLighting();
+        }
+    }
+
+    // 新增属性变更检测方法
+    private bool HasPropertyChanged()
+    {
+        return areaSizeX != cachedAreaSizeX ||
+               areaSizeZ != cachedAreaSizeZ ||
+               areaHeight != cachedAreaHeight ||
+               areaType != cachedAreaType ||
+               areaShape != cachedAreaShape ||
+               lightHeight != cachedLightHeight;
+    }
+
+    private void CacheCurrentProperties()
+    {
+        cachedAreaSizeX = areaSizeX;
+        cachedAreaSizeZ = areaSizeZ;
+        cachedAreaHeight = areaHeight;
+        cachedAreaType = areaType;
+        cachedAreaShape = areaShape;
+        cachedLightHeight = lightHeight;
+    }
+
+    // 添加编辑器即时更新支持
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (Application.isPlaying)
+        {
+            if (HasPropertyChanged())
+            {
+                CacheCurrentProperties();
+                LightingManager.UpdateLighting();
+            }
+        }
+    }
+#endif
 
     // 应用光照
     public int ApplyLighting()

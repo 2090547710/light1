@@ -392,7 +392,7 @@ public class QuadTree
         Gizmos.DrawWireCube(center, size * 1.0f);
 
         // 修改为数字高度显示
-        if (node.Height > 0 && node.Size==MinNodeSize)
+        if (node.Height > 0.01 && node.Size==MinNodeSize)
         {
             // 在节点中心上方显示高度值
             GUIStyle style = new GUIStyle();

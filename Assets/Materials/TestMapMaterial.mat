@@ -65,7 +65,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _ActiveAreaCount: 0
+    - _AreaShapes: 0
     - _BumpScale: 1
+    - _ColorIntensity: 0.5
     - _Cutoff: 0.5
     - _DarkFalloff: 0.793
     - _DarkRecoveryRange: 1.5
@@ -79,7 +82,7 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _LightCircleFalloff: 0.8
-    - _LightCount: 16
+    - _LightCount: 65
     - _LightFalloff: 1
     - _LightRadii: 0
     - _LightRectFalloff: 0
@@ -95,6 +98,7 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
+    - _ActiveAreas: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 0.23584908, g: 0.23584908, b: 0.23584908, a: 1}
     - _DarkColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

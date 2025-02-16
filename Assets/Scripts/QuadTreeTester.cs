@@ -40,7 +40,6 @@ public class QuadTreeTester : MonoBehaviour
                 quadTree.Remove(objects[i]);
                 Destroy(objects[i]);
                 objects.RemoveAt(i);
-                LightingManager.UpdateLighting();
             }
         }
 
@@ -86,7 +85,6 @@ public class QuadTreeTester : MonoBehaviour
                     Destroy(objects[i]);
                 }
                 objects.Clear();
-                LightingManager.UpdateLighting();
             }
         }
     }
@@ -105,10 +103,6 @@ public class QuadTreeTester : MonoBehaviour
         // Debug.Log($"插入{(success ? "成功" : "失败")} | " +
         //          $"位置：{position} | " );
 
-        Lighting lighting = newObj.GetComponent<Lighting>();
-        if(lighting != null){
-            LightingManager.UpdateLighting();
-        }
     } 
 
      public void TestDark(Vector3 position){
@@ -124,9 +118,5 @@ public class QuadTreeTester : MonoBehaviour
         // Debug.Log($"插入{(success ? "成功" : "失败")} | " +
         //          $"位置：{position} | " );
 
-        Lighting lighting = newObj.GetComponent<Lighting>();
-        if(lighting != null){
-            LightingManager.UpdateLighting();
-        }
     } 
 } 
