@@ -36,6 +36,7 @@ public class QuadTree
         public bool IsWalkable => AreaType != AreaType.Dark;
 
         // 新增高度属性,相对高度决定光照效果，绝对高度影响寻路
+        // 相对高度搭配灯光高度可以实现各种光照效果
         public float Height { get; private set; }
         public float relativeHeight { get; private set; }
         public AreaType AreaType;
@@ -549,10 +550,8 @@ public class QuadTree
         { 
             if (node.relativeHeight <= lightHeight)
             {
-                // 添加高度更新逻辑
-                node.UpdateHeight(area.size.y);
-                
                 bool originalState = node.IsIlluminated;
+                node.UpdateHeight(area.size.y);
                 if (originalState != node.IsIlluminated) count++;
             }
         }
@@ -608,6 +607,21 @@ public class QuadTree
         
         var startNode = FindLeafNode(startPos);
         var targetNode = FindLeafNode(targetPos);
+        
+        // 修改目标节点处理逻辑
+        if (targetNode == null || !targetNode.IsWalkable || targetNode.Size != MinNodeSize)
+        {
+            // 在目标位置周围3倍节点尺寸范围内寻找最近的可行走节点
+            var candidates = GetNeighborLeafNodes(targetPos, MinNodeSize.x * 3f)
+                .Where(n => n.IsWalkable && n.Size == MinNodeSize)
+                .OrderBy(n => Vector3.Distance(
+                    new Vector3(n.Center.x, 0, n.Center.y), 
+                    targetPos))
+                .ToList();
+
+            if (candidates.Count == 0) return null;
+            targetNode = candidates.First();
+        }
         
         // 直接返回null如果目标节点不可行走
         if (targetNode == null || !targetNode.IsWalkable || targetNode.Size != MinNodeSize)

@@ -153,7 +153,7 @@ public class Lighting : MonoBehaviour
             isDark,
             lightHeight
         );
-
+        
         switch (areaType)
         {
             case AreaType.Light:

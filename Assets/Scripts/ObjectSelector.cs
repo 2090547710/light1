@@ -10,6 +10,9 @@ public class ObjectSelector : MonoBehaviour
     private GameObject selectedObject;
     private Material originalMaterial;
 
+    // 添加公共属性访问选中对象
+    public GameObject SelectedObject => selectedObject;
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha3))
@@ -41,7 +44,7 @@ public class ObjectSelector : MonoBehaviour
             // 使用四叉树查询附近对象
             Bounds queryArea = new Bounds(
                 hit.point,
-                new Vector3(selectionRadius, 0.1f, selectionRadius));
+                new Vector3(selectionRadius, 1.0f, selectionRadius));
             
             var candidates = GameManager.Instance.tree.QueryArea(queryArea);
             
@@ -70,5 +73,12 @@ public class ObjectSelector : MonoBehaviour
         
         // 触发选择事件（可扩展）
         Debug.Log($"Selected: {obj.name}");
+
+        // 扩展选择事件
+        SelectionChanged?.Invoke(obj);
     }
+
+    // 添加选择事件委托
+    public delegate void SelectionHandler(GameObject selectedObj);
+    public static event SelectionHandler SelectionChanged;
 } 
