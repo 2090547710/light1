@@ -302,7 +302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabToSpawn:
-  - {fileID: 5540192311497395315, guid: dc7d33e851d9a1243a632ac428517299, type: 3}
+  - {fileID: 5825934674889951015, guid: db6dccf43de015140bae4ca55e8e23f5, type: 3}
   - {fileID: 3803225260541865786, guid: f39f1086029184848907829f710e4f3a, type: 3}
   groundLayer:
     serializedVersion: 2

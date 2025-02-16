@@ -13,6 +13,34 @@ public enum AreaType
     Obstacle, 
 }
 
+// 新增光照数据结构体
+[System.Serializable]
+public struct LightingData
+{
+    public float areaSizeX;
+    public float areaSizeZ;
+    [Range(-1,1)] public float areaHeight;
+    public AreaShape areaShape;
+    public AreaType areaType;
+    [Range(0,1)] public float lightHeight;
+
+    public LightingData(
+        float x = 1f, 
+        float z = 1f,
+        float height = 0.01f,
+        AreaShape shape = AreaShape.Rectangle,
+        AreaType type = AreaType.Dark,
+        float lHeight = 0.01f)
+    {
+        areaSizeX = x;
+        areaSizeZ = z;
+        areaHeight = height;
+        areaShape = shape;
+        areaType = type;
+        lightHeight = lHeight;
+    }
+}
+
 // 光照组件
 public class Lighting : MonoBehaviour
 {
@@ -63,6 +91,7 @@ public class Lighting : MonoBehaviour
 
     void Update()
     {
+      
         // 仅当关键属性变化时更新
         if (HasPropertyChanged())
         {
@@ -110,6 +139,8 @@ public class Lighting : MonoBehaviour
     // 应用光照
     public int ApplyLighting()
     {
+        
+        Debug.Log("ApplyLighting: " + areaType);
         ResetCounters();
         bool isRect = (areaShape == AreaShape.Rectangle);
         bool isDark = (areaType != AreaType.Light );
@@ -153,7 +184,7 @@ public class Lighting : MonoBehaviour
             isDark,
             lightHeight
         );
-        
+
         switch (areaType)
         {
             case AreaType.Light:
@@ -247,5 +278,19 @@ public class Lighting : MonoBehaviour
 #endif
     }
 
+    // 新增数据初始化方法
+    public void InitializeFromData(LightingData data)
+    {
+        areaSizeX = data.areaSizeX;
+        areaSizeZ = data.areaSizeZ;
+        areaHeight = data.areaHeight;
+        areaShape = data.areaShape;
+        areaType = data.areaType;
+        lightHeight = data.lightHeight;
+        
+        // 更新缓存并立即应用修改
+        CacheCurrentProperties();
+        LightingManager.UpdateLighting();
+    }
 
 }

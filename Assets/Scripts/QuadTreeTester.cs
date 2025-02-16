@@ -28,18 +28,17 @@ public class QuadTreeTester : MonoBehaviour
         seedCooldownTimer -= Time.deltaTime;
         darkCooldownTimer -= Time.deltaTime;
 
-        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) 
-        && Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKeyDown(KeyCode.Z))
         {
             if(objects.Count > 0){
                 int i = objects.Count - 1;
                 Lighting lighting = objects[i].GetComponent<Lighting>();
-                if(lighting != null){
+                if(lighting != null && lighting.areaType == AreaType.Seed){
                     lighting.RemoveLighting();
+                    quadTree.Remove(objects[i]);
+                    Destroy(objects[i]);
+                    objects.RemoveAt(i);
                 }
-                quadTree.Remove(objects[i]);
-                Destroy(objects[i]);
-                objects.RemoveAt(i);
             }
         }
 
@@ -117,6 +116,5 @@ public class QuadTreeTester : MonoBehaviour
         bool success = quadTree.Insert(newObj);
         // Debug.Log($"插入{(success ? "成功" : "失败")} | " +
         //          $"位置：{position} | " );
-
     } 
 } 
