@@ -22,7 +22,7 @@ public class QuadTree
         public List<GameObject> Objects = new List<GameObject>();
 
         // 简化为光照可见状态
-        public bool IsIlluminated => AreaType == AreaType.Light;
+        public bool IsIlluminated;
 
         // 添加父节点引用
         [System.NonSerialized]
@@ -33,22 +33,18 @@ public class QuadTree
         public float HCost;
         public float FCost => GCost + HCost;
         public QuadTreeNode ParentNode;
-        public bool IsWalkable => AreaType != AreaType.Dark;
+        public bool IsWalkable => IsIlluminated;
 
-        // 新增高度属性,相对高度决定光照效果，绝对高度影响寻路
-        // 相对高度搭配灯光高度可以实现各种光照效果
+        // 新增高度属性
         public float Height { get; private set; }
-        public float relativeHeight { get; private set; }
-        public AreaType AreaType;
 
         public QuadTreeNode(Vector2 center, Vector2 size, int capacity)
         {
             Center = center;
             Size = size;
             Capacity = capacity;
-            Height = 0.01f;
-            relativeHeight = 0.01f;
-            AreaType = AreaType.Dark;
+            Height = 0;
+            IsIlluminated = false;
         }
 
         // 分裂节点为四个子节点
@@ -91,40 +87,11 @@ public class QuadTree
                    Mathf.Abs(point.y - Center.y) <= Size.y * 0.5f;
         }
        
-        // 修改后的高度更新方法
-        public void UpdateHeight(float newHeight)
+        // 更新高度方法
+        public void SetHeight(float height, bool isObstacle)
         {
-            var newType = GetAreaType(newHeight);
-           
-            if ( newType == AreaType.Obstacle)
-            {
-                // 障碍物绝对高度等于相对高度
-                Height = newHeight;
-                relativeHeight = newHeight;
-                AreaType = newType;
-                return;
-            }
-            // 优先级判断规则：Obstacle>Light>seed>Dark
-            relativeHeight = newHeight;
-            AreaType = newType;
-
+            Height = isObstacle ? height : 0;
         }
-
-        // 根据高度值获取区域类型
-        private AreaType GetAreaType(float height)
-        {
-            if (height >= 0.11f && height <= 1f) 
-                return AreaType.Obstacle;
-            if (height >= -1f && height <= -0.01f) 
-                return AreaType.Light;
-            if (height >= 0.01f && height <= 0.1f) 
-                return AreaType.Dark;
-            if (Mathf.Approximately(height, 0f)) 
-                return AreaType.Seed;
-            
-            return AreaType.Dark; // 默认处理
-        }
-
 
     }
     #endregion
@@ -426,18 +393,17 @@ public class QuadTree
 
     #region 光照标记方法
     // 修改后的光照标记方法 先预分裂，
-    public int MarkIlluminatedArea(Bounds area, bool isRect, bool isDark, float lightHeight)
+    public Vector2 MarkIlluminatedArea(Bounds area, bool isObstacle, AreaMapData mapData)
     {
-        PreSplitForLighting(root, area, isRect, 0);
-        return FinalizeIlluminationMarking(area, isRect, isDark, lightHeight);
+        PreSplitForLighting(root, area, 0);
+        return FinalizeIlluminationMarking(area, isObstacle, mapData);
     }
 
     // 修改后的预分裂方法（移除高度更新）
-    private void PreSplitForLighting(QuadTreeNode node, Bounds area, bool isRect, int currentDepth)
+    private void PreSplitForLighting(QuadTreeNode node, Bounds area, int currentDepth)
     {
-        Vector2 center = new Vector2(area.center.x, area.center.z);
-        Vector2 size = new Vector2(area.size.x, area.size.z);
-        float radius = area.size.x * 0.5f;
+        Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
+        Vector2 rectSize = new Vector2(area.size.x, area.size.z);
 
         Rect nodeRect = new Rect(
             node.Center.x - node.Size.x/2,
@@ -445,9 +411,7 @@ public class QuadTree
             node.Size.x,
             node.Size.y);
 
-        bool overlap = isRect ? 
-            RectangleRectOverlap(center, size, nodeRect) : 
-            CircleRectOverlap(center, radius, nodeRect);
+        bool overlap = RectangleRectOverlap(rectCenter, rectSize, nodeRect);
         
         if (!overlap) return;
 
@@ -461,71 +425,26 @@ public class QuadTree
             
             foreach (var child in node.Children)
             {
-                PreSplitForLighting(child, area, isRect, currentDepth + 1);
+                PreSplitForLighting(child, area, currentDepth + 1);
             }
         }
     }
 
-    // 修改获取区域对象方法
-    private List<GameObject> GetAllObjectsInArea(Bounds area, bool isRect)
-    {
-        List<GameObject> results = new List<GameObject>();
-        QueryAreaRecursive(root, area, isRect, ref results);
-        return results;
-    }
-
-    // 修改查询方法
-    private void QueryAreaRecursive(QuadTreeNode node, Bounds area, bool isRect, ref List<GameObject> results)
-    {
-        Rect nodeRect = new Rect(
-            node.Center.x - node.Size.x/2,
-            node.Center.y - node.Size.y/2,
-            node.Size.x,
-            node.Size.y);
-
-        Vector2 center = new Vector2(area.center.x, area.center.z);
-        bool overlap = isRect ?
-            RectangleRectOverlap(center, new Vector2(area.size.x, area.size.z), nodeRect) :
-            CircleRectOverlap(center, area.size.x * 0.5f, nodeRect);
-
-        if (!overlap) return;
-
-        // 如果有子节点则递归查询
-        if (node.Children != null)
-        {
-            foreach (var child in node.Children)
-            {
-                QueryAreaRecursive(child, area, isRect, ref results);
-            }
-        }
-        else
-        {
-            // 添加当前节点内的有效对象
-            foreach (var obj in node.Objects)
-            {
-                Vector3 objPos = obj.transform.position;
-                if (area.Contains(new Vector3(objPos.x, 0, objPos.z)))
-                {
-                    results.Add(obj);
-                }
-            }
-        }
-    }
 
     // 修改后的最终标记方法（添加高度更新）
-    private int FinalizeIlluminationMarking(Bounds area, bool isRect, bool isDark, float lightHeight)
+    private Vector2 FinalizeIlluminationMarking(Bounds area, bool isObstacle, AreaMapData mapData)
     {
-        int count = 0;
-        FinalMarkRecursive(root, area, isRect, isDark, lightHeight, 0, ref count);
-        return count;
+        int lightCount = 0;
+        int darkCount = 0;
+        FinalMarkRecursive(root, area, isObstacle, mapData, ref lightCount, ref darkCount);
+        return new Vector2(lightCount, darkCount);
     }
 
-    private void FinalMarkRecursive(QuadTreeNode node, Bounds area, bool isRect, bool isDark, 
-                                  float lightHeight, int depth, ref int count)
+    private void FinalMarkRecursive(QuadTreeNode node, Bounds area, bool isObstacle, 
+                                   AreaMapData mapData, ref int lightCount, ref int darkCount)
     {
-        Vector2 center = new Vector2(area.center.x, area.center.z);
-        Vector2 size = new Vector2(area.size.x, area.size.z);
-        float radius = area.size.x * 0.5f;
+        Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
+        Vector2 rectSize = new Vector2(area.size.x, area.size.z);
 
         Rect nodeRect = new Rect(
             node.Center.x - node.Size.x/2,
@@ -533,9 +452,7 @@ public class QuadTree
             node.Size.x,
             node.Size.y);
 
-        bool overlap = isRect ? 
-            RectangleRectOverlap(center, size, nodeRect) : 
-            CircleRectOverlap(center, radius, nodeRect);
+        bool overlap = RectangleRectOverlap(rectCenter, rectSize, nodeRect);
         
         if (!overlap) return;
 
@@ -543,35 +460,74 @@ public class QuadTree
         {
             foreach (var child in node.Children)
             {
-                FinalMarkRecursive(child, area, isRect, isDark, lightHeight, depth + 1, ref count);
+                FinalMarkRecursive(child, area, isObstacle, mapData, ref lightCount, ref darkCount);
             }
         }
         else
         { 
-            if (node.relativeHeight <= lightHeight)
+            // 计算UV坐标（以区域中心为UV(0.5,0.5)）
+            Vector2 uv = new Vector2(
+                // 将区域中心作为UV坐标系原点
+                (node.Center.x - area.center.x) / area.size.x + 0.5f,
+                (node.Center.y - area.center.z) / area.size.z + 0.5f
+            );
+
+            // 应用贴图的平铺和偏移
+            uv.x = uv.x * mapData.tiling.x + mapData.offset.x;
+            uv.y = uv.y * mapData.tiling.y + mapData.offset.y;
+
+            // 新增边界约束确保UV在0-1范围内
+            uv.x = Mathf.Clamp01(uv.x);
+            uv.y = Mathf.Clamp01(uv.y);
+
+            // 从高度图采样原始值
+            float rawHeight = mapData.heightMap != null ? 
+                mapData.heightMap.GetPixelBilinear(uv.x, uv.y).r : 0f; // 直接读取红色通道
+
+            // 添加容差处理（处理浮点精度）
+            rawHeight = Mathf.Clamp01(rawHeight);
+            if(rawHeight < 0.003f) rawHeight = 0;
+
+            // 在采样后添加调试输出：
+            // Debug.Log($"UV: {uv} HeightData: {mapData.heightMap.GetPixelBilinear(uv.x, uv.y)} Grayscale: {rawHeight}");
+
+            // 设置节点属性
+            if (isObstacle)
             {
-                bool originalState = node.IsIlluminated;
-                node.UpdateHeight(area.size.y);
-                if (originalState != node.IsIlluminated) count++;
+                float height = rawHeight * mapData.heightScale * area.size.y;
+                node.SetHeight(height, true);
+                lightCount++;
+            }
+            else
+            {
+                // 分开统计光照和阴影区域
+                if (rawHeight >= 0.99f)
+                {
+                    node.IsIlluminated = true;
+                    lightCount++;
+                }
+                else if (rawHeight > 0.01f)
+                {                    
+                    node.IsIlluminated = false;
+                    darkCount++;
+                }
+                // rawHeight <= 0.01f不修改状态
             }
         }
     }
     #endregion
    
     #region 光照移除方法
-    public void RemoveIlluminationEffect(Bounds area, bool isRect, AreaType areaType)
+    public void RemoveIlluminationEffect(Bounds area)
     {
-        if (areaType == AreaType.Obstacle) return;
-        
-        RemoveIlluminationRecursive(root, area, isRect);
+        RemoveIlluminationRecursive(root, area);
     }
    
-    private void RemoveIlluminationRecursive(QuadTreeNode node, Bounds area, bool isRect)
+    private void RemoveIlluminationRecursive(QuadTreeNode node, Bounds area)
     {
-        // 区域重叠检测（复用现有逻辑）
-        Vector2 center = new Vector2(area.center.x, area.center.z);
-        Vector2 size = new Vector2(area.size.x, area.size.z);
-        float radius = area.size.x * 0.5f;
+        // 修改为矩形区域检测
+        Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
+        Vector2 rectSize = new Vector2(area.size.x, area.size.z);
 
         Rect nodeRect = new Rect(
             node.Center.x - node.Size.x/2,
@@ -579,9 +535,7 @@ public class QuadTree
             node.Size.x,
             node.Size.y);
 
-        bool overlap = isRect ? 
-            RectangleRectOverlap(center, size, nodeRect) : 
-            CircleRectOverlap(center, radius, nodeRect);
+        bool overlap = RectangleRectOverlap(rectCenter, rectSize, nodeRect);
         
         if (!overlap) return;
 
@@ -589,12 +543,12 @@ public class QuadTree
         {
             foreach (var child in node.Children)
             {
-                RemoveIlluminationRecursive(child, area, isRect);
+                RemoveIlluminationRecursive(child, area);
             }
         }
         else if (node.Size == MinNodeSize) // 仅处理最小节点
         {
-            node.UpdateHeight(0.01f);
+            node.SetHeight(0, false);
         }
     }
     #endregion
@@ -916,7 +870,8 @@ public class QuadTree
 
     private void ResetIlluminationRecursive(QuadTreeNode node)
     {
-        node.UpdateHeight(0.01f);
+        node.SetHeight(0.01f, false);
+        node.IsIlluminated = false;
         if (node.Children != null)
         {
             foreach (var child in node.Children)

@@ -61,11 +61,11 @@ public class Plant : MonoBehaviour
 
         var stage = growthStages[stageIndex];
         // 根据数据创建并初始化光源组件
-        stage.associatedLights.ForEach(data => {
-            var newLight = gameObject.AddComponent<Lighting>();
-            newLight.InitializeFromData(data);
-            lightSources.Add(newLight); // 添加到光源列表
-        });
+        // stage.associatedLights.ForEach(data => {
+        //     var newLight = gameObject.AddComponent<Lighting>();
+        //     newLight.InitializeFromData(data);
+        //     lightSources.Add(newLight); // 添加到光源列表
+        // });
     }
 
     public void Wither()
@@ -83,6 +83,6 @@ public class Plant : MonoBehaviour
     public class PlantStage
     {
         public StageType stageType;
-        public List<LightingData> associatedLights; // 改为存储光照数据
+        // public List<LightingData> associatedLights; // 改为存储光照数据
     }
 } 

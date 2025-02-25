@@ -105,17 +105,17 @@ MonoBehaviour:
   growthStages:
   - stageType: 0
     associatedLights:
-    - areaSizeX: 2
-      areaSizeZ: 2
+    - areaSizeX: 7.29
+      areaSizeZ: 7.06
       areaHeight: 0
-      areaShape: 1
-      areaType: 0
+      areaShape: 0
+      areaType: 2
       lightHeight: 0
   - stageType: 1
     associatedLights:
     - areaSizeX: 3
       areaSizeZ: 3
-      areaHeight: -0.31
+      areaHeight: -0.4
       areaShape: 0
       areaType: 2
       lightHeight: 0.167

@@ -33,7 +33,7 @@ public class QuadTreeTester : MonoBehaviour
             if(objects.Count > 0){
                 int i = objects.Count - 1;
                 Lighting lighting = objects[i].GetComponent<Lighting>();
-                if(lighting != null && lighting.areaType == AreaType.Seed){
+                if(lighting != null){
                     lighting.RemoveLighting();
                     quadTree.Remove(objects[i]);
                     Destroy(objects[i]);

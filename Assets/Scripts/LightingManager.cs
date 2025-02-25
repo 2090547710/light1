@@ -5,14 +5,13 @@ using UnityEngine;
 // 新增光照系统管理器
 public class LightingManager : MonoBehaviour
 {
-    private static LightingManager instance;
+    public static LightingManager instance;
     
     public static QuadTree tree { get; set; }
     public static List<Lighting> activeLights = new List<Lighting>();
     
     // 新增数据提供者引用
-    [SerializeField] private LightingDataProvider dataProvider;
-    
+       
     void Awake() => instance = this;
 
     void Start()
@@ -22,7 +21,7 @@ public class LightingManager : MonoBehaviour
 
     void LateUpdate()
     {
-
+        
     }
 
     public static void RegisterLight(Lighting light)
@@ -35,14 +34,16 @@ public class LightingManager : MonoBehaviour
 
     public static void UpdateLighting(){
         tree.ResetIllumination();
-        // 保持原有的四叉树光照逻辑
-        foreach (var light in activeLights)
+        
+        // 添加空列表保护
+        if(activeLights.Count > 0)
         {
-            light.ApplyLighting();
+            foreach (var light in activeLights)
+            {
+                light.ApplyLighting();
+            }
         }
         
-        // 移除误差参数传递
-        instance.dataProvider.UpdateLightingData(activeLights);     
     }
     
     public static void UnregisterLight(Lighting light)
