@@ -150,11 +150,9 @@ static void SaveCompositeMenuItem()
     public static void UpdateHeightmapParams(Vector2 center, Vector2 size)
     {
         _heightmapParams = new Vector4(center.x, center.y, size.x, size.y);
-        // 确保正确设置全局着色器参数
+        // 设置全局着色器参数
         Shader.SetGlobalTexture("_CompositeHeightmap", compositeHeightmap);
         Shader.SetGlobalVector("_HeightmapParams", _heightmapParams);
-        // 添加调试输出确认值已正确设置
-        Debug.Log($"设置高度图参数: 中心({_heightmapParams.x}, {_heightmapParams.y}), 尺寸({_heightmapParams.z}, {_heightmapParams.w})");
         Shader.SetGlobalFloat("_TestFloat", _TestFloat);
     }
 

@@ -11,11 +11,20 @@ public class PlayerPathfinding : MonoBehaviour
     private Vector3[] currentPath;
     private int currentPathIndex;
     private Coroutine moveCoroutine;
-
+    
     [Header("Marker Settings")]
     public GameObject markerPrefab;  // 拖入预制体
     public float markerScale = 0.2f; // 标记缩放比例
     public float markerDuration = 1.0f; // 标记存在时间
+    
+    // 新增玩家对象引用
+    private GameObject playerObject;
+    
+    void Start()
+    {
+        playerObject = this.gameObject;
+        InsertToQuadTree(); // 初始插入
+    }
 
     void Update()
     {
@@ -49,6 +58,10 @@ public class PlayerPathfinding : MonoBehaviour
                     if (moveCoroutine != null) 
                         StopCoroutine(moveCoroutine);
                     
+                    // 更新玩家在四叉树中的位置
+                    quadTree.Remove(playerObject);
+                    InsertToQuadTree();
+                    
                     moveCoroutine = StartCoroutine(FollowPath());
                 }
             }
@@ -61,17 +74,32 @@ public class PlayerPathfinding : MonoBehaviour
         {
             Vector3 targetPos = currentPath[currentPathIndex];
             
-            // 保持当前高度移动
-            Vector3 moveDirection = new Vector3(targetPos.x - transform.position.x, 0, targetPos.z - transform.position.z);
-            transform.Translate(moveDirection.normalized * moveSpeed * Time.deltaTime, Space.World);
-            
-            // 到达路径点时转向下一个点
-            if (Vector3.Distance(transform.position, targetPos) < stoppingDistance)
+            // 持续移动到精确位置
+            while (Vector3.Distance(transform.position, targetPos) > 0.1f) // 使用更小的阈值确保精确到达
             {
-                currentPathIndex++;
+                Vector3 moveDirection = (targetPos - transform.position).normalized;
+                transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
+                
+                // 在移动过程中持续更新四叉树位置
+                quadTree.Remove(playerObject);
+                InsertToQuadTree();
+                
+                yield return null;
             }
-            
-            yield return null;
+
+            // 确保最终位置精确
+            transform.position = targetPos;
+            currentPathIndex++;
+        }
+    }
+
+    // 新增四叉树插入方法
+    private void InsertToQuadTree()
+    {
+        if (quadTree != null)
+        {
+            // 使用新的插入方法（不调整位置）
+            quadTree.Insert(playerObject, adjustPosition: false);
         }
     }
 
@@ -86,6 +114,27 @@ public class PlayerPathfinding : MonoBehaviour
                 Gizmos.DrawSphere(currentPath[i], 0.2f);
                 if (i > 0)
                     Gizmos.DrawLine(currentPath[i-1], currentPath[i]);
+            }
+        }
+
+        // 新增玩家所在节点绘制
+        if (quadTree != null && playerObject != null)
+        {
+            var playerNode = quadTree.FindLeafNode(transform.position);
+            if (playerNode != null)
+            {
+                Vector3 center = new Vector3(
+                    playerNode.Center.x, 
+                    transform.position.y,  // 保持与玩家相同高度
+                    playerNode.Center.y);
+                
+                Vector3 size = new Vector3(
+                    playerNode.Size.x, 
+                    1f,  // 保持薄片高度
+                    playerNode.Size.y);
+                
+                Gizmos.color = new Color(1, 0, 0, 1f); // 半透明红色
+                Gizmos.DrawWireCube(center, size);
             }
         }
     }
