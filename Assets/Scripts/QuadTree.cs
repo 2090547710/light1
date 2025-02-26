@@ -97,7 +97,15 @@ public class QuadTree
         // 更新高度方法
         public void SetHeight(float height, bool isObstacle)
         {
-            Height = isObstacle ? height : 0;
+            if (isObstacle)
+            {
+                // 仅当新高度大于当前高度时更新
+                Height = Mathf.Max(height, Height);
+            }
+            else
+            {
+                Height = 0;
+            }
         }
 
     }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 // 新增光照系统管理器
 public class LightingManager : MonoBehaviour
@@ -69,7 +70,13 @@ public class LightingManager : MonoBehaviour
         
         if(activeLights.Count > 0)
         {
-            foreach (var light in activeLights)
+            // 优先处理障碍物光源
+            foreach (var light in activeLights.Where(l => l.isObstacle))
+            {
+                light.ApplyLighting();
+            }
+            // 处理其他光源
+            foreach (var light in activeLights.Where(l => !l.isObstacle))
             {
                 light.ApplyLighting();
             }

@@ -28,7 +28,6 @@ public class Lighting : MonoBehaviour
     public Texture2D heightMap;
     public Vector2 tiling;
     public Vector2 offset;
-    [Range(0, 10)] public float heightScale;
     [Range(0, 1)] public float lightHeight;
     private AreaMapData areaMapData;
     private Bounds area;
@@ -112,8 +111,10 @@ public class Lighting : MonoBehaviour
 
                 if (isObstacle)
                 {
-                    // 障碍物写入绿色通道
-                    LightingManager.compositePixels[index].g = height;
+                    // 障碍物写入绿色通道（保留最高值）
+                    LightingManager.compositePixels[index].g = Mathf.Max(
+                        LightingManager.compositePixels[index].g, 
+                        height);
                 }
                 else 
                 {
