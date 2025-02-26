@@ -28,6 +28,7 @@ public class Lighting : MonoBehaviour
     public Texture2D heightMap;
     public Vector2 tiling;
     public Vector2 offset;
+    [Range(0, 10)] public float heightScale;
     [Range(0, 1)] public float lightHeight;
     private AreaMapData areaMapData;
     private Bounds area;
