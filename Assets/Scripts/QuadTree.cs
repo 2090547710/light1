@@ -103,6 +103,7 @@ public class QuadTree
 
     // 新增根节点尺寸访问属性
     public Vector2 RootSize { get; private set; }
+    public Vector2 RootCenter { get; private set; }
     public int MaxDepth { get; private set; }
 
     // 添加最小节点尺寸属性
@@ -114,6 +115,7 @@ public class QuadTree
     public QuadTree(Vector2 center, Vector2 size, int capacity, int maxDepth = 5, bool preSplit = false)
     {
         RootSize = size;
+        RootCenter = center;
         MaxDepth = maxDepth;
         // 计算最小节点尺寸
         MinNodeSize = size / Mathf.Pow(2, maxDepth);
@@ -496,22 +498,35 @@ public class QuadTree
             {
                 float height = rawHeight * mapData.heightScale * area.size.y;
                 node.SetHeight(height, true);
-                lightCount++;
             }
             else
             {
-                // 分开统计光照和阴影区域
-                if (rawHeight >= 0.99f)
+                bool illuminatedState = node.IsIlluminated;
+
+                // 第一层：高度条件判断
+                if (area.size.y * mapData.heightScale >= node.Height)
                 {
-                    node.IsIlluminated = true;
-                    lightCount++;
+                    // 第二层：根据rawHeight值判断区域类型
+                    bool isFullLight = rawHeight >= 0.99f;
+                    bool isPartialLight = rawHeight > 0.01f;
+                    
+                    // 统一设置光照状态
+                    node.IsIlluminated = isFullLight || isPartialLight;
+                    
+                    // 第三层：检测光照状态变化
+                    if (illuminatedState != node.IsIlluminated)
+                    {
+                        if (isFullLight)
+                        {
+                            lightCount++;
+                        }
+                        else if (isPartialLight)
+                        {
+                            darkCount++;
+                        }
+                    }
                 }
-                else if (rawHeight > 0.01f)
-                {                    
-                    node.IsIlluminated = false;
-                    darkCount++;
-                }
-                // rawHeight <= 0.01f不修改状态
+                // rawHeight <= 0.01f保持原状态不修改
             }
         }
     }

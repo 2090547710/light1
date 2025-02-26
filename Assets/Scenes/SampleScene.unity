@@ -288,8 +288,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ba212a27d0762f49b1eb17e0a00288a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dataProvider: {fileID: 877133418}
-  illuminationMaterial: {fileID: 0}
 --- !u!114 &877133417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -322,6 +320,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 319c6db022da7534daee8cfbbb744e1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  illuminationMaterial: {fileID: 2100000, guid: 12a3a78a40985e446b3cca4f32a1eb5c, type: 2}
+  compositeHeightMap: {fileID: 0}
 --- !u!114 &877133419
 MonoBehaviour:
   m_ObjectHideFlags: 0

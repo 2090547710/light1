@@ -1,0 +1,43 @@
+// LightCompute.compute
+#pragma kernel ProcessPixels
+
+// 输入参数
+Texture2D<float> HeightMap;
+RWTexture2D<uint> CompositeMap;
+
+// 四叉树参数
+float2 RootSize;
+float2 RootCenter;
+
+// 在纹理声明后添加采样器定义
+SamplerState sampler_linear_clamp
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
+[numthreads(16,16,1)]
+void ProcessPixels (uint3 id : SV_DispatchThreadID)
+{
+    // 将像素坐标转换为世界坐标
+    float2 uv = float2(
+        (id.x + 0.5) / 2048.0,  // 假设合成图尺寸为2048x2048
+        (id.y + 0.5) / 2048.0
+    );
+    
+    float2 worldPos = float2(
+        RootCenter.x - RootSize.x * 0.5 + uv.x * RootSize.x,
+        RootCenter.y - RootSize.y * 0.5 + uv.y * RootSize.y
+    );
+
+    // 从高度图采样（需要先转换为UV）
+    float2 heightUV = worldPos / RootSize + 0.5;
+    float height = HeightMap.SampleLevel(sampler_linear_clamp, heightUV, 0);
+
+    // 原子写入保证线程安全
+    if(height > 0.01) {
+        uint quantizedHeight = (uint)(height * 255); // 将0-1范围量化为0-255
+        InterlockedMax(CompositeMap[id.xy], quantizedHeight);
+    }
+}
