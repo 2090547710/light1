@@ -52,7 +52,7 @@ MonoBehaviour:
   heightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
   tiling: {x: 1, y: 1}
   offset: {x: 0, y: 0}
-  heightScale: 1
+  lightHeight: 0.298
   LightAffectedNodesCount: 0
   DarkAffectedNodesCount: 0
 --- !u!33 &-6707501822687446620

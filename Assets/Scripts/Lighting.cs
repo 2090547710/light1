@@ -10,15 +10,13 @@ public struct AreaMapData
     public Texture2D heightMap;
     public Vector2 tiling;
     public Vector2 offset;
-    [Range(0, 10)] public float heightScale;
 
     public AreaMapData(Texture2D map = null, Vector2 tiling = default, 
-                      Vector2 offset = default, float scale = 1f)
+                      Vector2 offset = default)
     {
         heightMap = map;
         this.tiling = tiling == default ? Vector2.one : tiling;
         this.offset = offset;
-        heightScale = scale;
     }
 }
 
@@ -30,7 +28,6 @@ public class Lighting : MonoBehaviour
     public Texture2D heightMap;
     public Vector2 tiling;
     public Vector2 offset;
-    [Range(0, 10)] public float heightScale;
     [Range(0, 1)] public float lightHeight;
     private AreaMapData areaMapData;
     private Bounds area;
@@ -59,8 +56,7 @@ public class Lighting : MonoBehaviour
         areaMapData = new AreaMapData(
             heightMap,
             tiling == default ? Vector2.one : tiling,  // 使用默认值保护
-            offset,
-            heightScale
+            offset
         );
         // 初始化区域范围
         area = new Bounds(transform.position, new Vector3(size, lightHeight, size));
@@ -122,10 +118,12 @@ public class Lighting : MonoBehaviour
                 {
                     // 获取当前障碍物高度
                     float obstacleHeight = LightingManager.compositePixels[index].g;
-                    // 比较光照高度与障碍物高度，原高度>0.01视为有效光照
+                    float currentR = LightingManager.compositePixels[index].r;
+                    float newHeight = Mathf.Clamp01(currentR + height);
+                    
                     if (area.size.y >= obstacleHeight && height > 0.01f)
                     {
-                        LightingManager.compositePixels[index].r = height;
+                        LightingManager.compositePixels[index].r = newHeight;
                     }
                 }
             }
@@ -143,8 +141,7 @@ public class Lighting : MonoBehaviour
         return new AreaMapData(
             heightMap,
             tiling == default ? Vector2.one : tiling,
-            offset,
-            heightScale
+            offset
         );
     }
 

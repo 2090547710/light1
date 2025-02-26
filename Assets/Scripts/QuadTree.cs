@@ -38,6 +38,10 @@ public class QuadTree
         // 新增高度属性
         public float Height { get; private set; }
 
+        // 新增亮度属性
+        public float Brightness;
+        public float BrightnessThreshold;
+
         public QuadTreeNode(Vector2 center, Vector2 size, int capacity)
         {
             Center = center;
@@ -45,6 +49,9 @@ public class QuadTree
             Capacity = capacity;
             Height = 0;
             IsIlluminated = false;
+            Brightness = 0;
+            BrightnessThreshold = 0.8f;
+            ;
         }
 
         // 分裂节点为四个子节点
@@ -496,7 +503,7 @@ public class QuadTree
             // 设置节点属性
             if (isObstacle)
             {
-                float height = rawHeight * mapData.heightScale * area.size.y;
+                float height = rawHeight;
                 node.SetHeight(height, true);
             }
             else
@@ -504,29 +511,28 @@ public class QuadTree
                 bool illuminatedState = node.IsIlluminated;
 
                 // 第一层：高度条件判断
-                if (area.size.y * mapData.heightScale >= node.Height)
+                if (area.size.y >= node.Height)
                 {
-                    // 第二层：根据rawHeight值判断区域类型
-                    bool isFullLight = rawHeight >= 0.99f;
-                    bool isPartialLight = rawHeight > 0.01f;
+                    // 新增亮度累加逻辑
+                    node.Brightness += rawHeight;
                     
-                    // 统一设置光照状态
-                    node.IsIlluminated = isFullLight || isPartialLight;
-                    
-                    // 第三层：检测光照状态变化
+                    // 使用亮度阈值判断光照状态
+                    node.IsIlluminated = node.Brightness >= node.BrightnessThreshold;
+
+                    // 检测光照状态变化
+                    // 日后可能添加负光照高度图，以实现黑暗区域
                     if (illuminatedState != node.IsIlluminated)
                     {
-                        if (isFullLight)
+                        if (node.IsIlluminated)
                         {
                             lightCount++;
                         }
-                        else if (isPartialLight)
+                        else
                         {
                             darkCount++;
                         }
                     }
                 }
-                // rawHeight <= 0.01f保持原状态不修改
             }
         }
     }
@@ -563,7 +569,8 @@ public class QuadTree
         }
         else if (node.Size == MinNodeSize) // 仅处理最小节点
         {
-            node.SetHeight(0, false);
+            node.SetHeight(0, true);
+            node.Brightness = 0; // 重置亮度
         }
     }
     #endregion
@@ -885,8 +892,9 @@ public class QuadTree
 
     private void ResetIlluminationRecursive(QuadTreeNode node)
     {
-        node.SetHeight(0.01f, false);
+        node.SetHeight(0, true);
         node.IsIlluminated = false;
+        node.Brightness = 0;
         if (node.Children != null)
         {
             foreach (var child in node.Children)
