@@ -20,9 +20,8 @@ Shader "Custom/HeightmapLighting"
         #pragma target 3.0
 
         sampler2D _MainTex;
-        uniform sampler2D _CompositeHeightmap;
+        sampler2D _CompositeMap; // 直接使用GPU中的RenderTexture
         uniform float4 _HeightmapParams;
-        uniform float _TestFloat;
 
         struct Input
         {
@@ -47,12 +46,14 @@ Shader "Custom/HeightmapLighting"
             float2 heightmapUV = (IN.worldPos.xz - _HeightmapParams.xy + _HeightmapParams.zw*0.5) / _HeightmapParams.zw;
             heightmapUV = clamp(heightmapUV, 0, 1);
             
-            // 采样高度图
-            float height = tex2D(_CompositeHeightmap, heightmapUV).r;
+            // 直接从GPU的RenderTexture采样
+            float4 lightData = tex2D(_CompositeMap, heightmapUV);
+            float lightIntensity = lightData.r; // 使用红色通道存储的光照数据
+            float obstacleHeight = lightData.g; // 使用绿色通道存储的高度数据
             
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-            o.Albedo = c.rgb * height;
+            o.Albedo = c.rgb * lightIntensity;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
