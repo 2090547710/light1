@@ -15,7 +15,7 @@ public class LightingManager : MonoBehaviour
     private static RenderTexture compositeRT;
     
     // 新增合成高度图相关字段
-    public static int compositeSize = 1024;
+    public static int compositeSize = 4096;
     // 备用CPU处理像素数组
     // public static Color[] compositePixels;
     public static Texture2D compositeHeightmap;
@@ -145,10 +145,24 @@ public class LightingManager : MonoBehaviour
         
         byte[] bytes = saveTex.EncodeToPNG();
         string filename = $"composite_{System.DateTime.Now:yyyyMMddHHmmss}.png";
-        string path = System.IO.Path.Combine(Application.persistentDataPath, filename);
+        
+        // 修改保存路径到HeightMap
+        string folderPath = "HeightMap";
+        // 确保目录存在
+        if (!System.IO.Directory.Exists(folderPath))
+        {
+            System.IO.Directory.CreateDirectory(folderPath);
+        }
+        
+        string path = System.IO.Path.Combine(folderPath, filename);
         
         System.IO.File.WriteAllBytes(path, bytes);
         Debug.Log($"合成高度图已保存至：{path}");
+        
+#if UNITY_EDITOR
+        // 刷新资源数据库，使Unity能够识别新文件
+        UnityEditor.AssetDatabase.Refresh();
+#endif
         
         Destroy(saveTex);
     }
