@@ -146,8 +146,8 @@ public class LightingManager : MonoBehaviour
         byte[] bytes = saveTex.EncodeToPNG();
         string filename = $"composite_{System.DateTime.Now:yyyyMMddHHmmss}.png";
         
-        // 修改保存路径到HeightMap
-        string folderPath = "HeightMap";
+        // 修改保存路径到Assets/HeightMap
+        string folderPath = "Assets/HeightMap";
         // 确保目录存在
         if (!System.IO.Directory.Exists(folderPath))
         {

@@ -99,7 +99,7 @@ public class Lighting : MonoBehaviour
         Gizmos.DrawWireCube(area.center, area.size);
     }
 
-    private void OnValidate()
+    public void OnValidate()
     {
         bool needsUpdate = false;
         

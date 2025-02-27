@@ -72,8 +72,9 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
-# 自定义忽略规则
-/light/HeightMap@.gitignore
+# 忽略自动生成的高度图文件及其元数据
+/Assets/HeightMap/*.png
+/Assets/HeightMap/*.meta
 
 
 
