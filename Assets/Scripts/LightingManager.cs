@@ -15,7 +15,7 @@ public class LightingManager : MonoBehaviour
     private static RenderTexture compositeRT;
     
     // 新增合成高度图相关字段
-    public static int compositeSize = 2048;
+    public static int compositeSize = 1024;
     // 备用CPU处理像素数组
     // public static Color[] compositePixels;
     public static Texture2D compositeHeightmap;

@@ -25,17 +25,32 @@ void CSObstacleLight(uint3 id : SV_DispatchThreadID)
     uint compositeWidth, compositeHeight;
     _CompositeMap.GetDimensions(compositeWidth, compositeHeight);
     
-    uint2 pixelCoord = uint2(
-        targetUV.x * (compositeWidth-1),
-        targetUV.y * (compositeHeight-1)
-    );
+    // 修改后的区域映射计算
+    float2 compositeUVStart = targetUV * float2(compositeWidth-1, compositeHeight-1);
+    float2 compositeUVEnd = (targetUV + (1.0f / float2(width, height))) * float2(compositeWidth-1, compositeHeight-1);
     
-    // 障碍物写入绿色通道
-    float objectHeight = _HeightMap[id.xy].r;
-    float4 compositeData = _CompositeMap[pixelCoord];  // 读取完整数据
-    float newHeight = saturate(compositeData.g + objectHeight); //叠加并限制在0-1之间
-    compositeData.g = newHeight;  // 只修改绿色通道
-    _CompositeMap[pixelCoord] = compositeData;  // 完整写入所有通道
+    // 显式转换浮点数为无符号整数
+    uint startY = uint(max(0, floor(compositeUVStart.y)));
+    uint endY = uint(min(compositeHeight-1, ceil(compositeUVEnd.y)));
+    uint startX = uint(max(0, floor(compositeUVStart.x)));
+    uint endX = uint(min(compositeWidth-1, ceil(compositeUVEnd.x)));
+    
+    // 遍历合成图对应区域
+    for (uint y = startY; y <= endY; y++) {
+        for (uint x = startX; x <= endX; x++) {
+            uint2 areaCoord = uint2(
+                clamp(x, 0, compositeWidth-1),
+                clamp(y, 0, compositeHeight-1)
+            );
+            
+            // 障碍物写入绿色通道
+            float objectHeight = _HeightMap[id.xy].r;
+            float4 compositeData = _CompositeMap[areaCoord];
+            float newHeight = saturate(compositeData.g + objectHeight);
+            compositeData.g = newHeight;
+            _CompositeMap[areaCoord] = compositeData;
+        }
+    }
 }
 
 [numthreads(16,16,1)]
@@ -54,22 +69,37 @@ void CSNormalLight(uint3 id : SV_DispatchThreadID)
     uint compositeWidth, compositeHeight;
     _CompositeMap.GetDimensions(compositeWidth, compositeHeight);
     
-    uint2 pixelCoord = uint2(
-        targetUV.x * (compositeWidth-1),
-        targetUV.y * (compositeHeight-1)
-    );
+    // 同样的区域映射修改
+    float2 compositeUVStart = targetUV * float2(compositeWidth-1, compositeHeight-1);
+    float2 compositeUVEnd = (targetUV + (1.0f / float2(width, height))) * float2(compositeWidth-1, compositeHeight-1);
     
-    // 获取当前像素值
-    float objectHeight = _HeightMap[id.xy].r;
-    if(objectHeight < 0.01f) return;
+    // 同样的类型转换修正
+    uint startY = uint(max(0, floor(compositeUVStart.y)));
+    uint endY = uint(min(compositeHeight-1, ceil(compositeUVEnd.y)));
+    uint startX = uint(max(0, floor(compositeUVStart.x)));
+    uint endX = uint(min(compositeWidth-1, ceil(compositeUVEnd.x)));
     
-    float obstacleHeight = _CompositeMap[pixelCoord].g;
-    float4 compositeData = _CompositeMap[pixelCoord];  // 读取完整数据
-    
-    // 只有当光源高度大于障碍物且亮度足够时才写入
-    if(_LightHeight >= obstacleHeight) {
-        float newHeight = saturate(compositeData.r + objectHeight); //叠加并限制在0-1之间
-        compositeData.r = newHeight;  // 修改红色通道
-        _CompositeMap[pixelCoord] = compositeData;  // 完整写入所有通道
+    // 遍历合成图对应区域
+    for (uint y = startY; y <= endY; y++) {
+        for (uint x = startX; x <= endX; x++) {
+            uint2 areaCoord = uint2(
+                clamp(x, 0, compositeWidth-1),
+                clamp(y, 0, compositeHeight-1)
+            );
+            
+            // 获取当前像素值
+            float objectHeight = _HeightMap[id.xy].r;
+            if(objectHeight < 0.01f) return;
+            
+            float obstacleHeight = _CompositeMap[areaCoord].g;
+            float4 compositeData = _CompositeMap[areaCoord];  // 读取完整数据
+            
+            // 只有当光源高度大于障碍物且亮度足够时才写入
+            if(_LightHeight >= obstacleHeight) {
+                float newHeight = saturate(compositeData.r + objectHeight); //叠加并限制在0-1之间
+                compositeData.r = newHeight;  // 修改红色通道
+                _CompositeMap[areaCoord] = compositeData;  // 完整写入所有通道
+            }
+        }
     }
 }
