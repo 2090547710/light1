@@ -99,8 +99,8 @@ public class QuadTree
         {
             if (isObstacle)
             {
-                // 仅当新高度大于当前高度时更新
-                Height = Mathf.Max(height, Height);
+                // 叠加高度
+                Height += height;
             }
             else
             {
@@ -484,9 +484,6 @@ public class QuadTree
                 (node.Center.y - area.center.z) / area.size.z + 0.5f
             );
 
-            // 应用贴图的平铺和偏移
-            uv.x = uv.x * mapData.tiling.x + mapData.offset.x;
-            uv.y = uv.y * mapData.tiling.y + mapData.offset.y;
 
             // 新增边界约束确保UV在0-1范围内
             uv.x = Mathf.Clamp01(uv.x);
@@ -512,9 +509,9 @@ public class QuadTree
             else
             {
                 bool illuminatedState = node.IsIlluminated;
-
+                float centerHeight = GetNodeHeightAtPosition(new Vector3(area.center.x, 0, area.center.z));             
                 // 第一层：高度条件判断
-                if (area.size.y >= node.Height)
+                if (area.size.y+centerHeight>= node.Height)
                 {
                     // 新增亮度累加逻辑
                     node.Brightness += rawHeight;
@@ -540,44 +537,7 @@ public class QuadTree
         }
     }
     #endregion
-   
-    #region 光照移除方法
-    public void RemoveIlluminationEffect(Bounds area)
-    {
-        RemoveIlluminationRecursive(root, area);
-    }
-   
-    private void RemoveIlluminationRecursive(QuadTreeNode node, Bounds area)
-    {
-        // 修改为矩形区域检测
-        Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
-        Vector2 rectSize = new Vector2(area.size.x, area.size.z);
-
-        Rect nodeRect = new Rect(
-            node.Center.x - node.Size.x/2,
-            node.Center.y - node.Size.y/2,
-            node.Size.x,
-            node.Size.y);
-
-        bool overlap = RectangleRectOverlap(rectCenter, rectSize, nodeRect);
-        
-        if (!overlap) return;
-
-        if (node.Children != null)
-        {
-            foreach (var child in node.Children)
-            {
-                RemoveIlluminationRecursive(child, area);
-            }
-        }
-        else if (node.Size == MinNodeSize) // 仅处理最小节点
-        {
-            node.SetHeight(0, true);
-            node.Brightness = 0; // 重置亮度
-        }
-    }
-    #endregion
-    
+       
     #region 路径规划
     // 新增路径规划方法
     public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, float maxStepHeight = 0.2f)
@@ -813,6 +773,13 @@ public class QuadTree
     #endregion
 
     #region 其他辅助方法
+    // 新增方法：获取指定位置最小尺寸节点的高度
+    public float GetNodeHeightAtPosition(Vector3 position)
+    {
+        QuadTreeNode node = FindLeafNode(position);
+        return node != null ? node.Height : 0f;
+    }
+
     // 修改遍历方法
     private void ForEachNodeInArea(Bounds area, bool isRect, System.Action<QuadTreeNode> action)
     {
@@ -896,7 +863,7 @@ public class QuadTree
 
     private void ResetIlluminationRecursive(QuadTreeNode node)
     {
-        node.SetHeight(0, true);
+        node.SetHeight(0, false);
         node.IsIlluminated = false;
         node.Brightness = 0;
         if (node.Children != null)

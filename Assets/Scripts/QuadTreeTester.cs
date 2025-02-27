@@ -55,6 +55,7 @@ public class QuadTreeTester : MonoBehaviour
             {
                 TestSeed(hit.point);
                 seedCooldownTimer = seedCooldown; // 重置冷却时间
+                LightingManager.UpdateLighting();
             }
         }
 
@@ -66,6 +67,7 @@ public class QuadTreeTester : MonoBehaviour
             {
                 TestDark(hit.point);
                 darkCooldownTimer = darkCooldown; // 重置冷却时间
+                LightingManager.UpdateLighting();
             }
         }
 

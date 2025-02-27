@@ -96,7 +96,6 @@ public class PlayerPathfinding : MonoBehaviour
                 yield return null;
             }
 
-            Debug.Log($"目标位置：{targetPos}当前位置：{transform.position} " );
             currentPathIndex++;
             quadTree.Remove(playerObject);
             InsertToQuadTree();

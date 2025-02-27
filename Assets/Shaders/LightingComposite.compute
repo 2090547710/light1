@@ -31,9 +31,10 @@ void CSObstacleLight(uint3 id : SV_DispatchThreadID)
     );
     
     // 障碍物写入绿色通道
-    float objectheight = _HeightMap[id.xy].r;
+    float objectHeight = _HeightMap[id.xy].r;
     float4 compositeData = _CompositeMap[pixelCoord];  // 读取完整数据
-    compositeData.g = max(compositeData.g, objectheight);  // 只修改绿色通道
+    float newHeight = saturate(compositeData.g + objectHeight); //叠加并限制在0-1之间
+    compositeData.g = newHeight;  // 只修改绿色通道
     _CompositeMap[pixelCoord] = compositeData;  // 完整写入所有通道
 }
 
@@ -67,8 +68,8 @@ void CSNormalLight(uint3 id : SV_DispatchThreadID)
     
     // 只有当光源高度大于障碍物且亮度足够时才写入
     if(_LightHeight >= obstacleHeight) {
-        float newHeight = saturate(compositeData.r + objectHeight);
+        float newHeight = saturate(compositeData.r + objectHeight); //叠加并限制在0-1之间
         compositeData.r = newHeight;  // 修改红色通道
         _CompositeMap[pixelCoord] = compositeData;  // 完整写入所有通道
     }
-} 
+}

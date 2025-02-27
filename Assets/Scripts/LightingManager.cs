@@ -70,7 +70,7 @@ public class LightingManager : MonoBehaviour
 
     void LateUpdate()
     {
-        
+
     }
 
     public static void RegisterLight(Lighting light)
@@ -81,29 +81,11 @@ public class LightingManager : MonoBehaviour
         }
     }
 
+    // 更新全体光照
     public static void UpdateLighting()
     {
-        tree.ResetIllumination();
-        ClearComposite();
-        
-        if(activeLights.Count > 0)
-        {
-            // 优先处理障碍物光源
-            foreach (var light in activeLights.Where(l => l.isObstacle))
-            {
-                light.ApplyLighting();
-            }
-            // 处理其他光源
-            foreach (var light in activeLights.Where(l => !l.isObstacle))
-            {
-                light.ApplyLighting();
-            }
-        }
-        
-        UpdateHeightmapParams(
-            tree.RootCenter,
-            tree.RootSize
-        );
+        UpdateLightingMarkers();
+        UpdateCompositeHeightmap();
     }
     
     public static void UnregisterLight(Lighting light)
@@ -203,7 +185,8 @@ static void SaveCompositeMenuItem()
     {
         if (instance.lightingComputeShader == null || compositeRT == null || heightMap == null)
             return;
-        
+        float centerHeight = tree.GetNodeHeightAtPosition(new Vector3(lightBounds.center.x, 0, lightBounds.center.z));
+
         // 计算根节点范围
         var rootSize = tree.RootSize;
         var rootCenter = tree.RootCenter;
@@ -231,7 +214,7 @@ static void SaveCompositeMenuItem()
         instance.lightingComputeShader.SetVector("_LightBounds", lightBoundsParam);
         instance.lightingComputeShader.SetVector("_RootBounds", rootBoundsParam);
         instance.lightingComputeShader.SetFloat("_IsObstacle", light.isObstacle ? 1 : 0);
-        instance.lightingComputeShader.SetFloat("_LightHeight", lightHeight);
+        instance.lightingComputeShader.SetFloat("_LightHeight", lightHeight+centerHeight);
         
         // 派发计算
         int threadGroupsX = Mathf.CeilToInt(heightMap.width / 16.0f);
@@ -246,5 +229,57 @@ static void SaveCompositeMenuItem()
             compositeRT.Release();
             compositeRT = null;
         }
+    }
+
+    // 更新四叉树光照标记
+    public static void UpdateLightingMarkers()
+    {
+        tree.ResetIllumination();
+        
+        if(activeLights.Count > 0)
+        {
+            // 优先处理障碍物光源标记
+            foreach (var light in activeLights.Where(l => l.isObstacle))
+            {
+                light.ApplyLighting();
+            }
+            // 处理其他光源标记
+            foreach (var light in activeLights.Where(l => !l.isObstacle))
+            {
+                light.ApplyLighting();
+            }
+        }
+    }
+
+    // 更新合成高度图
+    public static void UpdateCompositeHeightmap()
+    {
+        ClearComposite();
+        
+        if(activeLights.Count > 0)
+        {
+            // 优先处理障碍物光源的高度图
+            foreach (var light in activeLights.Where(l => l.isObstacle))
+            {
+                ProcessLightingGPU(
+                    light, 
+                    light.GetWorldBounds(), 
+                    light.heightMap, 
+                    light.lightHeight
+                );
+            }
+            // 处理其他光源的高度图
+            foreach (var light in activeLights.Where(l => !l.isObstacle))
+            {
+                ProcessLightingGPU(
+                    light, 
+                    light.GetWorldBounds(), 
+                    light.heightMap, 
+                    light.lightHeight
+                );
+            }
+        }
+        
+        UpdateHeightmapParams(tree.RootCenter, tree.RootSize);
     }
 }
