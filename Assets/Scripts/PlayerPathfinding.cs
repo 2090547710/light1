@@ -6,7 +6,7 @@ public class PlayerPathfinding : MonoBehaviour
 {
     public static QuadTree quadTree; // 在Inspector中分配
     public float moveSpeed = 5f;
-    public float stoppingDistance = 0.5f;
+    public float stoppingDistance = 0.2f;
     
     private Vector3[] currentPath;
     private int currentPathIndex;
@@ -19,6 +19,7 @@ public class PlayerPathfinding : MonoBehaviour
     
     // 新增玩家对象引用
     private GameObject playerObject;
+    
     
     void Start()
     {
@@ -55,8 +56,10 @@ public class PlayerPathfinding : MonoBehaviour
                     currentPathIndex = 0;
                     
                     // 停止之前的移动协程
-                    if (moveCoroutine != null) 
+                    if (moveCoroutine != null)
+                    {
                         StopCoroutine(moveCoroutine);
+                    }
                     
                     // 更新玩家在四叉树中的位置
                     quadTree.Remove(playerObject);
@@ -70,26 +73,33 @@ public class PlayerPathfinding : MonoBehaviour
 
     IEnumerator FollowPath()
     {
+        
         while (currentPathIndex < currentPath.Length)
         {
             Vector3 targetPos = currentPath[currentPathIndex];
-            
-            // 持续移动到精确位置
-            while (Vector3.Distance(transform.position, targetPos) > 0.1f) // 使用更小的阈值确保精确到达
+            // 添加中断检查点
+            while (Vector3.Distance(transform.position, targetPos) > stoppingDistance)
             {
-                Vector3 moveDirection = (targetPos - transform.position).normalized;
-                transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
+                // 使用更精确的移动方式
+                float step = moveSpeed * Time.deltaTime;
+                transform.position = Vector3.MoveTowards(
+                    transform.position, 
+                    targetPos, 
+                    step);
                 
-                // 在移动过程中持续更新四叉树位置
-                quadTree.Remove(playerObject);
-                InsertToQuadTree();
+                if (Time.frameCount % 5 == 0)
+                {
+                    quadTree.Remove(playerObject);
+                    InsertToQuadTree();
+                }
                 
                 yield return null;
             }
 
-            // 确保最终位置精确
-            transform.position = targetPos;
+            Debug.Log($"目标位置：{targetPos}当前位置：{transform.position} " );
             currentPathIndex++;
+            quadTree.Remove(playerObject);
+            InsertToQuadTree();
         }
     }
 
