@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         // 生成N个实例
-        // objects = new GameObject[50];
+        // objects = new GameObject[1000];
         // for (int i = 0; i < objects.Length; i++)
         // {
         //     Vector3 position = new Vector3(

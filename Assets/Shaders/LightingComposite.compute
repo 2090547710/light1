@@ -9,97 +9,95 @@ float4 _RootBounds; // x,y: center, z,w: size
 float _IsObstacle;
 float _LightHeight;
 
+// 新增uniform参数：合成图区域起始位置和区域尺寸
+int2 _CompositeOffset;
+int2 _CompositeRegionSize;
+
 [numthreads(16,16,1)]
 void CSObstacleLight(uint3 id : SV_DispatchThreadID)
 {
-    uint width, height;
-    _HeightMap.GetDimensions(width, height);
+    // 获取合成图尺寸
+    uint compWidth, compHeight;
+    _CompositeMap.GetDimensions(compWidth, compHeight);
     
-    if(id.x >= width || id.y >= height) return;
+    // 每个线程负责合成图中的一个像素，其真实坐标为：线程ID + _CompositeOffset
+    int2 compCoord = int2(id.xy) + _CompositeOffset;
     
-    // 计算世界空间UV
-    float2 uv = float2(id.xy) / float2(width-1, height-1);
-    float2 targetUV = lerp(_LightBounds.xy, _LightBounds.zw, uv);
+    // 判断该线程是否超出区域范围
+    if(compCoord.x >= _CompositeOffset.x + _CompositeRegionSize.x ||
+       compCoord.y >= _CompositeOffset.y + _CompositeRegionSize.y)
+        return;
     
-    // 计算合成图坐标
-    uint compositeWidth, compositeHeight;
-    _CompositeMap.GetDimensions(compositeWidth, compositeHeight);
+    // 计算当前合成图像素在该区域内的归一化坐标 t ∈ [0,1]
+    float2 t = (float2(compCoord - _CompositeOffset)) / (float2(_CompositeRegionSize - 1));
     
-    // 修改后的区域映射计算
-    float2 compositeUVStart = targetUV * float2(compositeWidth-1, compositeHeight-1);
-    float2 compositeUVEnd = (targetUV + (1.0f / float2(width, height))) * float2(compositeWidth-1, compositeHeight-1);
+    // 获取高度图尺寸
+    uint heightWidth, heightHeight;
+    _HeightMap.GetDimensions(heightWidth, heightHeight);
     
-    // 显式转换浮点数为无符号整数
-    uint startY = uint(max(0, floor(compositeUVStart.y)));
-    uint endY = uint(min(compositeHeight-1, ceil(compositeUVEnd.y)));
-    uint startX = uint(max(0, floor(compositeUVStart.x)));
-    uint endX = uint(min(compositeWidth-1, ceil(compositeUVEnd.x)));
+    // 计算光源图上对应的浮点采样坐标（两个通道均对应高度图维度）
+    float2 lightCoord = t * float2(heightWidth - 1, heightHeight - 1);
     
-    // 遍历合成图对应区域
-    for (uint y = startY; y <= endY; y++) {
-        for (uint x = startX; x <= endX; x++) {
-            uint2 areaCoord = uint2(
-                clamp(x, 0, compositeWidth-1),
-                clamp(y, 0, compositeHeight-1)
-            );
-            
-            // 障碍物写入绿色通道
-            float objectHeight = _HeightMap[id.xy].r;
-            float4 compositeData = _CompositeMap[areaCoord];
-            float newHeight = saturate(compositeData.g + objectHeight);
-            compositeData.g = newHeight;
-            _CompositeMap[areaCoord] = compositeData;
-        }
-    }
+    // 双线性插值采样
+    int2 coordInt = int2(floor(lightCoord));
+    float2 frac = lightCoord - float2(coordInt);
+    
+    // 为防止越界，在采样时限制最大索引（保证 coordInt+1 不超过边界 ）
+    coordInt.x = clamp(coordInt.x, 0, int(heightWidth) - 2);
+    coordInt.y = clamp(coordInt.y, 0, int(heightHeight) - 2);
+    
+    float a = _HeightMap[uint2(coordInt.x,     coordInt.y    )].r;
+    float b = _HeightMap[uint2(coordInt.x + 1, coordInt.y    )].r;
+    float c = _HeightMap[uint2(coordInt.x,     coordInt.y + 1)].r;
+    float d = _HeightMap[uint2(coordInt.x + 1, coordInt.y + 1)].r;
+    float objectHeight = lerp(lerp(a, b, frac.x), lerp(c, d, frac.x), frac.y);
+
+    // 对于障碍物光源，将采样得到的高度累加到通道 G 上
+    float4 compositeData = _CompositeMap[uint2(compCoord.x, compCoord.y)];
+    compositeData.g = saturate(compositeData.g + objectHeight);
+    _CompositeMap[uint2(compCoord.x, compCoord.y)] = compositeData;
 }
 
 [numthreads(16,16,1)]
 void CSNormalLight(uint3 id : SV_DispatchThreadID)
 {
-    uint width, height;
-    _HeightMap.GetDimensions(width, height);
+    uint compWidth, compHeight;
+    _CompositeMap.GetDimensions(compWidth, compHeight);
     
-    if(id.x >= width || id.y >= height) return;
+    int2 compCoord = int2(id.xy) + _CompositeOffset;
     
-    // 计算世界空间UV
-    float2 uv = float2(id.xy) / float2(width-1, height-1);
-    float2 targetUV = lerp(_LightBounds.xy, _LightBounds.zw, uv);
+    if(compCoord.x >= _CompositeOffset.x + _CompositeRegionSize.x ||
+       compCoord.y >= _CompositeOffset.y + _CompositeRegionSize.y)
+        return;
     
-    // 计算合成图坐标
-    uint compositeWidth, compositeHeight;
-    _CompositeMap.GetDimensions(compositeWidth, compositeHeight);
+    float2 t = (float2(compCoord - _CompositeOffset)) / (float2(_CompositeRegionSize - 1));
     
-    // 同样的区域映射修改
-    float2 compositeUVStart = targetUV * float2(compositeWidth-1, compositeHeight-1);
-    float2 compositeUVEnd = (targetUV + (1.0f / float2(width, height))) * float2(compositeWidth-1, compositeHeight-1);
+    uint heightWidth, heightHeight;
+    _HeightMap.GetDimensions(heightWidth, heightHeight);
     
-    // 同样的类型转换修正
-    uint startY = uint(max(0, floor(compositeUVStart.y)));
-    uint endY = uint(min(compositeHeight-1, ceil(compositeUVEnd.y)));
-    uint startX = uint(max(0, floor(compositeUVStart.x)));
-    uint endX = uint(min(compositeWidth-1, ceil(compositeUVEnd.x)));
+    float2 lightCoord = t * float2(heightWidth - 1, heightHeight - 1);
+    int2 coordInt = int2(floor(lightCoord));
+    float2 frac = lightCoord - float2(coordInt);
     
-    // 遍历合成图对应区域
-    for (uint y = startY; y <= endY; y++) {
-        for (uint x = startX; x <= endX; x++) {
-            uint2 areaCoord = uint2(
-                clamp(x, 0, compositeWidth-1),
-                clamp(y, 0, compositeHeight-1)
-            );
-            
-            // 获取当前像素值
-            float objectHeight = _HeightMap[id.xy].r;
-            if(objectHeight < 0.01f) return;
-            
-            float obstacleHeight = _CompositeMap[areaCoord].g;
-            float4 compositeData = _CompositeMap[areaCoord];  // 读取完整数据
-            
-            // 只有当光源高度大于障碍物且亮度足够时才写入
-            if(_LightHeight >= obstacleHeight) {
-                float newHeight = saturate(compositeData.r + objectHeight); //叠加并限制在0-1之间
-                compositeData.r = newHeight;  // 修改红色通道
-                _CompositeMap[areaCoord] = compositeData;  // 完整写入所有通道
-            }
-        }
+    coordInt.x = clamp(coordInt.x, 0, int(heightWidth) - 2);
+    coordInt.y = clamp(coordInt.y, 0, int(heightHeight) - 2);
+    
+    float a = _HeightMap[uint2(coordInt.x,     coordInt.y    )].r;
+    float b = _HeightMap[uint2(coordInt.x + 1, coordInt.y    )].r;
+    float c = _HeightMap[uint2(coordInt.x,     coordInt.y + 1)].r;
+    float d = _HeightMap[uint2(coordInt.x + 1, coordInt.y + 1)].r;
+    float objectHeight = lerp(lerp(a, b, frac.x), lerp(c, d, frac.x), frac.y);
+
+    // 如果采样高度过小，忽略该像素
+    if(objectHeight < 0.01f) return;
+    
+    uint2 compCoordUInt = uint2(compCoord.x, compCoord.y);
+    float4 compositeData = _CompositeMap[compCoordUInt];
+    float obstacleHeight = compositeData.g;
+    
+    // 只有当光源高度大于障碍物累加高度时才写入（累加到通道 R ）
+    if(_LightHeight >= obstacleHeight) {
+        compositeData.r = saturate(compositeData.r + objectHeight);
+        _CompositeMap[compCoordUInt] = compositeData;
     }
 }

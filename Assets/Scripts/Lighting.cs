@@ -1,4 +1,4 @@
-using System.Collections;
+    using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -142,13 +142,6 @@ public class Lighting : MonoBehaviour
 
         bool isValid = true;
         
-        // 验证分辨率
-        if (heightMap.width != 256 || heightMap.height != 256)
-        {
-            Debug.LogError($"高度图分辨率必须为256x256，当前：{heightMap.width}x{heightMap.height} ({name})", this);
-            isValid = false;
-        }
-
         // 验证格式
         bool formatValid = false;
 #if UNITY_EDITOR

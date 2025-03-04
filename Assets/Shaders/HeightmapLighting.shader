@@ -47,7 +47,6 @@ Shader "Custom/HeightmapLighting"
             // 计算UV坐标
             float2 heightmapUV = (IN.worldPos.xz - _HeightmapParams.xy + _HeightmapParams.zw*0.5) / _HeightmapParams.zw;
             heightmapUV = clamp(heightmapUV, 0, 1);
-            
             // 直接从GPU的RenderTexture采样
             float4 lightData = tex2D(_CompositeMap, heightmapUV);
             float lightIntensity = lightData.r; // 使用红色通道存储的光照数据

@@ -249,7 +249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec8a6dfcf46693e498cf74142c7c4337, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxDepth: 8
+  maxDepth: 7
   capacity: 2
   preSplit: 0
   size: {x: 128, y: 128}
@@ -287,6 +287,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ba212a27d0762f49b1eb17e0a00288a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lightingComputeShader: {fileID: 7200000, guid: 17609775a1724e140a089c11b9891a5a, type: 3}
 --- !u!114 &877133417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,6 +325,13 @@ MonoBehaviour:
     m_Bits: 128
   selectionRadius: 0.5
   highlightMaterial: {fileID: 2100000, guid: c91f8bb88c5fbfa4887573142a1e2d6b, type: 2}
+  editingProperties:
+    size: 0
+    isObstacle: 0
+    heightMap: {fileID: 0}
+    tiling: {x: 0, y: 0}
+    offset: {x: 0, y: 0}
+    lightHeight: 0
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -639,7 +647,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  stoppingDistance: 0.5
+  stoppingDistance: 0.2
   markerPrefab: {fileID: 1323435036065331973, guid: d903664912025734989e641f0cb73d56, type: 3}
   markerScale: 0.3
   markerDuration: 1
