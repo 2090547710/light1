@@ -19,7 +19,6 @@ public class QuadTreeTester : MonoBehaviour
     void Start()
     {
         mainCamera = Camera.main;
-        LightingManager.UpdateLighting();
     }
 
     void Update()
@@ -55,7 +54,7 @@ public class QuadTreeTester : MonoBehaviour
             {
                 TestSeed(hit.point);
                 seedCooldownTimer = seedCooldown; // 重置冷却时间
-                LightingManager.UpdateLighting();
+                LightingManager.UpdateDirtyLights();
             }
         }
 
@@ -67,7 +66,7 @@ public class QuadTreeTester : MonoBehaviour
             {
                 TestDark(hit.point);
                 darkCooldownTimer = darkCooldown; // 重置冷却时间
-                LightingManager.UpdateLighting();
+                LightingManager.UpdateDirtyLights();
             }
         }
 

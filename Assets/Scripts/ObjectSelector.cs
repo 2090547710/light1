@@ -144,6 +144,11 @@ public class ObjectSelector : MonoBehaviour
                 lighting.offset = selector.editingProperties.offset;
                 lighting.lightHeight = selector.editingProperties.lightHeight;
 
+                // 新增亮度影响显示
+                EditorGUILayout.Space(5);
+                EditorGUILayout.LabelField($"亮度影响值: {lighting.TotalBrightnessImpact:F2}", 
+                    new GUIStyle(EditorStyles.label) { fontSize = 12, fontStyle = FontStyle.Bold });
+
                 // 立即应用修改
                 if (GUI.changed)
                 {

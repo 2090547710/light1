@@ -1,0 +1,7 @@
+{
+    "ai.customCodeBase": "https://api.deepseek.com/v1",
+    "ai.customChatBase": "https://api.deepseek.com/v1",
+    "ai.customModelName": "deepseek-chat",
+    "ai.provider": "custom",
+    "ai.apiKey": "sk-your-api-key-here"
+} 

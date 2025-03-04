@@ -50,7 +50,7 @@ Shader "Custom/HeightmapLighting"
             // 直接从GPU的RenderTexture采样
             float4 lightData = tex2D(_CompositeMap, heightmapUV);
             float lightIntensity = lightData.r; // 使用红色通道存储的光照数据
-            float obstacleHeight = lightData.g; // 使用绿色通道存储的高度数据
+            lightIntensity = saturate(lightIntensity); // 使用saturate限制在0-1范围
             
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;

@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         // 生成N个实例
-        // objects = new GameObject[1000];
+        // objects = new GameObject[50];
         // for (int i = 0; i < objects.Length; i++)
         // {
         //     Vector3 position = new Vector3(
@@ -48,16 +48,9 @@ public class GameManager : MonoBehaviour
         //         Random.Range(-50f, 50f)
         //     );
         //     objects[i] = Instantiate(prefab, position, Quaternion.identity, transform);
+        //     tree.Insert(objects[i]);
         // }
 
-        // 重置光照状态
-        tree.ResetIllumination();
-
-        // 插入对象
-        // foreach (var obj in objects)
-        // {
-        //     tree.Insert(obj);
-        // }
 
     }
 

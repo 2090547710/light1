@@ -1,4 +1,4 @@
-    using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -405,10 +405,11 @@ public class QuadTree
 
     #region 光照标记方法
     // 修改后的光照标记方法 先预分裂，
-    public Vector2 MarkIlluminatedArea(Bounds area, bool isObstacle, AreaMapData mapData)
+    public float MarkIlluminatedArea(Lighting lighting, bool isAdditive = true, bool useCachedData = false)
     {
+        var area = useCachedData ? lighting.GetCachedWorldBounds() : lighting.GetWorldBounds();
         PreSplitForLighting(root, area, 0);
-        return FinalizeIlluminationMarking(area, isObstacle, mapData);
+        return FinalizeIlluminationMarking(lighting, isAdditive, useCachedData);
     }
 
     // 修改后的预分裂方法（移除高度更新）
@@ -443,18 +444,20 @@ public class QuadTree
     }
 
 
-    // 修改后的最终标记方法（添加高度更新）
-    private Vector2 FinalizeIlluminationMarking(Bounds area, bool isObstacle, AreaMapData mapData)
+    // 修改后的最终标记方法（添加亮度累加或减少）
+    private float FinalizeIlluminationMarking(Lighting lighting, bool isAdditive = true, bool useCachedData = false)
     {
-        int lightCount = 0;
-        int darkCount = 0;
-        FinalMarkRecursive(root, area, isObstacle, mapData, ref lightCount, ref darkCount);
-        return new Vector2(lightCount, darkCount);
+        float totalBrightness = 0f;
+        FinalMarkRecursive(root, lighting, ref totalBrightness, isAdditive, useCachedData);
+        return totalBrightness;
     }
 
-    private void FinalMarkRecursive(QuadTreeNode node, Bounds area, bool isObstacle, 
-                                   AreaMapData mapData, ref int lightCount, ref int darkCount)
+    private void FinalMarkRecursive(QuadTreeNode node, Lighting lighting, ref float totalBrightness, bool isAdditive = true, bool useCachedData = false)
     {
+        var area = useCachedData ? lighting.GetCachedWorldBounds() : lighting.GetWorldBounds();
+        var mapData = useCachedData ? lighting.GetCachedAreaMapData() : lighting.GetAreaMapData();
+        bool isObstacle = useCachedData ? lighting.GetCachedIsObstacle() : lighting.isObstacle;
+        
         Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
         Vector2 rectSize = new Vector2(area.size.x, area.size.z);
 
@@ -472,7 +475,7 @@ public class QuadTree
         {
             foreach (var child in node.Children)
             {
-                FinalMarkRecursive(child, area, isObstacle, mapData, ref lightCount, ref darkCount);
+                FinalMarkRecursive(child, lighting, ref totalBrightness, isAdditive, useCachedData);
             }
         }
         else
@@ -483,7 +486,6 @@ public class QuadTree
                 (node.Center.x - area.center.x) / area.size.x + 0.5f,
                 (node.Center.y - area.center.z) / area.size.z + 0.5f
             );
-
 
             // 新增边界约束确保UV在0-1范围内
             uv.x = Mathf.Clamp01(uv.x);
@@ -497,41 +499,39 @@ public class QuadTree
             rawHeight = Mathf.Clamp01(rawHeight);
             if(rawHeight < 0.003f) rawHeight = 0;
 
-            // 在采样后添加调试输出：
-            // Debug.Log($"UV: {uv} HeightData: {mapData.heightMap.GetPixelBilinear(uv.x, uv.y)} Grayscale: {rawHeight}");
-
             // 设置节点属性
             if (isObstacle)
             {
                 float height = rawHeight;
-                node.SetHeight(height, true);
+                // 根据加减法标志决定操作
+                if (isAdditive)
+                    node.SetHeight(height, true);
+                else {
+                    // 减法操作，减少高度
+                    node.SetHeight(-height, true);
+                }
+                totalBrightness +=0.01f;
             }
             else
             {
                 bool illuminatedState = node.IsIlluminated;
                 float centerHeight = GetNodeHeightAtPosition(new Vector3(area.center.x, 0, area.center.z));             
-                // 第一层：高度条件判断
-                if (area.size.y+centerHeight>= node.Height)
+                // 第一层：高度条件判断 限制在0-1之间
+                if (Mathf.Clamp01(area.size.y+centerHeight)>= Mathf.Clamp01(node.Height))
                 {
-                    // 新增亮度累加逻辑
-                    node.Brightness += rawHeight;
+                    // 根据加减法标志决定亮度操作
+                    if (isAdditive) {
+                        // 累加原始亮度值到总影响
+                        totalBrightness += rawHeight;
+                        node.Brightness += rawHeight;
+                    } else {
+                        // 减法操作，减少亮度但不低于0
+                        totalBrightness -= rawHeight;
+                        node.Brightness = Mathf.Max(0, node.Brightness - rawHeight);
+                    }
                     
                     // 使用亮度阈值判断光照状态
                     node.IsIlluminated = node.Brightness >= node.BrightnessThreshold;
-
-                    // 检测光照状态变化
-                    // 日后可能添加负光照高度图，以实现黑暗区域
-                    if (illuminatedState != node.IsIlluminated)
-                    {
-                        if (node.IsIlluminated)
-                        {
-                            lightCount++;
-                        }
-                        else
-                        {
-                            darkCount++;
-                        }
-                    }
                 }
             }
         }

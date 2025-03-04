@@ -61,8 +61,14 @@ MonoBehaviour:
   tiling: {x: 0, y: 0}
   offset: {x: 0, y: 0}
   lightHeight: 0
-  LightAffectedNodesCount: 0
-  DarkAffectedNodesCount: 0
+  TotalBrightnessImpact: 0
+  cachedSize: 5
+  cachedIsObstacle: 1
+  cachedHeightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
+  cachedTiling: {x: 0, y: 0}
+  cachedOffset: {x: 0, y: 0}
+  cachedLightHeight: 0
+  isDirty: 1
 --- !u!65 &-6355687641031468626
 BoxCollider:
   m_ObjectHideFlags: 0

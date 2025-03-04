@@ -1,4 +1,4 @@
-    using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -23,18 +23,15 @@ public struct AreaMapData
 public class Lighting : MonoBehaviour
 {
     [Header("区域设置")]
-    public float size;
+    [Range(0,100)]public float size;
     public bool isObstacle;
     public Texture2D heightMap;
     public Vector2 tiling;
     public Vector2 offset;
     [Range(0, 1)] public float lightHeight;
-    private AreaMapData areaMapData;
-    private Bounds area;
 
     [Header("节点影响")]
-    public int LightAffectedNodesCount;
-    public int DarkAffectedNodesCount;
+    public float TotalBrightnessImpact;
 
     // 添加缓存字段
     [Header("调试信息")]
@@ -45,35 +42,103 @@ public class Lighting : MonoBehaviour
     [SerializeField] private Vector2 cachedOffset;
     [SerializeField] private float cachedLightHeight;
 
-    private void OnEnable() => LightingManager.RegisterLight(this);
-    private void OnDisable() => LightingManager.UnregisterLight(this);
+    // 添加脏标记系统
+    [SerializeField] private bool isDirty = true; // 默认为脏，确保首次应用
+    public bool IsDirty => isDirty;
 
-    public int ApplyLighting()
+    // 新增哈希表记录重叠的光源
+    [Header("重叠光源信息")]
+    [SerializeField] private Dictionary<int, Lighting> overlappingLights = new Dictionary<int, Lighting>();
+    
+    // 新增公共属性用于获取重叠光源
+    public IReadOnlyDictionary<int, Lighting> OverlappingLights => overlappingLights;
+
+    private void OnEnable() 
     {
-        // 初始化区域数据
-        areaMapData = new AreaMapData(
-            heightMap,
-            tiling == default ? Vector2.one : tiling,  // 使用默认值保护
-            offset
-        );
-        // 初始化区域范围
-        area = new Bounds(transform.position, new Vector3(size, lightHeight, size));
+        LightingManager.RegisterLight(this);
+    }
+    
+    private void OnDisable() 
+    {
 
-        Vector2 counts = LightingManager.tree.MarkIlluminatedArea(
-            area,
-            isObstacle,
-            areaMapData
-        );
-        LightAffectedNodesCount = (int)counts.x;
-        DarkAffectedNodesCount = (int)counts.y;
-        return LightAffectedNodesCount + DarkAffectedNodesCount;
+        LightingManager.UnregisterLight(this);
+    }
+    
+    // 更新当前光源与其他光源的重叠关系
+    public void UpdateOverlappingLights(bool useCachedData = false)
+    {
+        // 先清除现有关系
+        overlappingLights.Clear();
+        
+        // 获取当前光源的影响范围（根据是否使用缓存数据）
+        Bounds myBounds = useCachedData ? GetCachedWorldBounds() : GetWorldBounds();
+        
+        // 检查与所有其他活跃光源的重叠
+        
+        foreach (var otherLight in LightingManager.activeLights)
+        {
+            // 跳过自身和障碍物光源
+            if (otherLight == this || otherLight.isObstacle)
+                continue;
+                
+            // 获取其他光源的影响范围
+            Bounds otherBounds = otherLight.GetWorldBounds();
+            // 判断两个矩形在xz平面是否重叠
+            if (IsOverlappingOnXZPlane(myBounds, otherBounds))
+            {
+                // 添加到重叠光源表中
+                overlappingLights.Add(otherLight.GetInstanceID(), otherLight);
+                
+                // 同时更新对方的重叠光源表（如果当前光源不是障碍物）
+                if (!isObstacle && !otherLight.overlappingLights.ContainsKey(this.GetInstanceID()))
+                {
+                    otherLight.overlappingLights.Add(this.GetInstanceID(), this);
+                }
+            }
+        }
+    }
+    
+    // 清除与其他光源的重叠关系
+    private void ClearOverlappingRelationships()
+    {
+        // 从其他光源的重叠列表中移除自己
+        foreach (var otherLight in overlappingLights.Values)
+        {
+            if (otherLight != null)
+            {
+                otherLight.overlappingLights.Remove(this.GetInstanceID());
+            }
+        }
+        
+        // 清空自己的重叠列表
+        overlappingLights.Clear();
+    }
+
+    //光照标记
+    public int ApplyLighting(bool isAdditive = true, bool useCachedData = false)
+    { 
+        if (useCachedData)
+        {
+            // 使用缓存数据
+            TotalBrightnessImpact = LightingManager.tree.MarkIlluminatedArea(this, isAdditive, true);
+        }
+        else
+        {
+            // 使用当前数据
+            TotalBrightnessImpact = LightingManager.tree.MarkIlluminatedArea(this, isAdditive, false);
+        }
+        
+        return Mathf.RoundToInt(TotalBrightnessImpact * 100f);
     }
 
     public void RemoveLighting()
     {
-        //在光照管理器在通知光照管理器更新光照
-        LightingManager.UnregisterLight(this);
+        // 清除重叠关系
+        ClearOverlappingRelationships();
+        
+        // 通知光照管理器更新光照
         LightingManager.UpdateLighting(); 
+         LightingManager.UnregisterLight(this);
     }
 
     public AreaMapData GetAreaMapData()
@@ -96,7 +161,20 @@ public class Lighting : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = isObstacle ? Color.red : Color.yellow;
-        Gizmos.DrawWireCube(area.center, area.size);
+        Gizmos.DrawWireCube(transform.position, new Vector3(size, 0, size));
+        
+        // 可选：绘制重叠光源关系线
+        if (overlappingLights != null && overlappingLights.Count > 0)
+        {
+            Gizmos.color = Color.magenta;
+            foreach (var light in overlappingLights.Values)
+            {
+                if (light != null)
+                {
+                    Gizmos.DrawLine(transform.position, light.transform.position);
+                }
+            }
+        }
     }
 
     public void OnValidate()
@@ -112,6 +190,7 @@ public class Lighting : MonoBehaviour
             cachedLightHeight != lightHeight)
         {
             needsUpdate = true;
+            isDirty = true; // 设置为脏
         }
 
         ValidateHeightmap();
@@ -119,7 +198,7 @@ public class Lighting : MonoBehaviour
         // 如果有参数变化且应用在编辑器运行时
         if (needsUpdate && Application.isPlaying)
         {
-            LightingManager.UpdateLighting();
+            LightingManager.UpdateDirtyLights(); // 使用新方法更新脏光源
         }
 
         // 更新缓存值
@@ -164,6 +243,64 @@ public class Lighting : MonoBehaviour
         }
 
         return isValid;
+    }
+
+    // 添加重置脏标记方法
+    public void ResetDirtyFlag()
+    {
+        isDirty = false;
+    }
+
+    // 强制设置脏标记
+    public void MarkDirty()
+    {
+        isDirty = true;
+    }
+
+    // 新增获取缓存的heightMap方法
+    public Texture2D GetCachedHeightMap()
+    {
+        return cachedHeightMap;
+    }
+    
+    // 新增获取缓存的WorldBounds方法
+    public Bounds GetCachedWorldBounds()
+    {
+        Vector3 center = transform.position;
+        Vector3 size = new Vector3(cachedSize, cachedLightHeight, cachedSize);
+        return new Bounds(center, size);
+    }
+    
+    // 新增获取缓存的AreaMapData方法
+    public AreaMapData GetCachedAreaMapData()
+    {
+        return new AreaMapData(
+            cachedHeightMap,
+            cachedTiling == default ? Vector2.one : cachedTiling,
+            cachedOffset
+        );
+    }
+    
+    // 新增获取缓存的isObstacle方法
+    public bool GetCachedIsObstacle()
+    {
+        return cachedIsObstacle;
+    }
+    
+    // 新增获取缓存的lightHeight方法
+    public float GetCachedLightHeight()
+    {
+        return cachedLightHeight;
+    }
+
+    // 添加新方法：检测两个边界在xz平面上是否重叠
+    private bool IsOverlappingOnXZPlane(Bounds a, Bounds b)
+    {
+        // 只检查x和z轴方向的重叠，忽略y轴
+        bool overlapX = Mathf.Abs(a.center.x - b.center.x) <= (a.size.x + b.size.x) * 0.5f;
+        bool overlapZ = Mathf.Abs(a.center.z - b.center.z) <= (a.size.z + b.size.z) * 0.5f;
+        
+        return overlapX && overlapZ;
     }
 }
 

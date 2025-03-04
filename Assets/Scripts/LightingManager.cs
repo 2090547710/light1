@@ -63,7 +63,7 @@ public class LightingManager : MonoBehaviour
 
     void Start()
     {
-        
+        UpdateLighting();
     }
 
     void LateUpdate()
@@ -82,8 +82,14 @@ public class LightingManager : MonoBehaviour
     // 更新全体光照
     public static void UpdateLighting()
     {
-        UpdateLightingMarkers();
-        UpdateCompositeHeightmap();
+        // 将所有光源标记为脏
+        foreach (var light in activeLights)
+        {
+            light.MarkDirty();
+        }
+        
+        // 使用增量更新方法
+        UpdateDirtyLights();
     }
     
     public static void UnregisterLight(Lighting light)
@@ -182,8 +188,8 @@ static void SaveCompositeMenuItem()
         Shader.SetGlobalTexture("_CompositeMap", compositeRT);
     }
 
-    // 新增GPU处理方法
-    public static void ProcessLightingGPU(Lighting light, Bounds lightBounds, Texture2D heightMap, float lightHeight)
+    // 新增GPU处理方法带加减法参数
+    public static void ProcessLightingGPU(Lighting light, Bounds lightBounds, Texture2D heightMap, float lightHeight, bool isAdditive = true)
     {
         if (instance.lightingComputeShader == null || compositeRT == null || heightMap == null)
             return;
@@ -218,6 +224,8 @@ static void SaveCompositeMenuItem()
         instance.lightingComputeShader.SetVector("_RootBounds", rootBoundsParam);
         instance.lightingComputeShader.SetFloat("_IsObstacle", light.isObstacle ? 1 : 0);
         instance.lightingComputeShader.SetFloat("_LightHeight", lightHeight + centerHeight);
+        // 添加加减操作标记
+        instance.lightingComputeShader.SetFloat("_IsAdditive", isAdditive ? 1 : 0);
         
         // ===== 计算合成区域（反向映射） =====
         // compositeRT为正方形，尺寸为 compositeSize
@@ -251,55 +259,124 @@ static void SaveCompositeMenuItem()
         }
     }
 
-    // 更新四叉树光照标记
-    public static void UpdateLightingMarkers()
+    
+    // 添加只更新脏光源的方法
+    public static void UpdateDirtyLights()
     {
-        tree.ResetIllumination();
+        // 获取所有脏光源
+        var dirtyLights = activeLights.Where(light => light.IsDirty).ToList();
         
-        if(activeLights.Count > 0)
-        {
-            // 优先处理障碍物光源标记
-            foreach (var light in activeLights.Where(l => l.isObstacle))
-            {
-                light.ApplyLighting();
-            }
-            // 处理其他光源标记
-            foreach (var light in activeLights.Where(l => !l.isObstacle))
-            {
-                light.ApplyLighting();
-            }
+        if(dirtyLights.Count == 0) {
+            UpdateHeightmapParams(tree.RootCenter, tree.RootSize);
+            return; // 没有脏光源需要更新
         }
-    }
+        
+        // 将脏光源分为障碍物和非障碍物两组
+        var dirtyObstacleLights = dirtyLights.Where(light => light.isObstacle).ToList();
+        var dirtyNormalLights = dirtyLights.Where(light => !light.isObstacle).ToList();
 
-    // 更新合成高度图
-    public static void UpdateCompositeHeightmap()
-    {
-        ClearComposite();
+        // 创建待更新的光源列表（受影响的重叠光源）
+        HashSet<Lighting> affectedLights = new HashSet<Lighting>();
         
-        if(activeLights.Count > 0)
+        // ===== 第一步：基于障碍物脏光源收集重叠光源 =====
+        foreach (var light in dirtyObstacleLights)
         {
-            // 优先处理障碍物光源的高度图
-            foreach (var light in activeLights.Where(l => l.isObstacle))
+            // 1.1 收集基于缓存数据的重叠光源
+            light.UpdateOverlappingLights(true); // 使用缓存数据更新重叠关系
+            var cachedOverlappingLights = light.OverlappingLights.Values.ToList();
+            // 1.2 收集基于新数据的重叠光源
+            light.UpdateOverlappingLights(false); // 使用当前数据更新重叠关系
+            var newOverlappingLights = light.OverlappingLights.Values.ToList();
+            // 1.3 合并两次收集的重叠光源（去除重复和已经是脏光源的）
+            foreach (var overlappingLight in cachedOverlappingLights.Concat(newOverlappingLights))
             {
-                ProcessLightingGPU(
-                    light, 
-                    light.GetWorldBounds(), 
-                    light.heightMap, 
-                    light.lightHeight
-                );
+    
+                if (!dirtyLights.Contains(overlappingLight))
+                {
+                    affectedLights.Add(overlappingLight);
+                }
             }
-            // 处理其他光源的高度图
-            foreach (var light in activeLights.Where(l => !l.isObstacle))
+        }
+        
+        // ===== 第二步：普通脏光源和受影响重叠光源移除光照 =====
+        foreach (var light in dirtyNormalLights.Concat(affectedLights))
+        {
+            // 2.1 只有光照影响大于阈值才移除光照
+            if (light.TotalBrightnessImpact >= 0.01f)
             {
+                bool useCache = dirtyNormalLights.Contains(light); // 脏光源使用缓存数据，受影响光源使用当前数据
+                
+                // 移除光照
+                light.ApplyLighting(false, useCache);
+                // 同时更新合成高度图
                 ProcessLightingGPU(
                     light, 
-                    light.GetWorldBounds(), 
-                    light.heightMap, 
-                    light.lightHeight
+                    useCache ? light.GetCachedWorldBounds() : light.GetWorldBounds(), 
+                    useCache ? light.GetCachedHeightMap() : light.heightMap, 
+                    useCache ? light.GetCachedLightHeight() : light.lightHeight,
+                    false // isAdditive = false，执行减法操作
                 );
             }
         }
         
+        // ===== 第三步：障碍物脏光源的移除光照和更新光照 =====
+        foreach (var light in dirtyObstacleLights)
+        {
+            // 3.1 只有光照影响大于阈值才移除光照
+            if (light.TotalBrightnessImpact >= 0.01f)
+            {
+                // 移除光照（使用缓存数据）
+                light.ApplyLighting(false, true);
+                // 同时更新合成高度图
+                ProcessLightingGPU(
+                    light, 
+                    light.GetCachedWorldBounds(), 
+                    light.GetCachedHeightMap(), 
+                    light.GetCachedLightHeight(),                  
+                    false // isAdditive = false，执行减法操作
+                );
+            }
+            
+            // 3.2 更新光照（使用新数据）
+            light.ApplyLighting(true, false);
+            // 同时更新合成高度图
+            ProcessLightingGPU(
+                light, 
+                light.GetWorldBounds(), 
+                light.heightMap, 
+                light.lightHeight,
+                true // isAdditive = true，执行加法操作
+            );
+            
+            // 重置脏标记
+            light.ResetDirtyFlag();
+        }
+        
+        // ===== 第四步：普通脏光源和受影响重叠光源更新光照并更新重叠关系 =====
+        foreach (var light in dirtyNormalLights.Concat(affectedLights))
+        {
+            // 4.1 更新光照
+            light.ApplyLighting(true, false);
+            // 同时更新合成高度图
+            ProcessLightingGPU(
+                light, 
+                light.GetWorldBounds(), 
+                light.heightMap, 
+                light.lightHeight,
+                true // isAdditive = true，执行加法操作
+            );
+            
+            // 4.2 更新重叠关系
+            light.UpdateOverlappingLights(false);
+            
+            // 对于脏光源，重置脏标记
+            if (dirtyNormalLights.Contains(light))
+            {
+                light.ResetDirtyFlag();
+            }
+        }
+
+        // 更新GPU中的合成高度图参数
         UpdateHeightmapParams(tree.RootCenter, tree.RootSize);
     }
 }

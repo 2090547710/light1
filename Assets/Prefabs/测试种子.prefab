@@ -49,15 +49,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 10
   isObstacle: 0
-  heightMap: {fileID: 2800000, guid: e3c2b3648260f47418f9c9c6e93b8985, type: 3}
+  heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
   tiling: {x: 1, y: 1}
   offset: {x: 0, y: 0}
   lightHeight: 0.205
-  LightAffectedNodesCount: 0
-  DarkAffectedNodesCount: 0
+  TotalBrightnessImpact: 0
   cachedSize: 10
   cachedIsObstacle: 0
-  cachedHeightMap: {fileID: 2800000, guid: e3c2b3648260f47418f9c9c6e93b8985, type: 3}
+  cachedHeightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
   cachedTiling: {x: 1, y: 1}
   cachedOffset: {x: 0, y: 0}
   cachedLightHeight: 0.205

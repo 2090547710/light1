@@ -1,0 +1,8 @@
+{
+  // ... 其他现有配置 ...
+  "llm.customLLM": "deepseek",
+  "llm.customEndpoint": "https://api.deepseek.com/v1/chat/completions",
+  "llm.customApiKey": "sk-49ac7e3e8eb145be897495189ef84e49",
+  "llm.model": "deepseek-coder",
+  // ... 其他现有配置 ...
+}

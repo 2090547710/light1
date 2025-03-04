@@ -8,6 +8,7 @@ float4 _LightBounds; // x,y: min点, z,w: max点
 float4 _RootBounds; // x,y: center, z,w: size
 float _IsObstacle;
 float _LightHeight;
+float _IsAdditive; // 新增加减操作参数，1为加，0为减
 
 // 新增uniform参数：合成图区域起始位置和区域尺寸
 int2 _CompositeOffset;
@@ -52,9 +53,17 @@ void CSObstacleLight(uint3 id : SV_DispatchThreadID)
     float d = _HeightMap[uint2(coordInt.x + 1, coordInt.y + 1)].r;
     float objectHeight = lerp(lerp(a, b, frac.x), lerp(c, d, frac.x), frac.y);
 
-    // 对于障碍物光源，将采样得到的高度累加到通道 G 上
+    // 对于障碍物光源，将采样得到的高度累加/减去到通道 G 上
     float4 compositeData = _CompositeMap[uint2(compCoord.x, compCoord.y)];
-    compositeData.g = saturate(compositeData.g + objectHeight);
+    
+    if (_IsAdditive > 0.5) {
+        // 加法操作
+        compositeData.g = compositeData.g + objectHeight;
+    } else {
+        // 减法操作 - 不低于0
+        compositeData.g = max(0.0, compositeData.g - objectHeight);
+    }
+    
     _CompositeMap[uint2(compCoord.x, compCoord.y)] = compositeData;
 }
 
@@ -95,9 +104,18 @@ void CSNormalLight(uint3 id : SV_DispatchThreadID)
     float4 compositeData = _CompositeMap[compCoordUInt];
     float obstacleHeight = compositeData.g;
     
-    // 只有当光源高度大于障碍物累加高度时才写入（累加到通道 R ）
-    if(_LightHeight >= obstacleHeight) {
-        compositeData.r = saturate(compositeData.r + objectHeight);
+    // 只有当光源高度大于障碍物累加高度时才写入（加/减到通道 R ）
+    float clampedLightHeight = clamp(_LightHeight, 0.0, 1.0);
+    float clampedObstacleHeight = clamp(obstacleHeight, 0.0, 1.0);
+    
+    if(clampedLightHeight >= clampedObstacleHeight) {
+        if (_IsAdditive > 0.5) {
+            // 加法操作
+            compositeData.r = compositeData.r + objectHeight;
+        } else {
+            // 减法操作 - 不低于0
+            compositeData.r = max(0.0, compositeData.r - objectHeight);
+        }
         _CompositeMap[compCoordUInt] = compositeData;
     }
 }
