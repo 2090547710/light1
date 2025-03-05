@@ -249,12 +249,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec8a6dfcf46693e498cf74142c7c4337, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxDepth: 7
+  maxDepth: 8
   capacity: 2
   preSplit: 0
   size: {x: 128, y: 128}
   center: {x: 0, y: 0}
-  prefab: {fileID: 3803225260541865786, guid: f39f1086029184848907829f710e4f3a, type: 3}
+  prefab: {fileID: 5540192311497395315, guid: dc7d33e851d9a1243a632ac428517299, type: 3}
   objects:
   - {fileID: 0}
   queryBounds:

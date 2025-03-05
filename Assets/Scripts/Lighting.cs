@@ -133,12 +133,12 @@ public class Lighting : MonoBehaviour
 
     public void RemoveLighting()
     {
-        // 清除重叠关系
-        ClearOverlappingRelationships();
-        
-        // 通知光照管理器更新光照
-        LightingManager.UpdateLighting(); 
-         LightingManager.UnregisterLight(this);
+        // 通过设置光源大小为0，来移除光源
+        size = 0;
+        MarkDirty();
+        LightingManager.UpdateDirtyLights();
+        //从activeLights中移除
+        LightingManager.UnregisterLight(this);
     }
 
     public AreaMapData GetAreaMapData()

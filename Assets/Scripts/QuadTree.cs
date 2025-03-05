@@ -159,12 +159,12 @@ public class QuadTree
     // 修改后的插入方法
     public bool Insert(GameObject obj, bool adjustPosition = true, int currentDepth = 0)
     {
-        if(adjustPosition)
-        {
-            Vector2 targetCenter = CalculateFinalNodeCenter(obj.transform.position);
-            Vector3 newPos = new Vector3(targetCenter.x, obj.transform.position.y, targetCenter.y);
-            obj.transform.position = newPos;
-        }
+        // if(adjustPosition)
+        // {
+        //     Vector2 targetCenter = CalculateFinalNodeCenter(obj.transform.position);
+        //     Vector3 newPos = new Vector3(targetCenter.x, obj.transform.position.y, targetCenter.y);
+        //     obj.transform.position = newPos;
+        // }
 
         neighborCache.Clear();
         return InsertRecursive(root, new Vector2(obj.transform.position.x, obj.transform.position.z), obj, currentDepth);
