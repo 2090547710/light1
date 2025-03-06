@@ -1,6 +1,7 @@
 using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
+using System.IO;
 
 public enum StageType
 {        
@@ -22,7 +23,7 @@ public class Plant : MonoBehaviour
     public List<PlantStage> growthStages = new List<PlantStage>();
 
     [Header("开花设置")]
-    public float bloomThreshold = 0.5f; // 开花阈值
+    public float bloomThreshold = 0.8f; // 开花阈值
     public float bloomSteepness = 10f; // Sigmoid激活函数的陡峭度
     [SerializeField] private float bloomProbability; // 开花概率
     [SerializeField] private float brightnessRatio; // 添加亮度比例字段
@@ -44,8 +45,13 @@ public class Plant : MonoBehaviour
     public float BrightnessRatio => brightnessRatio; // 新增亮度比例属性
     public bool IsDirty => isDirty;
 
+    [Header("植物信息")]
+    public int plantID; // 植物ID
+    public string plantName; // 植物名称
+
     void Start()
     {
+        LoadGrowthStagesFromResources("PlantData/test");
         currentStage=0;
         lightSources.Clear();
         if (growthStages.Count > 0 && currentStage <= growthStages.Count)
@@ -73,6 +79,13 @@ public class Plant : MonoBehaviour
         lightSources.Clear();
         
         ApplyStageConfig(currentStage);
+        
+        // 从当前阶段获取植物信息
+        if (currentStage < growthStages.Count) {
+            plantID = growthStages[currentStage].plantID;
+            plantName = growthStages[currentStage].plantName;
+        }
+        
         currentStage++;
     }
 
@@ -132,6 +145,26 @@ public class Plant : MonoBehaviour
         }
     }
 
+      public void TryFruit()
+    {
+        // 只在花阶段尝试结果
+        if (currentStage != 2 || isWithered) return;
+        
+        // 计算区域内亮度情况及结果概率
+        float brightnessRatio = CalculateBrightnessRatio();
+
+        // 根据概率决定是否结果
+        if (Random.value < bloomProbability)
+        {
+            Debug.Log($"花朵成功结果！亮度比例: {brightnessRatio:F2}, 结果概率: {bloomProbability:F2}");
+            Grow();
+        }
+        else
+        {
+            Debug.Log($"花朵尝试结果失败。亮度比例: {brightnessRatio:F2}, 结果概率: {bloomProbability:F2}");
+        }
+    }
+
     public float CalculateBrightnessRatio()
     {
         if (LightingManager.tree == null)
@@ -142,22 +175,24 @@ public class Plant : MonoBehaviour
             return 0;
         }
         
-        // 查找种子光源
-        Lighting seedLight = lightSources.FirstOrDefault(l => l.isSeed);
-        if (seedLight == null)
+        // 使用所有光源中最大的size作为检测区域大小
+        float maxLightSize = 0f;
+        if (lightSources.Count > 0)
         {
-            Debug.LogWarning("找不到种子光源，无法计算开花概率");
+            maxLightSize = lightSources.Max(l => l.size);
+        }
+        else
+        {
+            Debug.LogWarning("没有光源，无法计算开花概率");
             bloomProbability = 0;
-            brightnessRatio = 0; // 更新亮度比例字段
+            brightnessRatio = 0;
             return 0;
         }
         
-        // 使用种子光源的size作为检测区域大小
-        float seedSize = seedLight.size;
         Vector3 position = transform.position;
         
         // 创建检测区域的边界框
-        Bounds bloomArea = new Bounds(position, new Vector3(seedSize , 0, seedSize));
+        Bounds bloomArea = new Bounds(position, new Vector3(maxLightSize, 0, maxLightSize));
         
         // 使用边界框方法获取区域内的所有叶子节点
         List<QuadTree.QuadTreeNode> leafNodes = LightingManager.tree.GetNeighborLeafNodes(bloomArea);
@@ -229,10 +264,68 @@ public class Plant : MonoBehaviour
     }
     #endif
 
+    public void LoadGrowthStagesFromCSV(string filePath)
+    {
+        List<PlantStage> loadedStages = CSVParser.LoadPlantStagesFromCSV(filePath);
+        
+        if (loadedStages != null && loadedStages.Count > 0)
+        {
+            growthStages = loadedStages;
+            maxStages = growthStages.Count;
+            Debug.Log($"成功从CSV加载了{growthStages.Count}个生长阶段");
+        }
+        else
+        {
+            Debug.LogWarning("从CSV加载生长阶段失败或没有数据");
+        }
+    }
+
+    // 添加一个方便的方法，从Resources文件夹加载CSV
+    public void LoadGrowthStagesFromResources(string resourcePath)
+    {
+        // 如果传入的路径包含扩展名，则移除
+        resourcePath = Path.GetFileNameWithoutExtension(resourcePath);
+        
+        // 如果传入的是完整路径（包含PlantData/），则使用原样
+        // 否则，假设文件在PlantData文件夹中
+        if (!resourcePath.Contains("/"))
+        {
+            resourcePath = $"PlantData/{resourcePath}";
+        }
+        
+        TextAsset csvFile = Resources.Load<TextAsset>(resourcePath);
+        if (csvFile != null)
+        {
+            // 创建临时文件，确保使用UTF-8编码
+            string tempPath = Path.Combine(Application.temporaryCachePath, "temp_plant_stages.csv");
+            File.WriteAllText(tempPath, csvFile.text, System.Text.Encoding.UTF8);
+            
+            // 加载数据
+            LoadGrowthStagesFromCSV(tempPath);
+            
+            // 清理临时文件
+            try { File.Delete(tempPath); } catch { }
+            
+            Debug.Log($"成功从{resourcePath}.csv加载植物数据");
+        }
+        else
+        {
+            Debug.LogError($"无法从Resources加载CSV文件: {resourcePath}");
+        }
+    }
+
+    // 添加保存到CSV的方法
+    public void SaveGrowthStagesToCSV(string filePath)
+    {
+        CSVParser.SavePlantStagesToCSV(growthStages, filePath);
+    }
+
     [System.Serializable]
     public class PlantStage
     {
-        public StageType stageType;
+        public StageType stageType;//阶段类型
         public List<LightingData> associatedLights; // 改为存储光照数据
+        public int plantID; // 植物ID
+        public string plantName; // 植物名称
     }
 } 

@@ -164,7 +164,14 @@ MonoBehaviour:
       heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
-  bloomThreshold: 0.5
+  bloomThreshold: 0.8
   bloomSteepness: 10
   bloomProbability: 0
   brightnessRatio: 0
+  growthRate: 1
+  growthRateInfluence: 0.3
+  cachedBloomThreshold: 0.8
+  cachedBloomSteepness: 10
+  cachedGrowthRate: 1
+  cachedGrowthRateInfluence: 0.3
+  isDirty: 1

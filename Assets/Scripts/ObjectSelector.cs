@@ -5,7 +5,7 @@ using UnityEditor;
 public class ObjectSelector : MonoBehaviour
 {
     public LayerMask selectableLayer;
-    public float selectionRadius = 0.5f;
+    public float selectionRadius = 2f;
     public Material highlightMaterial;
     
     private GameObject selectedObject;
@@ -230,88 +230,6 @@ public class ObjectSelector : MonoBehaviour
             
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
             
-            // 处理光照组件
-            if (selectedObject.TryGetComponent<Lighting>(out var lighting))
-            {
-                EditorGUILayout.LabelField("光照属性编辑", EditorStyles.boldLabel);
-                EditorGUILayout.Space(5);
-                
-                // 创建可撤销的修改记录
-                Undo.RecordObject(lighting, "Modify Lighting Properties");
-                
-                // 尺寸大小
-                float newSize = EditorGUILayout.FloatField("大小:", lighting.size);
-                if (newSize != lighting.size)
-                {
-                    lighting.size = Mathf.Max(0.01f, newSize);
-                }
-                
-                // 是否为种子
-                bool newIsSeed = EditorGUILayout.Toggle("是种子:", lighting.isSeed);
-                if (newIsSeed != lighting.isSeed)
-                {
-                    lighting.isSeed = newIsSeed;
-                    if (newIsSeed && lighting.isObstacle)
-                    {
-                        lighting.isObstacle = false;
-                        EditorGUILayout.HelpBox("种子不能同时是障碍物", MessageType.Warning);
-                    }
-                }
-                
-                // 是否为障碍物
-                bool newIsObstacle = EditorGUILayout.Toggle("是障碍物:", lighting.isObstacle);
-                if (newIsObstacle != lighting.isObstacle)
-                {
-                    lighting.isObstacle = newIsObstacle;
-                    if (newIsObstacle && lighting.isSeed)
-                    {
-                        lighting.isSeed = false;
-                        EditorGUILayout.HelpBox("障碍物不能同时是种子", MessageType.Warning);
-                    }
-                }
-                
-                // 光照高度
-                float newLightHeight = EditorGUILayout.Slider("光照高度:", lighting.lightHeight, 0, 1);
-                if (newLightHeight != lighting.lightHeight)
-                {
-                    lighting.lightHeight = newLightHeight;
-                }
-                
-                // 高度图
-                Texture2D newHeightMap = (Texture2D)EditorGUILayout.ObjectField("高度图:", lighting.heightMap, typeof(Texture2D), false);
-                if (newHeightMap != lighting.heightMap)
-                {
-                    lighting.heightMap = newHeightMap;
-                }
-                
-                // 平铺
-                Vector2 newTiling = EditorGUILayout.Vector2Field("平铺:", lighting.tiling);
-                if (newTiling != lighting.tiling)
-                {
-                    lighting.tiling = newTiling;
-                }
-                
-                // 偏移
-                Vector2 newOffset = EditorGUILayout.Vector2Field("偏移:", lighting.offset);
-                if (newOffset != lighting.offset)
-                {
-                    lighting.offset = newOffset;
-                }
-                
-                // 亮度影响显示
-                EditorGUILayout.Space(5);
-                EditorGUILayout.LabelField($"亮度影响值: {lighting.TotalBrightnessImpact:F2}", 
-                    new GUIStyle(EditorStyles.label) { fontSize = 12, fontStyle = FontStyle.Bold });
-                
-                // 立即应用修改
-                if (GUI.changed)
-                {
-                    EditorUtility.SetDirty(lighting);
-                    lighting.OnValidate(); // 触发验证和更新
-                }
-                
-                EditorGUILayout.Space(10);
-            }
             
             // 处理植物组件
             if (selectedObject.TryGetComponent<Plant>(out var plant))
@@ -321,6 +239,10 @@ public class ObjectSelector : MonoBehaviour
                 
                 // 创建可撤销的修改记录
                 Undo.RecordObject(plant, "修改植物属性");
+                
+                // 显示植物ID和名称
+                EditorGUILayout.LabelField($"植物ID: {plant.plantID}");
+                EditorGUILayout.LabelField($"植物名称: {plant.plantName}");
                 
                 // 显示当前生长阶段
                 EditorGUILayout.LabelField($"当前阶段: {plant.currentStage}/{plant.maxStages}");
@@ -430,6 +352,16 @@ public class ObjectSelector : MonoBehaviour
                     plant.TryBloom();
                 }
                 
+                // 结果按钮
+                if (GUILayout.Button("结果", GUILayout.Height(30)))
+                {
+                    plant.TryFruit();
+                }
+                
+                EditorGUILayout.EndHorizontal();
+                
+                EditorGUILayout.BeginHorizontal();
+                
                 // 添加计算概率按钮
                 if (GUILayout.Button("计算概率", GUILayout.Height(30)))
                 {
@@ -454,6 +386,62 @@ public class ObjectSelector : MonoBehaviour
                 }
                 
                 EditorGUILayout.Space(10);
+            }
+            
+            // 新增：光照组件列表编辑
+            if (selectedObject.TryGetComponent<Plant>(out var plantComponent) && plantComponent.lightSources != null && plantComponent.lightSources.Count > 0) {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("光照组件列表编辑", EditorStyles.boldLabel);
+                for (int i = 0; i < plantComponent.lightSources.Count; i++) {
+                    var lightElement = plantComponent.lightSources[i];
+                    EditorGUILayout.LabelField($"光照组件 {i}", EditorStyles.boldLabel);
+                    Undo.RecordObject(lightElement, "Modify Lighting Properties");
+
+                    float newSize = EditorGUILayout.FloatField("大小:", lightElement.size);
+                    if (newSize != lightElement.size) {
+                        lightElement.size = Mathf.Max(0.01f, newSize);
+                    }
+
+                    bool newIsSeed = EditorGUILayout.Toggle("是否为种子:", lightElement.isSeed);
+                    if (newIsSeed != lightElement.isSeed) {
+                        lightElement.isSeed = newIsSeed;
+                        if (newIsSeed && lightElement.isObstacle) {
+                            lightElement.isObstacle = false;
+                            EditorGUILayout.HelpBox("种子不能同时为障碍物", MessageType.Warning);
+                        }
+                    }
+
+                    bool newIsObstacle = EditorGUILayout.Toggle("是否为障碍物:", lightElement.isObstacle);
+                    if (newIsObstacle != lightElement.isObstacle) {
+                        lightElement.isObstacle = newIsObstacle;
+                        if (newIsObstacle && lightElement.isSeed) {
+                            lightElement.isSeed = false;
+                            EditorGUILayout.HelpBox("障碍物不能同时为种子", MessageType.Warning);
+                        }
+                    }
+
+                    float newLightHeight = EditorGUILayout.Slider("光照高度:", lightElement.lightHeight, 0, 1);
+                    if (newLightHeight != lightElement.lightHeight) {
+                        lightElement.lightHeight = newLightHeight;
+                    }
+
+                    Texture2D newHeightMap = (Texture2D)EditorGUILayout.ObjectField("高度图:", lightElement.heightMap, typeof(Texture2D), false);
+                    if (newHeightMap != lightElement.heightMap) {
+                        lightElement.heightMap = newHeightMap;
+                    }
+
+                    Vector2 newTiling = EditorGUILayout.Vector2Field("平铺:", lightElement.tiling);
+                    if (newTiling != lightElement.tiling) {
+                        lightElement.tiling = newTiling;
+                    }
+
+                    Vector2 newOffset = EditorGUILayout.Vector2Field("偏移:", lightElement.offset);
+                    if (newOffset != lightElement.offset) {
+                        lightElement.offset = newOffset;
+                    }
+
+                    EditorGUILayout.Space();
+                }
             }
             
             EditorGUILayout.EndScrollView();

@@ -1,0 +1,4 @@
+StageType,PlantID,PlantName,Size,IsObstacle,IsSeed,LightHeight,HeightMapPath,Tiling,Offset
+Seed,1,你,10,FALSE,TRUE,0.5,HeightMaps/seed,1|1,0|0
+Flower,1,aa,20,FALSE,FALSE,0.7,HeightMaps/test3,1|1,0|0
+Fruit,1,bb,30,FALSE,FALSE,0.9,HeightMaps/test3,1|1,0|0
