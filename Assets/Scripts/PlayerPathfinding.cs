@@ -4,7 +4,7 @@ using System.Linq; // 添加LINQ命名空间
 
 public class PlayerPathfinding : MonoBehaviour
 {
-    public static QuadTree quadTree; // 在Inspector中分配
+    public static QuadTree quadTree; 
     public float moveSpeed = 5f;
     public float stoppingDistance = 0.2f;
     
@@ -25,6 +25,7 @@ public class PlayerPathfinding : MonoBehaviour
     {
         playerObject = this.gameObject;
         InsertToQuadTree(); // 初始插入
+        stoppingDistance=quadTree.MinNodeSize.x/2-0.05f;
     }
 
     void Update()
@@ -73,32 +74,30 @@ public class PlayerPathfinding : MonoBehaviour
 
     IEnumerator FollowPath()
     {
-        
         while (currentPathIndex < currentPath.Length)
         {
             Vector3 targetPos = currentPath[currentPathIndex];
             // 添加中断检查点
-            while (Vector3.Distance(transform.position, targetPos) > stoppingDistance)
-            {
-                // 使用更精确的移动方式
-                float step = moveSpeed * Time.deltaTime;
-                transform.position = Vector3.MoveTowards(
-                    transform.position, 
-                    targetPos, 
-                    step);
-                
-                if (Time.frameCount % 5 == 0)
-                {
-                    quadTree.Remove(playerObject);
-                    InsertToQuadTree();
-                }
-                
-                yield return null;
-            }
+            
+            // 移除了距离检查循环，改为每帧移动一次
+            float step = moveSpeed * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(
+                transform.position, 
+                targetPos, 
+                step);
+            
 
-            currentPathIndex++;
             quadTree.Remove(playerObject);
             InsertToQuadTree();
+
+            
+            // 检查是否已足够接近目标点
+            if (Vector3.Distance(transform.position, targetPos) <= stoppingDistance)
+            {
+                currentPathIndex++;
+            }
+            
+            yield return null;
         }
     }
 

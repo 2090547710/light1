@@ -130,6 +130,13 @@ public class ObjectSelector : MonoBehaviour
                 
                 // 同步编辑属性到实际组件
                 selector.editingProperties.size = EditorGUILayout.FloatField("Size", selector.editingProperties.size);
+                // 确保size大于0
+                if (selector.editingProperties.size <= 0)
+                {
+                    selector.editingProperties.size = 0.01f;
+                    EditorGUILayout.HelpBox("Size必须大于0", MessageType.Warning);
+                }
+                
                 selector.editingProperties.isObstacle = EditorGUILayout.Toggle("Is Obstacle", selector.editingProperties.isObstacle);
                 selector.editingProperties.heightMap = (Texture2D)EditorGUILayout.ObjectField("Height Map", selector.editingProperties.heightMap, typeof(Texture2D), false);
                 selector.editingProperties.tiling = EditorGUILayout.Vector2Field("Tiling", selector.editingProperties.tiling);
@@ -137,7 +144,7 @@ public class ObjectSelector : MonoBehaviour
                 selector.editingProperties.lightHeight = EditorGUILayout.Slider("Light Height", selector.editingProperties.lightHeight, 0, 1);
 
                 // 应用修改到实际组件
-                lighting.size = selector.editingProperties.size;
+                lighting.size = Mathf.Max(0.01f, selector.editingProperties.size); // 确保size至少为0.01
                 lighting.isObstacle = selector.editingProperties.isObstacle;
                 lighting.heightMap = selector.editingProperties.heightMap;
                 lighting.tiling = selector.editingProperties.tiling;

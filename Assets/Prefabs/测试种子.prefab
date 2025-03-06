@@ -9,10 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1311347517692698864}
-  - component: {fileID: -4297824294045107601}
   - component: {fileID: -6707501822687446620}
   - component: {fileID: 1616921767199694163}
   - component: {fileID: -6464795277884603783}
+  - component: {fileID: 7033655984732425316}
   m_Layer: 7
   m_Name: "\u6D4B\u8BD5\u79CD\u5B50"
   m_TagString: Untagged
@@ -35,31 +35,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-4297824294045107601
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5540192311497395315}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 801302af557be1048a2eb17174804a56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  size: 10
-  isObstacle: 0
-  heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
-  tiling: {x: 1, y: 1}
-  offset: {x: 0, y: 0}
-  lightHeight: 0.205
-  TotalBrightnessImpact: 0
-  cachedSize: 10
-  cachedIsObstacle: 0
-  cachedHeightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
-  cachedTiling: {x: 1, y: 1}
-  cachedOffset: {x: 0, y: 0}
-  cachedLightHeight: 0.205
 --- !u!33 &-6707501822687446620
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -131,3 +106,56 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7033655984732425316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5540192311497395315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de5b6a563c58f6e4da4f1f9481160b8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightSources: []
+  currentStage: 0
+  maxStages: 3
+  isWithered: 0
+  growthStages:
+  - stageType: 0
+    associatedLights:
+    - size: 8
+      isObstacle: 1
+      lightHeight: 0
+      heightMap: {fileID: 2800000, guid: 8862a6735c7eb764eb0b3a7548bba5c6, type: 3}
+      tiling: {x: 0, y: 0}
+      offset: {x: 0, y: 0}
+  - stageType: 1
+    associatedLights:
+    - size: 3
+      isObstacle: 1
+      lightHeight: 0
+      heightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
+      tiling: {x: 0, y: 0}
+      offset: {x: 0, y: 0}
+    - size: 15
+      isObstacle: 0
+      lightHeight: 0.1
+      heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
+      tiling: {x: 0, y: 0}
+      offset: {x: 0, y: 0}
+  - stageType: 2
+    associatedLights:
+    - size: 12
+      isObstacle: 1
+      lightHeight: 0
+      heightMap: {fileID: 2800000, guid: 8862a6735c7eb764eb0b3a7548bba5c6, type: 3}
+      tiling: {x: 0, y: 0}
+      offset: {x: 0, y: 0}
+    - size: 35
+      isObstacle: 0
+      lightHeight: 0.08
+      heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
+      tiling: {x: 0, y: 0}
+      offset: {x: 0, y: 0}

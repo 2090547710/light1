@@ -23,37 +23,41 @@ public class Plant : MonoBehaviour
 
     void Start()
     {
-        InitializeLightSources();
-    }
-
-    void InitializeLightSources()
-    {
         currentStage=0;
         lightSources.Clear();
         if (growthStages.Count > 0 && currentStage <= growthStages.Count)
         {
-            ApplyStageConfig(currentStage);
+            Grow();
         }
     }
-
+   
+    void OnGUI()
+    {
+        if (GUILayout.Button("Grow", GUILayout.Width(100), GUILayout.Height(50)))
+        {
+            Grow();
+        }
+    }
+    
     public void Grow()
     {
         if (isWithered || currentStage >= maxStages) return;
 
         // 禁用并移除所有现有光源组件
         lightSources.ForEach(l => {
-            l.enabled = false;
+            l.RemoveLighting();
+            LightingManager.tree.Remove(l.gameObject);
             Destroy(l);
         });
         lightSources.Clear();
-
-        currentStage++;
+        
         ApplyStageConfig(currentStage);
+        currentStage++;
     }
 
     void ApplyStageConfig(int stageIndex)
     {
-        if (stageIndex < 0 || stageIndex >= growthStages.Count)
+        if (stageIndex < 0 || stageIndex >= maxStages)
         {
             Debug.LogWarning($"无效的生长阶段索引: {stageIndex}");
             return;
@@ -61,11 +65,11 @@ public class Plant : MonoBehaviour
 
         var stage = growthStages[stageIndex];
         // 根据数据创建并初始化光源组件
-        // stage.associatedLights.ForEach(data => {
-        //     var newLight = gameObject.AddComponent<Lighting>();
-        //     newLight.InitializeFromData(data);
-        //     lightSources.Add(newLight); // 添加到光源列表
-        // });
+        stage.associatedLights.ForEach(data => {
+            var newLight = gameObject.AddComponent<Lighting>();
+            newLight.InitializeFromData(data);
+            lightSources.Add(newLight); // 添加到光源列表
+        });
     }
 
     public void Wither()
@@ -83,6 +87,6 @@ public class Plant : MonoBehaviour
     public class PlantStage
     {
         public StageType stageType;
-        // public List<LightingData> associatedLights; // 改为存储光照数据
+        public List<LightingData> associatedLights; // 改为存储光照数据
     }
 } 

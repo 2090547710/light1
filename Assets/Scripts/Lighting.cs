@@ -20,6 +20,28 @@ public struct AreaMapData
     }
 }
 
+[System.Serializable]
+public struct LightingData
+{
+    [Range(0, 100)] public float size;
+    public bool isObstacle;
+    [Range(0, 1)] public float lightHeight;
+    public Texture2D heightMap;
+    public Vector2 tiling;
+    public Vector2 offset;
+
+    public LightingData(float size = 0, bool isObstacle = false, float lightHeight = 0.5f, 
+                       Texture2D heightMap = null, Vector2 tiling = default, Vector2 offset = default)
+    {
+        this.size = Mathf.Clamp(size, 0, 100);
+        this.isObstacle = isObstacle;
+        this.lightHeight = Mathf.Clamp01(lightHeight);
+        this.heightMap = heightMap;
+        this.tiling = tiling == default ? Vector2.one : tiling;
+        this.offset = offset;
+    }
+}
+
 public class Lighting : MonoBehaviour
 {
     [Header("区域设置")]
@@ -68,7 +90,7 @@ public class Lighting : MonoBehaviour
     public void UpdateOverlappingLights(bool useCachedData = false)
     {
         // 先清除现有关系
-        overlappingLights.Clear();
+        ClearOverlappingRelationships();
         
         // 获取当前光源的影响范围（根据是否使用缓存数据）
         Bounds myBounds = useCachedData ? GetCachedWorldBounds() : GetWorldBounds();
@@ -97,7 +119,7 @@ public class Lighting : MonoBehaviour
             }
         }
     }
-    
+
     // 清除与其他光源的重叠关系
     private void ClearOverlappingRelationships()
     {
@@ -179,7 +201,6 @@ public class Lighting : MonoBehaviour
 
     public void OnValidate()
     {
-        bool needsUpdate = false;
         
         // 检查每个参数是否发生变化
         if (cachedSize != size || 
@@ -189,14 +210,16 @@ public class Lighting : MonoBehaviour
             cachedOffset != offset ||
             cachedLightHeight != lightHeight)
         {
-            needsUpdate = true;
-            isDirty = true; // 设置为脏
+           MarkDirty(); // 设置为脏
         }
 
-        ValidateHeightmap();
+        if(TotalBrightnessImpact > 0.01f)
+        {
+            ValidateHeightmap();
+        }
 
         // 如果有参数变化且应用在编辑器运行时
-        if (needsUpdate && Application.isPlaying)
+        if (isDirty && Application.isPlaying)
         {
             LightingManager.UpdateDirtyLights(); // 使用新方法更新脏光源
         }
@@ -220,28 +243,6 @@ public class Lighting : MonoBehaviour
         }
 
         bool isValid = true;
-        
-        // 验证格式
-        bool formatValid = false;
-#if UNITY_EDITOR
-        // 编辑器模式下检查原始格式
-        var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(heightMap)) as TextureImporter;
-        if (importer != null)
-        {
-            var platformSettings = importer.GetDefaultPlatformTextureSettings();
-            formatValid = platformSettings.format == TextureImporterFormat.R8;
-        }
-#else
-        // 运行时检查实际格式
-        formatValid = heightMap.format == TextureFormat.R8;
-#endif
-
-        if (!formatValid)
-        {
-            Debug.LogError($"高度图格式必须为R8，当前格式：{heightMap.format} ({name})", this);
-            isValid = false;
-        }
-
         return isValid;
     }
 
@@ -301,6 +302,31 @@ public class Lighting : MonoBehaviour
         bool overlapZ = Mathf.Abs(a.center.z - b.center.z) <= (a.size.z + b.size.z) * 0.5f;
         
         return overlapX && overlapZ;
+    }
+
+ 
+    //通过LightingData初始化光照组件
+    public void InitializeFromData(LightingData data)
+    {
+        // 设置主要字段
+        size = data.size;
+        isObstacle = data.isObstacle;
+        lightHeight = data.lightHeight;
+        heightMap = data.heightMap;
+        tiling = data.tiling;
+        offset = data.offset;
+        
+        // 同时初始化缓存字段
+        cachedSize = data.size;
+        cachedIsObstacle = data.isObstacle;
+        cachedLightHeight = data.lightHeight;
+        cachedHeightMap = data.heightMap;
+        cachedTiling = data.tiling;
+        cachedOffset = data.offset;
+        
+        // 标记为脏，确保应用更改
+        MarkDirty();
+        LightingManager.UpdateDirtyLights();
     }
 }
 
