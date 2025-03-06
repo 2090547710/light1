@@ -305,16 +305,18 @@ static void SaveCompositeMenuItem()
             if (light.TotalBrightnessImpact >= 0.01f)
             {
                 bool useCache = dirtyNormalLights.Contains(light); // 脏光源使用缓存数据，受影响光源使用当前数据
+                // 获取是否为种子光源的状态
+                bool isSeed = useCache ? light.GetCachedIsSeed() : light.isSeed;
                 
-                // 移除光照
-                light.ApplyLighting(false, useCache);
-                // 同时更新合成高度图
+                // 移除光照 - 种子光源移除时使用加法操作
+                light.ApplyLighting(isSeed, useCache);
+                // 同时更新合成高度图 - 种子光源移除时使用加法
                 ProcessLightingGPU(
                     light, 
                     useCache ? light.GetCachedWorldBounds() : light.GetWorldBounds(), 
                     useCache ? light.GetCachedHeightMap() : light.heightMap, 
                     useCache ? light.GetCachedLightHeight() : light.lightHeight,
-                    false // isAdditive = false，执行减法操作
+                    isSeed // isAdditive = isSeed，种子光源移除时执行加法操作
                 );
             }
         }
@@ -355,15 +357,18 @@ static void SaveCompositeMenuItem()
         // ===== 第四步：普通脏光源和受影响重叠光源更新光照并更新重叠关系 =====
         foreach (var light in dirtyNormalLights.Concat(affectedLights))
         {
-            // 4.1 更新光照
-            light.ApplyLighting(true, false);
-            // 同时更新合成高度图
+            // 获取是否为种子光源状态
+            bool isSeed = light.isSeed;
+            
+            // 4.1 更新光照 - 种子光源更新时使用减法操作
+            light.ApplyLighting(!isSeed, false);
+            // 同时更新合成高度图 - 种子光源更新时使用减法
             ProcessLightingGPU(
                 light, 
                 light.GetWorldBounds(), 
                 light.heightMap, 
                 light.lightHeight,
-                true // isAdditive = true，执行加法操作
+                !isSeed // isAdditive = !isSeed，种子光源更新时执行减法操作
             );
             
             // 4.2 更新重叠关系

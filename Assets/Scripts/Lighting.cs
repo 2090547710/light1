@@ -25,16 +25,18 @@ public struct LightingData
 {
     [Range(0, 100)] public float size;
     public bool isObstacle;
+    public bool isSeed;
     [Range(0, 1)] public float lightHeight;
     public Texture2D heightMap;
     public Vector2 tiling;
     public Vector2 offset;
 
-    public LightingData(float size = 0, bool isObstacle = false, float lightHeight = 0.5f, 
+    public LightingData(float size = 0, bool isObstacle = false, bool isSeed = false, float lightHeight = 0.5f, 
                        Texture2D heightMap = null, Vector2 tiling = default, Vector2 offset = default)
     {
         this.size = Mathf.Clamp(size, 0, 100);
         this.isObstacle = isObstacle;
+        this.isSeed = isSeed;
         this.lightHeight = Mathf.Clamp01(lightHeight);
         this.heightMap = heightMap;
         this.tiling = tiling == default ? Vector2.one : tiling;
@@ -47,6 +49,7 @@ public class Lighting : MonoBehaviour
     [Header("区域设置")]
     [Range(0,100)]public float size;
     public bool isObstacle;
+    public bool isSeed;
     public Texture2D heightMap;
     public Vector2 tiling;
     public Vector2 offset;
@@ -59,6 +62,7 @@ public class Lighting : MonoBehaviour
     [Header("调试信息")]
     [SerializeField] private float cachedSize;
     [SerializeField] private bool cachedIsObstacle;
+    [SerializeField] private bool cachedIsSeed;
     [SerializeField] private Texture2D cachedHeightMap;
     [SerializeField] private Vector2 cachedTiling;
     [SerializeField] private Vector2 cachedOffset;
@@ -201,10 +205,16 @@ public class Lighting : MonoBehaviour
 
     public void OnValidate()
     {
+        // 确保isSeed和isObstacle不能同时为true
+        if(isSeed && isObstacle)
+        {
+            isObstacle = false;
+        }
         
         // 检查每个参数是否发生变化
         if (cachedSize != size || 
             cachedIsObstacle != isObstacle ||
+            cachedIsSeed != isSeed ||
             cachedHeightMap != heightMap ||
             cachedTiling != tiling ||
             cachedOffset != offset ||
@@ -227,6 +237,7 @@ public class Lighting : MonoBehaviour
         // 更新缓存值
         cachedSize = size;
         cachedIsObstacle = isObstacle;
+        cachedIsSeed = isSeed;
         cachedHeightMap = heightMap;
         cachedTiling = tiling;
         cachedOffset = offset;
@@ -294,6 +305,12 @@ public class Lighting : MonoBehaviour
         return cachedLightHeight;
     }
 
+    // 新增获取缓存的isSeed方法
+    public bool GetCachedIsSeed()
+    {
+        return cachedIsSeed;
+    }
+
     // 添加新方法：检测两个边界在xz平面上是否重叠
     private bool IsOverlappingOnXZPlane(Bounds a, Bounds b)
     {
@@ -311,6 +328,7 @@ public class Lighting : MonoBehaviour
         // 设置主要字段
         size = data.size;
         isObstacle = data.isObstacle;
+        isSeed = data.isSeed;
         lightHeight = data.lightHeight;
         heightMap = data.heightMap;
         tiling = data.tiling;
@@ -319,6 +337,7 @@ public class Lighting : MonoBehaviour
         // 同时初始化缓存字段
         cachedSize = data.size;
         cachedIsObstacle = data.isObstacle;
+        cachedIsSeed = data.isSeed;
         cachedLightHeight = data.lightHeight;
         cachedHeightMap = data.heightMap;
         cachedTiling = data.tiling;

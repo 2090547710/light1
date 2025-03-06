@@ -60,8 +60,8 @@ void CSObstacleLight(uint3 id : SV_DispatchThreadID)
         // 加法操作
         compositeData.g = compositeData.g + objectHeight;
     } else {
-        // 减法操作 - 不低于0
-        compositeData.g = max(0.0, compositeData.g - objectHeight);
+        // 减法操作 - 允许低于0
+        compositeData.g = compositeData.g - objectHeight;
     }
     
     _CompositeMap[uint2(compCoord.x, compCoord.y)] = compositeData;
@@ -113,8 +113,8 @@ void CSNormalLight(uint3 id : SV_DispatchThreadID)
             // 加法操作
             compositeData.r = compositeData.r + objectHeight;
         } else {
-            // 减法操作 - 不低于0
-            compositeData.r = max(0.0, compositeData.r - objectHeight);
+            // 减法操作 - 允许低于0
+            compositeData.r = compositeData.r - objectHeight;
         }
         _CompositeMap[compCoordUInt] = compositeData;
     }

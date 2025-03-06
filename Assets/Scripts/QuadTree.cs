@@ -514,7 +514,6 @@ public class QuadTree
             }
             else
             {
-                bool illuminatedState = node.IsIlluminated;
                 float centerHeight = GetNodeHeightAtPosition(new Vector3(area.center.x, 0, area.center.z));             
                 // 第一层：高度条件判断 限制在0-1之间
                 if (Mathf.Clamp01(area.size.y+centerHeight)>= Mathf.Clamp01(node.Height))
@@ -526,8 +525,8 @@ public class QuadTree
                         node.Brightness += rawHeight;
                     } else {
                         // 减法操作，减少亮度但不低于0
-                        totalBrightness -= rawHeight;
-                        node.Brightness = Mathf.Max(0, node.Brightness - rawHeight);
+                        totalBrightness += rawHeight;
+                        node.Brightness -= rawHeight;
                     }
                     
                     // 使用亮度阈值判断光照状态
@@ -929,16 +928,51 @@ public class QuadTree
         return false;
     }
 
-    // 获取指定位置周围邻近的叶子节点
+    // 新增方法：获取指定区域内的叶子节点
+    public List<QuadTreeNode> GetNeighborLeafNodes(Bounds area)
+    {
+        Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
+        Vector2 rectSize = new Vector2(area.size.x, area.size.z);
+        List<QuadTreeNode> result = new List<QuadTreeNode>();
+        FindNeighborLeafNodes(root, rectCenter, rectSize, result);
+        return result;
+    }
+
+    private void FindNeighborLeafNodes(QuadTreeNode node, Vector2 rectCenter, Vector2 rectSize, List<QuadTreeNode> result)
+    {
+        if (node == null) return;
+
+        Rect nodeRect = new Rect(
+            node.Center.x - node.Size.x/2,
+            node.Center.y - node.Size.y/2,
+            node.Size.x,
+            node.Size.y);
+
+        if (!RectangleRectOverlap(rectCenter, rectSize, nodeRect)) return;
+
+        if (node.Children == null)
+        {
+            result.Add(node);
+        }
+        else
+        {
+            foreach (var child in node.Children)
+            {
+                FindNeighborLeafNodes(child, rectCenter, rectSize, result);
+            }
+        }
+    }
+
+    // 保留原有方法作为重载，以兼容现有代码
     public List<QuadTreeNode> GetNeighborLeafNodes(Vector3 position, float radius)
     {
         Vector2 pos = new Vector2(position.x, position.z);
         List<QuadTreeNode> result = new List<QuadTreeNode>();
-        FindNeighborLeafNodes(root, pos, radius, result);
+        FindNeighborLeafNodesCircle(root, pos, radius, result);
         return result;
     }
 
-    private void FindNeighborLeafNodes(QuadTreeNode node, Vector2 position, float radius, List<QuadTreeNode> result)
+    private void FindNeighborLeafNodesCircle(QuadTreeNode node, Vector2 position, float radius, List<QuadTreeNode> result)
     {
         if (node == null) return;
 
@@ -958,7 +992,7 @@ public class QuadTree
         {
             foreach (var child in node.Children)
             {
-                FindNeighborLeafNodes(child, position, radius, result);
+                FindNeighborLeafNodesCircle(child, position, radius, result);
             }
         }
     }

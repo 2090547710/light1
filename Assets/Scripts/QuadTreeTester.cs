@@ -31,13 +31,13 @@ public class QuadTreeTester : MonoBehaviour
         {
             if(objects.Count > 0){
                 int i = objects.Count - 1;
-                Lighting lighting = objects[i].GetComponent<Lighting>();
-                if(lighting != null){
-                    lighting.RemoveLighting();
-                    quadTree.Remove(objects[i]);
-                    Destroy(objects[i]);
-                    objects.RemoveAt(i);
+                // 先检查是否有 Plant 组件
+                Plant plant = objects[i].GetComponent<Plant>();
+                if(plant != null){
+                    plant.Wither(); // 调用 Wither 方法
                 }
+                Destroy(objects[i]);
+                objects.RemoveAt(i);
             }
         }
 
@@ -77,11 +77,11 @@ public class QuadTreeTester : MonoBehaviour
             {
                 for (int i = 0; i < objects.Count; i++)
                 {
-                    Lighting lighting = objects[i].GetComponent<Lighting>();
-                    if(lighting != null){
-                        lighting.RemoveLighting();
+                    // 先检查是否有 Plant 组件
+                    Plant plant = objects[i].GetComponent<Plant>();
+                    if(plant != null){
+                        plant.Wither(); // 调用 Wither 方法
                     }
-                    quadTree.Remove(objects[i]);
                     Destroy(objects[i]);
                 }
                 objects.Clear();

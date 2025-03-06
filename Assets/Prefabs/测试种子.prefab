@@ -126,21 +126,24 @@ MonoBehaviour:
   - stageType: 0
     associatedLights:
     - size: 8
-      isObstacle: 1
+      isObstacle: 0
+      isSeed: 1
       lightHeight: 0
-      heightMap: {fileID: 2800000, guid: 8862a6735c7eb764eb0b3a7548bba5c6, type: 3}
+      heightMap: {fileID: 2800000, guid: ba44778c93d8d8b4abbcce8b2c95ba64, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
   - stageType: 1
     associatedLights:
     - size: 3
       isObstacle: 1
+      isSeed: 0
       lightHeight: 0
-      heightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
+      heightMap: {fileID: 2800000, guid: 8862a6735c7eb764eb0b3a7548bba5c6, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
     - size: 15
       isObstacle: 0
+      isSeed: 0
       lightHeight: 0.1
       heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
       tiling: {x: 0, y: 0}
@@ -149,13 +152,19 @@ MonoBehaviour:
     associatedLights:
     - size: 12
       isObstacle: 1
+      isSeed: 0
       lightHeight: 0
       heightMap: {fileID: 2800000, guid: 8862a6735c7eb764eb0b3a7548bba5c6, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
     - size: 35
       isObstacle: 0
+      isSeed: 0
       lightHeight: 0.08
       heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
+  bloomThreshold: 0.5
+  bloomSteepness: 10
+  bloomProbability: 0
+  brightnessRatio: 0

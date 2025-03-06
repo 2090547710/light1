@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1941934630235606073}
   - component: {fileID: 3700434311854040377}
-  - component: {fileID: 2964514041171739292}
   - component: {fileID: -6355687641031468626}
   - component: {fileID: 8593654199120966784}
+  - component: {fileID: 9208226250262049673}
   m_Layer: 7
   m_Name: "\u969C\u788D\u7269"
   m_TagString: Untagged
@@ -43,32 +43,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3803225260541865786}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &2964514041171739292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3803225260541865786}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 801302af557be1048a2eb17174804a56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  size: 5
-  isObstacle: 1
-  heightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
-  tiling: {x: 0, y: 0}
-  offset: {x: 0, y: 0}
-  lightHeight: 0
-  TotalBrightnessImpact: 0
-  cachedSize: 5
-  cachedIsObstacle: 1
-  cachedHeightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
-  cachedTiling: {x: 0, y: 0}
-  cachedOffset: {x: 0, y: 0}
-  cachedLightHeight: 0
-  isDirty: 1
 --- !u!65 &-6355687641031468626
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -132,3 +106,33 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &9208226250262049673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3803225260541865786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de5b6a563c58f6e4da4f1f9481160b8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightSources: []
+  currentStage: 0
+  maxStages: 1
+  isWithered: 0
+  growthStages:
+  - stageType: 1
+    associatedLights:
+    - size: 18
+      isObstacle: 0
+      isSeed: 0
+      lightHeight: 0
+      heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
+      tiling: {x: 0, y: 0}
+      offset: {x: 0, y: 0}
+  bloomThreshold: 0.373
+  bloomSteepness: 5
+  bloomProbability: 0
+  brightnessRatio: 0
