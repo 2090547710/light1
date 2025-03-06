@@ -27,9 +27,22 @@ public class Plant : MonoBehaviour
     [SerializeField] private float bloomProbability; // 开花概率
     [SerializeField] private float brightnessRatio; // 添加亮度比例字段
 
+    [Header("生长速度设置")]
+    public float growthRate = 1.0f; // 恒定生长速度值
+    public float growthRateInfluence = 0.3f; // 生长速度对开花概率的影响系数
+
+    // 添加缓存字段
+    [Header("缓存系统")]
+    [SerializeField] private float cachedBloomThreshold;
+    [SerializeField] private float cachedBloomSteepness;
+    [SerializeField] private float cachedGrowthRate;
+    [SerializeField] private float cachedGrowthRateInfluence;
+    [SerializeField] private bool isDirty = true; // 默认为脏，确保首次应用
+
     // 添加公共属性用于外部访问开花概率和亮度比例
     public float BloomProbability => bloomProbability;
     public float BrightnessRatio => brightnessRatio; // 新增亮度比例属性
+    public bool IsDirty => isDirty;
 
     void Start()
     {
@@ -39,6 +52,11 @@ public class Plant : MonoBehaviour
         {
             Grow();
         }
+        
+        // 初始化缓存值
+        UpdateCachedValues();
+        // 初始计算开花概率
+        if (isDirty) CalculateBrightnessRatio();
     }
    
     
@@ -161,10 +179,55 @@ public class Plant : MonoBehaviour
         brightnessRatio = totalBrightness / maxPossibleBrightness; // 更新亮度比例字段
         
         // 计算开花概率并存储为属性
-        bloomProbability = 1f / (1f + Mathf.Exp(-bloomSteepness * (brightnessRatio - bloomThreshold)));
+        // 将生长速度作为阈值的调整因子
+        float adjustedThreshold = bloomThreshold - (growthRate * growthRateInfluence);
+        bloomProbability = 1f / (1f + Mathf.Exp(-bloomSteepness * (brightnessRatio - adjustedThreshold)));
+        
+        // 重置脏标记
+        isDirty = false;
         
         return brightnessRatio;
     }
+
+    // 添加标记为脏的方法
+    public void MarkDirty()
+    {
+        isDirty = true;
+    }
+    
+    // 更新缓存值方法
+    private void UpdateCachedValues()
+    {
+        cachedBloomThreshold = bloomThreshold;
+        cachedBloomSteepness = bloomSteepness;
+        cachedGrowthRate = growthRate;
+        cachedGrowthRateInfluence = growthRateInfluence;
+    }
+    
+    // 添加OnValidate方法监测参数变化
+    #if UNITY_EDITOR
+    private void OnValidate()
+    {
+        // 检查参数是否发生变化
+        if (cachedBloomThreshold != bloomThreshold ||
+            cachedBloomSteepness != bloomSteepness ||
+            cachedGrowthRate != growthRate ||
+            cachedGrowthRateInfluence != growthRateInfluence)
+        {
+            // 标记为脏
+            isDirty = true;
+            
+            // 如果在游戏运行时参数发生变化，立即重新计算
+            if (Application.isPlaying)
+            {
+                CalculateBrightnessRatio();
+            }
+        }
+        
+        // 更新缓存值
+        UpdateCachedValues();
+    }
+    #endif
 
     [System.Serializable]
     public class PlantStage

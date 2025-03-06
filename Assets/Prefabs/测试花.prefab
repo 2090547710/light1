@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8593654199120966784}
   - component: {fileID: 9208226250262049673}
   m_Layer: 7
-  m_Name: "\u969C\u788D\u7269"
+  m_Name: "\u6D4B\u8BD5\u82B1"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -129,10 +129,17 @@ MonoBehaviour:
       isObstacle: 0
       isSeed: 0
       lightHeight: 0
-      heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
+      heightMap: {fileID: 2800000, guid: e3c2b3648260f47418f9c9c6e93b8985, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
   bloomThreshold: 0.373
   bloomSteepness: 5
   bloomProbability: 0
   brightnessRatio: 0
+  growthRate: 1
+  growthRateInfluence: 0.3
+  cachedBloomThreshold: 0.373
+  cachedBloomSteepness: 5
+  cachedGrowthRate: 1
+  cachedGrowthRateInfluence: 0.3
+  isDirty: 1

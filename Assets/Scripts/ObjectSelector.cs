@@ -320,7 +320,7 @@ public class ObjectSelector : MonoBehaviour
                 EditorGUILayout.Space(5);
                 
                 // 创建可撤销的修改记录
-                Undo.RecordObject(plant, "Modify Plant Properties");
+                Undo.RecordObject(plant, "修改植物属性");
                 
                 // 显示当前生长阶段
                 EditorGUILayout.LabelField($"当前阶段: {plant.currentStage}/{plant.maxStages}");
@@ -333,6 +333,85 @@ public class ObjectSelector : MonoBehaviour
                 
                 // 显示开花概率
                 EditorGUILayout.LabelField($"开花概率: {plant.BloomProbability:P2}");
+                
+                // 添加生长速度设置
+                EditorGUILayout.Space(10);
+                EditorGUILayout.LabelField("生长速度设置", EditorStyles.boldLabel);
+                
+                // 记录GUI变更前的值
+                float oldGrowthRate = plant.growthRate;
+                float oldGrowthRateInfluence = plant.growthRateInfluence;
+                
+                // 生长速度编辑
+                float newGrowthRate = EditorGUILayout.FloatField("生长速度:", plant.growthRate);
+                if (newGrowthRate != oldGrowthRate)
+                {
+                    plant.growthRate = Mathf.Max(0.01f, newGrowthRate);
+                    plant.MarkDirty();
+                    if (Application.isPlaying)
+                    {
+                        plant.CalculateBrightnessRatio();
+                    }
+                }
+                
+                // 生长速度影响系数编辑
+                float newGrowthRateInfluence = EditorGUILayout.Slider("速度影响系数:", plant.growthRateInfluence, 0f, 1f);
+                if (newGrowthRateInfluence != oldGrowthRateInfluence)
+                {
+                    plant.growthRateInfluence = newGrowthRateInfluence;
+                    plant.MarkDirty();
+                    if (Application.isPlaying)
+                    {
+                        plant.CalculateBrightnessRatio();
+                    }
+                }
+                
+                // 添加开花设置
+                EditorGUILayout.Space(10);
+                EditorGUILayout.LabelField("开花设置", EditorStyles.boldLabel);
+                
+                // 记录GUI变更前的值
+                float oldBloomThreshold = plant.bloomThreshold;
+                float oldBloomSteepness = plant.bloomSteepness;
+                
+                // 开花阈值编辑
+                float newBloomThreshold = EditorGUILayout.Slider("开花阈值:", plant.bloomThreshold, 0f, 1f);
+                if (newBloomThreshold != oldBloomThreshold)
+                {
+                    plant.bloomThreshold = newBloomThreshold;
+                    plant.MarkDirty();
+                    if (Application.isPlaying)
+                    {
+                        plant.CalculateBrightnessRatio();
+                    }
+                }
+                
+                // Sigmoid陡峭度编辑
+                float newBloomSteepness = EditorGUILayout.FloatField("Sigmoid陡峭度:", plant.bloomSteepness);
+                if (newBloomSteepness != oldBloomSteepness)
+                {
+                    plant.bloomSteepness = Mathf.Max(0.1f, newBloomSteepness);
+                    plant.MarkDirty();
+                    if (Application.isPlaying)
+                    {
+                        plant.CalculateBrightnessRatio();
+                    }
+                }
+                
+                EditorGUILayout.Space(10);
+                
+                // 添加概率曲线展示
+                EditorGUILayout.LabelField("开花概率曲线", EditorStyles.boldLabel);
+                
+                // 创建曲线区域
+                Rect curveRect = EditorGUILayout.GetControlRect(false, 200);
+                DrawProbabilityCurve(curveRect, plant);
+                
+                // 显示当前亮度比例的标记
+                if (Application.isPlaying)
+                {
+                    DrawCurrentBrightnessMarker(curveRect, plant);
+                }
                 
                 EditorGUILayout.Space(10);
                 
@@ -351,10 +430,11 @@ public class ObjectSelector : MonoBehaviour
                     plant.TryBloom();
                 }
                 
-                // 计算开花概率按钮
+                // 添加计算概率按钮
                 if (GUILayout.Button("计算概率", GUILayout.Height(30)))
                 {
                     plant.CalculateBrightnessRatio();
+                    Repaint(); // 刷新窗口显示
                 }
                 
                 EditorGUILayout.EndHorizontal();
@@ -391,6 +471,117 @@ public class ObjectSelector : MonoBehaviour
                     Repaint();
                 }
             }
+        }
+
+        // 添加绘制概率曲线的方法
+        private void DrawProbabilityCurve(Rect rect, Plant plant)
+        {
+            // 绘制背景和边框
+            EditorGUI.DrawRect(rect, new Color(0.2f, 0.2f, 0.2f, 1f));
+            
+            // 计算调整后的阈值
+            float adjustedThreshold = plant.bloomThreshold - (plant.growthRate * plant.growthRateInfluence);
+            
+            // 在曲线上绘制调整后的阈值位置
+            float thresholdX = rect.x + adjustedThreshold * rect.width;
+            Handles.color = new Color(1f, 0.5f, 0f, 0.8f); // 橙色
+            Handles.DrawLine(
+                new Vector3(thresholdX, rect.y), 
+                new Vector3(thresholdX, rect.y + rect.height)
+            );
+            
+            // 坐标轴
+            Handles.color = Color.white;
+            Handles.DrawLine(
+                new Vector3(rect.x, rect.y + rect.height), 
+                new Vector3(rect.x + rect.width, rect.y + rect.height)
+            ); // X轴
+            Handles.DrawLine(
+                new Vector3(rect.x, rect.y), 
+                new Vector3(rect.x, rect.y + rect.height)
+            ); // Y轴
+            
+            // 绘制标签
+            GUI.Label(new Rect(rect.x + rect.width - 40, rect.y + rect.height - 15, 40, 15), "亮度");
+            GUI.Label(new Rect(rect.x, rect.y, 40, 15), "概率");
+            GUI.Label(new Rect(rect.x, rect.y + rect.height - 15, 20, 15), "0");
+            GUI.Label(new Rect(rect.x + rect.width - 20, rect.y + rect.height - 15, 20, 15), "1");
+            
+            // 绘制曲线
+            Handles.color = Color.green;
+            Vector3 prevPoint = Vector3.zero;
+            int segments = 100;
+            
+            for (int i = 0; i <= segments; i++)
+            {
+                float x = (float)i / segments;
+                float brightness = x;
+                
+                // 使用与Plant.cs相同的公式计算概率
+                float probability = 1f / (1f + Mathf.Exp(-plant.bloomSteepness * (brightness - adjustedThreshold)));
+                
+                // 转换为屏幕坐标
+                float screenX = rect.x + x * rect.width;
+                float screenY = rect.y + rect.height - probability * rect.height;
+                
+                Vector3 point = new Vector3(screenX, screenY, 0);
+                
+                if (i > 0)
+                {
+                    Handles.DrawLine(prevPoint, point);
+                }
+                
+                prevPoint = point;
+            }
+            
+            // 在阈值处标记0.5概率点
+            float thresholdY = rect.y + rect.height - 0.5f * rect.height;
+            Handles.color = new Color(1f, 0.5f, 0f, 0.8f);
+            Handles.DrawLine(
+                new Vector3(thresholdX - 5, thresholdY), 
+                new Vector3(thresholdX + 5, thresholdY)
+            );
+            
+            // 显示阈值
+            GUI.Label(
+                new Rect(thresholdX - 25, thresholdY - 15, 50, 15), 
+                adjustedThreshold.ToString("F2"),
+                new GUIStyle(EditorStyles.label) { normal = { textColor = new Color(1f, 0.5f, 0f) } }
+            );
+        }
+        
+        // 添加当前亮度和概率标记方法
+        private void DrawCurrentBrightnessMarker(Rect rect, Plant plant)
+        {
+            if (plant.BrightnessRatio <= 0) return;
+            
+            // 计算当前亮度比例对应的位置
+            float currentX = rect.x + plant.BrightnessRatio * rect.width;
+            float currentY = rect.y + rect.height - plant.BloomProbability * rect.height;
+            
+            // 绘制垂直线标记当前亮度
+            Handles.color = Color.cyan;
+            Handles.DrawLine(
+                new Vector3(currentX, rect.y + rect.height),
+                new Vector3(currentX, currentY)
+            );
+            
+            // 绘制水平线标记当前概率
+            Handles.DrawLine(
+                new Vector3(rect.x, currentY),
+                new Vector3(currentX, currentY)
+            );
+            
+            // 绘制当前点
+            Handles.color = Color.yellow;
+            Handles.DrawSolidDisc(new Vector3(currentX, currentY, 0), Vector3.forward, 5f);
+            
+            // 显示具体数值标签
+            GUI.Label(
+                new Rect(currentX - 25, currentY - 20, 50, 15),
+                $"({plant.BrightnessRatio:F2}, {plant.BloomProbability:F2})",
+                new GUIStyle(EditorStyles.label) { normal = { textColor = Color.yellow } }
+            );
         }
     }
 #endif
