@@ -126,7 +126,7 @@ MonoBehaviour:
   - stageType: 1
     associatedLights:
     - size: 18
-      isObstacle: 0
+      isObstacle: 1
       isSeed: 0
       lightHeight: 0
       heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}

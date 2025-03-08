@@ -74,6 +74,13 @@ public class Plant : MonoBehaviour
     {
         if (isWithered || currentStage >= maxStages) return;
 
+        // 添加碰撞检测逻辑
+        if (currentStage < growthStages.Count && HasCollisionWithOtherPlants())
+        {
+            Debug.Log($"植物 {plantName} 无法生长，检测到与其他植物的碰撞");
+            return;
+        }
+
         // 禁用并移除所有现有光源组件
         lightSources.ForEach(l => {
             l.RemoveLighting();
@@ -156,7 +163,6 @@ public class Plant : MonoBehaviour
                 maxStages = growthStages.Count;
                 Debug.Log($"植物已更新为: {updatedStage.plantName} (ID: {updatedStage.plantID})");
             }
-            
             
             Grow();
         }
@@ -271,6 +277,101 @@ public class Plant : MonoBehaviour
         {
             PlantManager.Instance.UnregisterPlant(this);
         }
+    }
+
+    // 修改碰撞检测方法
+    private bool HasCollisionWithOtherPlants()
+    {
+        // 如果当前阶段无效或没有下一个阶段的数据，则无法检测碰撞
+        if (currentStage >= growthStages.Count)
+        {
+            return false;
+        }
+
+        // 获取当前植物下一阶段的配置
+        PlantStage nextStage = growthStages[currentStage];
+        
+        // 筛选出下一阶段中标记为障碍物的光源
+        List<LightingData> nextStageObstacleLights = nextStage.associatedLights
+            .Where(light => light.isObstacle)
+            .ToList();
+        
+        // 如果没有障碍物光源，则不会发生碰撞
+        if (nextStageObstacleLights.Count == 0)
+        {
+            return false;
+        }
+        
+        // 获取当前位置
+        Vector3 currentPosition = transform.position;
+        
+        // 获取所有活跃的障碍光源
+        List<Lighting> obstacleActiveLights = LightingManager.activeLights
+            .Where(light => light.isObstacle)
+            .ToList();
+        
+        // 检查当前位置是否已经在某个障碍光源范围内
+        HashSet<int> overlapLightIds = new HashSet<int>();
+        foreach (Lighting obstacleLight in obstacleActiveLights)
+        {
+            Bounds obstacleBounds = obstacleLight.GetWorldBounds();
+            
+            // 检查当前位置是否在该光源范围内
+            if (IsPointInXZBounds(currentPosition, obstacleBounds))
+            {
+                // 记录当前位置已经存在的障碍光源ID
+                overlapLightIds.Add(obstacleLight.GetInstanceID());
+            }
+        }
+        
+        // 遍历当前植物下一阶段的所有障碍物光源
+        foreach (LightingData nextLight in nextStageObstacleLights)
+        {
+            // 创建下一阶段光源的边界
+            Vector3 center = transform.position;
+            Vector3 size = new Vector3(nextLight.size, nextLight.lightHeight, nextLight.size);
+            Bounds nextLightBounds = new Bounds(center, size);
+            
+            // 检查与所有活跃障碍光源的碰撞
+            foreach (Lighting obstacleLight in obstacleActiveLights)
+            {
+                // 如果当前位置已经在该障碍光源内，则跳过这个障碍光源的检测
+                if (overlapLightIds.Contains(obstacleLight.GetInstanceID()))
+                {
+                    continue;
+                }
+                
+                Bounds obstacleBounds = obstacleLight.GetWorldBounds();
+                
+                // 检查两个光源是否在XZ平面上重叠
+                if (IsOverlappingOnXZPlane(nextLightBounds, obstacleBounds))
+                {
+                    return true; // 发现碰撞
+                }
+            }
+        }
+        
+        return false; // 没有碰撞
+    }
+
+    // 添加方法：检测两个边界在xz平面上是否重叠
+    private bool IsOverlappingOnXZPlane(Bounds a, Bounds b)
+    {
+        // 只检查x和z轴方向的重叠，忽略y轴
+        bool overlapX = Mathf.Abs(a.center.x - b.center.x) <= (a.size.x + b.size.x) * 0.5f;
+        bool overlapZ = Mathf.Abs(a.center.z - b.center.z) <= (a.size.z + b.size.z) * 0.5f;
+        
+        return overlapX && overlapZ;
+    }
+
+    // 添加方法：检测点是否在边界的XZ平面投影内
+    private bool IsPointInXZBounds(Vector3 point, Bounds bounds)
+    {
+        // 只检查x和z轴方向，忽略y轴
+        bool insideX = Mathf.Abs(point.x - bounds.center.x) <= bounds.size.x * 0.5f;
+        bool insideZ = Mathf.Abs(point.z - bounds.center.z) <= bounds.size.z * 0.5f;
+        
+        return insideX && insideZ;
     }
 
     [System.Serializable]
