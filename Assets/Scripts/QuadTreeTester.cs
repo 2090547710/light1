@@ -16,6 +16,14 @@ public class QuadTreeTester : MonoBehaviour
     private float seedCooldownTimer; // 种子冷却计时器
     private float darkCooldownTimer; // 障碍物冷却计时器
 
+    // 添加种子选择UI相关变量
+    [Header("种子选择")]
+    [SerializeField] private SizeLevel selectedSize = SizeLevel.Medium;
+    [SerializeField] private GrowthRateLevel selectedGrowthRate = GrowthRateLevel.Medium;
+    private string seedName = "MediumMedium"; // 默认种子名称
+    private bool showSeedUI = false;
+    private Rect seedUIRect = new Rect(10, 10, 200, 150);
+
     void Start()
     {
         mainCamera = Camera.main;
@@ -87,6 +95,58 @@ public class QuadTreeTester : MonoBehaviour
                 objects.Clear();
             }
         }
+
+        // 按Tab键显示/隐藏种子选择UI
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            showSeedUI = !showSeedUI;
+        }
+    }
+
+    void OnGUI()
+    {
+        if (showSeedUI)
+        {
+            seedUIRect = GUI.Window(0, seedUIRect, DrawSeedSelectionWindow, "种子选择");
+        }
+    }
+
+    void DrawSeedSelectionWindow(int windowID)
+    {
+        GUILayout.BeginVertical(GUI.skin.box);
+        
+        GUILayout.Label("选择种子大小:");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Toggle(selectedSize == SizeLevel.Small, "小", GUI.skin.button))
+            selectedSize = SizeLevel.Small;
+        if (GUILayout.Toggle(selectedSize == SizeLevel.Medium, "中", GUI.skin.button))
+            selectedSize = SizeLevel.Medium;
+        if (GUILayout.Toggle(selectedSize == SizeLevel.Large, "大", GUI.skin.button))
+            selectedSize = SizeLevel.Large;
+        GUILayout.EndHorizontal();
+        
+        GUILayout.Space(10);
+        
+        GUILayout.Label("选择生长速度:");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Toggle(selectedGrowthRate == GrowthRateLevel.Slow, "慢", GUI.skin.button))
+            selectedGrowthRate = GrowthRateLevel.Slow;
+        if (GUILayout.Toggle(selectedGrowthRate == GrowthRateLevel.Medium, "中", GUI.skin.button))
+            selectedGrowthRate = GrowthRateLevel.Medium;
+        if (GUILayout.Toggle(selectedGrowthRate == GrowthRateLevel.Fast, "快", GUI.skin.button))
+            selectedGrowthRate = GrowthRateLevel.Fast;
+        GUILayout.EndHorizontal();
+        
+        GUILayout.Space(10);
+        
+        // 更新种子名称
+        seedName = selectedSize.ToString() + selectedGrowthRate.ToString();
+        GUILayout.Label($"当前选择: {seedName}");
+        
+        GUILayout.EndVertical();
+        
+        // 允许窗口拖动
+        GUI.DragWindow();
     }
 
     public void TestSeed(Vector3 position){
@@ -98,11 +158,30 @@ public class QuadTreeTester : MonoBehaviour
             Quaternion.identity
         );
         objects.Add(newObj);
+        
+        // 获取Plant组件
+        Plant plant = newObj.GetComponent<Plant>();
+        if (plant != null)
+        {
+            // 清空现有的生长阶段
+            plant.growthStages.Clear();
+            
+            // 获取种子阶段
+            Plant.PlantStage seedStage = PlantManager.Instance.GetSeedPlantStageFromName(seedName);
+            if (seedStage != null)
+            {
+                // 添加种子阶段
+                plant.growthStages.Add(seedStage);
+                plant.maxStages = plant.growthStages.Count;
+            }
+            else
+            {
+                Debug.LogWarning($"无法获取种子阶段: {seedName}");
+            }
+        }
+        
         // 插入四叉树
         bool success = quadTree.Insert(newObj);
-        // Debug.Log($"插入{(success ? "成功" : "失败")} | " +
-        //          $"位置：{position} | " );
-
     } 
 
      public void TestDark(Vector3 position){

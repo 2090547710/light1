@@ -1,7 +1,9 @@
-using System.Linq;
-using UnityEngine;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 using System.IO;
+using System.Linq;
 
 public enum StageType
 {        
@@ -10,6 +12,19 @@ public enum StageType
     Fruit,
 }
 
+public enum SizeLevel
+{
+    Small, // 小
+    Medium, // 中
+    Large // 大
+}
+
+public enum GrowthRateLevel
+{
+    Slow, // 慢
+    Medium, // 中
+    Fast // 快
+}
 
 public class Plant : MonoBehaviour
 {
@@ -32,37 +47,26 @@ public class Plant : MonoBehaviour
     public float growthRate = 1.0f; // 恒定生长速度值
     public float growthRateInfluence = 0.3f; // 生长速度对开花概率的影响系数
 
-    // 添加缓存字段
-    [Header("缓存系统")]
-    [SerializeField] private float cachedBloomThreshold;
-    [SerializeField] private float cachedBloomSteepness;
-    [SerializeField] private float cachedGrowthRate;
-    [SerializeField] private float cachedGrowthRateInfluence;
-    [SerializeField] private bool isDirty = true; // 默认为脏，确保首次应用
-
     // 添加公共属性用于外部访问开花概率和亮度比例
     public float BloomProbability => bloomProbability;
     public float BrightnessRatio => brightnessRatio; // 新增亮度比例属性
-    public bool IsDirty => isDirty;
 
     [Header("植物信息")]
     public int plantID; // 植物ID
     public string plantName; // 植物名称
-
+    public List<int> prerequisitePlantIDs; // 前置植物ID列表
+    public List<float> prerequisiteWeights; // 新增的权重集合
+    public List<int> updatePlantIDs; // 更新植物ID列表 
+    public List<float> updateWeights; // 更新权重列表
+   
     void Start()
     {
-        LoadGrowthStagesFromResources("PlantData/test");
         currentStage=0;
         lightSources.Clear();
         if (growthStages.Count > 0 && currentStage <= growthStages.Count)
         {
             Grow();
         }
-        
-        // 初始化缓存值
-        UpdateCachedValues();
-        // 初始计算开花概率
-        if (isDirty) CalculateBrightnessRatio();
     }
    
     
@@ -84,8 +88,14 @@ public class Plant : MonoBehaviour
         if (currentStage < growthStages.Count) {
             plantID = growthStages[currentStage].plantID;
             plantName = growthStages[currentStage].plantName;
+            growthRate = growthStages[currentStage].growthRate;
+            prerequisitePlantIDs = growthStages[currentStage].prerequisitePlantIDs;
+            prerequisiteWeights = growthStages[currentStage].prerequisiteWeights;
+            updatePlantIDs = growthStages[currentStage].updatePlantIDs;
+            updateWeights = growthStages[currentStage].updateWeights;
         }
         
+        PlantManager.Instance.UpdatePlantCounts();
         currentStage++;
     }
 
@@ -105,6 +115,7 @@ public class Plant : MonoBehaviour
             lightSources.Add(newLight); // 添加到光源列表
         });
         LightingManager.tree.Insert(gameObject);
+        LightingManager.UpdateDirtyLights(); // 更新所有脏标记的光源
     }
 
     public void Wither()
@@ -134,9 +145,19 @@ public class Plant : MonoBehaviour
         float brightnessRatio = CalculateBrightnessRatio();
 
         // 根据概率决定是否开花
-        if (Random.value < bloomProbability)
+        if (UnityEngine.Random.value < bloomProbability)
         {
             Debug.Log($"种子成功开花！亮度比例: {brightnessRatio:F2}, 开花概率: {bloomProbability:F2}");
+
+            // 尝试通过植物名称获取更新后的植物阶段
+            PlantStage updatedStage = PlantManager.Instance.GetPlantStageBySeedFromName(plantName);
+            if (updatedStage != null) {
+                growthStages.Add(updatedStage);
+                maxStages = growthStages.Count;
+                Debug.Log($"植物已更新为: {updatedStage.plantName} (ID: {updatedStage.plantID})");
+            }
+            
+            
             Grow();
         }
         else
@@ -154,9 +175,22 @@ public class Plant : MonoBehaviour
         float brightnessRatio = CalculateBrightnessRatio();
 
         // 根据概率决定是否结果
-        if (Random.value < bloomProbability)
+        if (UnityEngine.Random.value < bloomProbability)
         {
             Debug.Log($"花朵成功结果！亮度比例: {brightnessRatio:F2}, 结果概率: {bloomProbability:F2}");
+            
+            // 获取当前阶段的配置
+            
+            // 尝试获取更新后的植物阶段
+            PlantStage updatedStage = PlantManager.Instance.GetUpdatedPlantStage(growthStages[currentStage-1]);
+            if (updatedStage != null) {
+                // 如果有更新的植物阶段，替换当前阶段
+                growthStages.Add(updatedStage);
+                maxStages = growthStages.Count;
+                Debug.Log($"植物已更新为: {updatedStage.plantName} (ID: {updatedStage.plantID})");
+            }
+
+            
             Grow();
         }
         else
@@ -218,106 +252,25 @@ public class Plant : MonoBehaviour
         float adjustedThreshold = bloomThreshold - (growthRate * growthRateInfluence);
         bloomProbability = 1f / (1f + Mathf.Exp(-bloomSteepness * (brightnessRatio - adjustedThreshold)));
         
-        // 重置脏标记
-        isDirty = false;
-        
         return brightnessRatio;
     }
 
-    // 添加标记为脏的方法
-    public void MarkDirty()
+    private void OnEnable()
     {
-        isDirty = true;
+        // 确保 PlantManager 实例存在
+        if (PlantManager.Instance != null)
+        {
+            PlantManager.Instance.RegisterPlant(this);
+        }
     }
     
-    // 更新缓存值方法
-    private void UpdateCachedValues()
+    private void OnDisable()
     {
-        cachedBloomThreshold = bloomThreshold;
-        cachedBloomSteepness = bloomSteepness;
-        cachedGrowthRate = growthRate;
-        cachedGrowthRateInfluence = growthRateInfluence;
-    }
-    
-    // 添加OnValidate方法监测参数变化
-    #if UNITY_EDITOR
-    private void OnValidate()
-    {
-        // 检查参数是否发生变化
-        if (cachedBloomThreshold != bloomThreshold ||
-            cachedBloomSteepness != bloomSteepness ||
-            cachedGrowthRate != growthRate ||
-            cachedGrowthRateInfluence != growthRateInfluence)
+        // 确保 PlantManager 实例存在
+        if (PlantManager.Instance != null)
         {
-            // 标记为脏
-            isDirty = true;
-            
-            // 如果在游戏运行时参数发生变化，立即重新计算
-            if (Application.isPlaying)
-            {
-                CalculateBrightnessRatio();
-            }
+            PlantManager.Instance.UnregisterPlant(this);
         }
-        
-        // 更新缓存值
-        UpdateCachedValues();
-    }
-    #endif
-
-    public void LoadGrowthStagesFromCSV(string filePath)
-    {
-        List<PlantStage> loadedStages = CSVParser.LoadPlantStagesFromCSV(filePath);
-        
-        if (loadedStages != null && loadedStages.Count > 0)
-        {
-            growthStages = loadedStages;
-            maxStages = growthStages.Count;
-            Debug.Log($"成功从CSV加载了{growthStages.Count}个生长阶段");
-        }
-        else
-        {
-            Debug.LogWarning("从CSV加载生长阶段失败或没有数据");
-        }
-    }
-
-    // 添加一个方便的方法，从Resources文件夹加载CSV
-    public void LoadGrowthStagesFromResources(string resourcePath)
-    {
-        // 如果传入的路径包含扩展名，则移除
-        resourcePath = Path.GetFileNameWithoutExtension(resourcePath);
-        
-        // 如果传入的是完整路径（包含PlantData/），则使用原样
-        // 否则，假设文件在PlantData文件夹中
-        if (!resourcePath.Contains("/"))
-        {
-            resourcePath = $"PlantData/{resourcePath}";
-        }
-        
-        TextAsset csvFile = Resources.Load<TextAsset>(resourcePath);
-        if (csvFile != null)
-        {
-            // 创建临时文件，确保使用UTF-8编码
-            string tempPath = Path.Combine(Application.temporaryCachePath, "temp_plant_stages.csv");
-            File.WriteAllText(tempPath, csvFile.text, System.Text.Encoding.UTF8);
-            
-            // 加载数据
-            LoadGrowthStagesFromCSV(tempPath);
-            
-            // 清理临时文件
-            try { File.Delete(tempPath); } catch { }
-            
-            Debug.Log($"成功从{resourcePath}.csv加载植物数据");
-        }
-        else
-        {
-            Debug.LogError($"无法从Resources加载CSV文件: {resourcePath}");
-        }
-    }
-
-    // 添加保存到CSV的方法
-    public void SaveGrowthStagesToCSV(string filePath)
-    {
-        CSVParser.SavePlantStagesToCSV(growthStages, filePath);
     }
 
     [System.Serializable]
@@ -327,5 +280,11 @@ public class Plant : MonoBehaviour
         public List<LightingData> associatedLights; // 改为存储光照数据
         public int plantID; // 植物ID
         public string plantName; // 植物名称
+        public float growthRate; // 生长速度
+        public List<int> prerequisitePlantIDs; // 前置植物ID列表
+        public List<float> prerequisiteWeights; // 新增的权重集合
+        public List<int> updatePlantIDs; // 更新植物ID列表 
+        public List<float> updateWeights; // 更新权重列表
     }
+
 } 

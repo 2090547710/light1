@@ -228,6 +228,8 @@ GameObject:
   - component: {fileID: 877133415}
   - component: {fileID: 877133414}
   - component: {fileID: 877133416}
+  - component: {fileID: 877133421}
+  - component: {fileID: 877133420}
   - component: {fileID: 877133417}
   - component: {fileID: 877133419}
   m_Layer: 0
@@ -328,10 +330,51 @@ MonoBehaviour:
   editingProperties:
     size: 0
     isObstacle: 0
+    isSeed: 0
     heightMap: {fileID: 0}
     tiling: {x: 0, y: 0}
     offset: {x: 0, y: 0}
     lightHeight: 0
+--- !u!114 &877133420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877133413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b17eb9571b75c3a459b0b7e09f502e7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  seedMappings: []
+  plantDatabasePath: PlantData/PlantDatabase
+  seedMappingPath: PlantData/SeedMapping
+--- !u!114 &877133421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877133413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 451c9105e1439864b8b727e5028a5c7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  size: 1
+  growthRate: 1
+  plantID: 0
+  plantName: 
+  stageType: 0
+  plantGrowthRate: 0
+  lightSourceCount: 0
+  prerequisitePlants: "\u65E0"
+  seedMode: 0
+  fruitMode: 0
+  seedName: 
+  candidatePlantIds: 
+  availablePlants: []
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

@@ -88,8 +88,7 @@ public class ObjectSelector : MonoBehaviour
         originalMaterial = renderer.material;
         renderer.material = highlightMaterial;
         
-        // 触发选择事件（可扩展）
-        Debug.Log($"Selected: {obj.name}");
+
 
         // 扩展选择事件
         SelectionChanged?.Invoke(obj);
@@ -269,7 +268,7 @@ public class ObjectSelector : MonoBehaviour
                 if (newGrowthRate != oldGrowthRate)
                 {
                     plant.growthRate = Mathf.Max(0.01f, newGrowthRate);
-                    plant.MarkDirty();
+
                     if (Application.isPlaying)
                     {
                         plant.CalculateBrightnessRatio();
@@ -281,7 +280,6 @@ public class ObjectSelector : MonoBehaviour
                 if (newGrowthRateInfluence != oldGrowthRateInfluence)
                 {
                     plant.growthRateInfluence = newGrowthRateInfluence;
-                    plant.MarkDirty();
                     if (Application.isPlaying)
                     {
                         plant.CalculateBrightnessRatio();
@@ -301,7 +299,6 @@ public class ObjectSelector : MonoBehaviour
                 if (newBloomThreshold != oldBloomThreshold)
                 {
                     plant.bloomThreshold = newBloomThreshold;
-                    plant.MarkDirty();
                     if (Application.isPlaying)
                     {
                         plant.CalculateBrightnessRatio();
@@ -313,7 +310,6 @@ public class ObjectSelector : MonoBehaviour
                 if (newBloomSteepness != oldBloomSteepness)
                 {
                     plant.bloomSteepness = Mathf.Max(0.1f, newBloomSteepness);
-                    plant.MarkDirty();
                     if (Application.isPlaying)
                     {
                         plant.CalculateBrightnessRatio();
@@ -440,6 +436,13 @@ public class ObjectSelector : MonoBehaviour
                         lightElement.offset = newOffset;
                     }
 
+                    if (GUI.changed)
+                    {
+                        EditorUtility.SetDirty(lightElement);
+                        lightElement.OnValidate(); // 触发验证和更新
+            
+                    }
+                    
                     EditorGUILayout.Space();
                 }
             }
