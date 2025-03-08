@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: -6355687641031468626}
   - component: {fileID: 8593654199120966784}
   - component: {fileID: 9208226250262049673}
+  - component: {fileID: -4983964908185945035}
   m_Layer: 7
   m_Name: "\u6D4B\u8BD5\u82B1"
   m_TagString: Untagged
@@ -113,7 +114,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3803225260541865786}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de5b6a563c58f6e4da4f1f9481160b8a, type: 3}
   m_Name: 
@@ -126,7 +127,7 @@ MonoBehaviour:
   - stageType: 1
     associatedLights:
     - size: 18
-      isObstacle: 1
+      isObstacle: 0
       isSeed: 0
       lightHeight: 0
       heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
@@ -151,3 +152,31 @@ MonoBehaviour:
   prerequisiteWeights: []
   updatePlantIDs: 
   updateWeights: []
+--- !u!114 &-4983964908185945035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3803225260541865786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 801302af557be1048a2eb17174804a56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  size: 19.5
+  isObstacle: 1
+  isSeed: 0
+  heightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
+  tiling: {x: 0, y: 0}
+  offset: {x: 0, y: 0}
+  lightHeight: 0
+  TotalBrightnessImpact: 0
+  cachedSize: 19.5
+  cachedIsObstacle: 1
+  cachedIsSeed: 0
+  cachedHeightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
+  cachedTiling: {x: 0, y: 0}
+  cachedOffset: {x: 0, y: 0}
+  cachedLightHeight: 0
+  isDirty: 1

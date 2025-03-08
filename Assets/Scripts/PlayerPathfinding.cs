@@ -20,6 +20,9 @@ public class PlayerPathfinding : MonoBehaviour
     // 新增玩家对象引用
     private GameObject playerObject;
     
+    [Header("旋转设置")]
+    public float rotationSpeed = 10f; // 旋转速度
+    public bool smoothRotation = true; // 是否使用平滑旋转
     
     void Start()
     {
@@ -86,6 +89,26 @@ public class PlayerPathfinding : MonoBehaviour
                 targetPos, 
                 step);
             
+            // 添加转向逻辑
+            Vector3 direction = targetPos - transform.position;
+            if (direction != Vector3.zero)
+            {
+                // 计算目标旋转
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                
+                // 根据设置决定是否使用平滑旋转
+                if (smoothRotation)
+                {
+                    transform.rotation = Quaternion.Slerp(
+                        transform.rotation, 
+                        targetRotation, 
+                        rotationSpeed * Time.deltaTime);
+                }
+                else
+                {
+                    transform.rotation = targetRotation;
+                }
+            }
 
             quadTree.Remove(playerObject);
             InsertToQuadTree();
