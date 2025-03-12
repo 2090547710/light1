@@ -1,7 +1,7 @@
 植物ID,阶段类型,植物名称,开始标记,size,isObstacle,isSeed,lightHeight,heightMap,size,isObstacle,isSeed,lightHeight,heightMap,开始标记,GrowthRate,开始标记,要求植物ID,权重（数量）,要求植物ID,权重（数量）,开始标记,更新植物,权重,更新植物,权重
-1,Flower,玫瑰,li,10,FALSE,FALSE,0.5,test3,5,TRUE,FALSE,0.5,test3,gr,1.5,pre,,,,,up,2,3,6,7
-2,Fruit,玫瑰果,li,20,FALSE,FALSE,0.7,test3,,,,,,gr,1,pre,5,1,,,up,,,,
-3,Flower,向日葵,li,25,FALSE,FALSE,0.8,test3,,,,,,gr,1,pre,,,,,up,2,6,4,9
-4,Fruit,向日葵籽,li,30,FALSE,FALSE,0.9,test3,,,,,,gr,1,pre,1,1,3,1,up,,,,
-5,Flower,郁金香,li,12,FALSE,FALSE,0.6,test3,,,,,,gr,1,pre,,,,,up,6,1,2,10
-6,Fruit,郁金香种子,li,15,FALSE,FALSE,0.7,test5,,,,,,gr,1,pre,5,1,,,up,,,,
+1,Flower,玫瑰,li,10,FALSE,FALSE,0.5,test3,5,TRUE,FALSE,0.5,test3,gr,0.5,pre,,,,,up,2,3,6,7
+2,Fruit,玫瑰果,li,20,FALSE,FALSE,0.7,test3,5,TRUE,FALSE,0.5,test3,gr,0.5,pre,5,1,,,up,,,,
+3,Flower,向日葵,li,25,FALSE,FALSE,0.8,test3,5,TRUE,FALSE,0.5,test3,gr,0.5,pre,,,,,up,2,6,4,9
+4,Fruit,向日葵籽,li,30,FALSE,FALSE,0.9,test3,5,TRUE,FALSE,0.5,test3,gr,0.5,pre,1,1,3,1,up,,,,
+5,Flower,郁金香,li,12,FALSE,FALSE,0.6,test3,5,TRUE,FALSE,0.5,test3,gr,0.5,pre,,,,,up,6,1,2,10
+6,Fruit,郁金香种子,li,15,FALSE,FALSE,0.7,test5,5,TRUE,FALSE,0.5,test3,gr,0.5,pre,5,1,,,up,,,,

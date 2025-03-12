@@ -291,13 +291,17 @@ public class Plant : MonoBehaviour
         // 获取当前植物下一阶段的配置
         PlantStage nextStage = growthStages[currentStage];
         
-        // 筛选出下一阶段中标记为障碍物的光源
+        // 筛选出下一阶段中标记为障碍物的光源和种子光源
         List<LightingData> nextStageObstacleLights = nextStage.associatedLights
             .Where(light => light.isObstacle)
             .ToList();
         
-        // 如果没有障碍物光源，则不会发生碰撞
-        if (nextStageObstacleLights.Count == 0)
+        List<LightingData> nextStageSeedLights = nextStage.associatedLights
+            .Where(light => light.isSeed)
+            .ToList();
+        
+        // 情况2：自身无障碍物光源也无isSeed光源，直接返回false
+        if (nextStageObstacleLights.Count == 0 && nextStageSeedLights.Count == 0)
         {
             return false;
         }
@@ -305,12 +309,16 @@ public class Plant : MonoBehaviour
         // 获取当前位置
         Vector3 currentPosition = transform.position;
         
-        // 获取所有活跃的障碍光源
+        // 获取所有活跃的障碍光源和种子光源
         List<Lighting> obstacleActiveLights = LightingManager.activeLights
             .Where(light => light.isObstacle)
             .ToList();
         
-        // 检查当前位置是否已经在某个障碍光源范围内
+        List<Lighting> seedActiveLights = LightingManager.activeLights
+            .Where(light => light.isSeed)
+            .ToList();
+        
+        // 记录当前位置已经在哪些障碍光源范围内
         HashSet<int> overlapLightIds = new HashSet<int>();
         foreach (Lighting obstacleLight in obstacleActiveLights)
         {
@@ -324,34 +332,141 @@ public class Plant : MonoBehaviour
             }
         }
         
-        // 遍历当前植物下一阶段的所有障碍物光源
-        foreach (LightingData nextLight in nextStageObstacleLights)
+        // 情况1：自身有障碍物光源或者有isSeed光源
+        
+        // 情况1.1和1.2：处理障碍物光源的碰撞
+        // 无论自身是否有障碍物光源或种子光源，都需要检查与其他障碍物光源的碰撞
+        if (nextStageObstacleLights.Count > 0 || nextStageSeedLights.Count > 0)
         {
-            // 创建下一阶段光源的边界
-            Vector3 center = transform.position;
-            Vector3 size = new Vector3(nextLight.size, nextLight.lightHeight, nextLight.size);
-            Bounds nextLightBounds = new Bounds(center, size);
-            
-            // 检查与所有活跃障碍光源的碰撞
-            foreach (Lighting obstacleLight in obstacleActiveLights)
+            // 处理自身障碍物光源与其他障碍物光源的碰撞
+            foreach (LightingData nextLight in nextStageObstacleLights)
             {
-                // 如果当前位置已经在该障碍光源内，则跳过这个障碍光源的检测
-                if (overlapLightIds.Contains(obstacleLight.GetInstanceID()))
+                // 创建下一阶段光源的边界
+                Vector3 center = transform.position;
+                Vector3 size = new Vector3(nextLight.size, nextLight.lightHeight, nextLight.size);
+                Bounds nextLightBounds = new Bounds(center, size);
+                
+                // 检查与所有活跃障碍光源的碰撞
+                foreach (Lighting obstacleLight in obstacleActiveLights)
                 {
-                    continue;
+                    // 如果当前位置已经在该障碍光源内，且该光源不属于任何活跃植物，则跳过这个障碍光源的检测
+                    if (overlapLightIds.Contains(obstacleLight.GetInstanceID()) && 
+                        !IsLightBelongToActivePlant(obstacleLight))
+                    {
+                        continue;
+                    }
+                    
+                    Bounds obstacleBounds = obstacleLight.GetWorldBounds();
+                    
+                    // 情况1.1：对于不在activePlants中植物的lightSources中的障碍物光源
+                    // 矩形相交但坐标在障碍物光源内不算碰撞
+                    if (!IsLightBelongToActivePlant(obstacleLight))
+                    {
+                        if (IsOverlappingOnXZPlane(nextLightBounds, obstacleBounds) && 
+                            !IsPointInXZBounds(currentPosition, obstacleBounds))
+                        {
+                            return true; // 发现碰撞
+                        }
+                    }
+                    // 情况1.2：对于activePlants中植物的lightSources中的障碍物光源
+                    // 矩形相交就算碰撞
+                    else
+                    {
+                        if (IsOverlappingOnXZPlane(nextLightBounds, obstacleBounds))
+                        {
+                            return true; // 发现碰撞
+                        }
+                    }
                 }
+            }
+            
+            // 处理自身种子光源与障碍物光源的碰撞
+            foreach (LightingData nextSeedLight in nextStageSeedLights)
+            {
+                // 创建下一阶段种子光源的边界
+                Vector3 center = transform.position;
+                Vector3 size = new Vector3(nextSeedLight.size, nextSeedLight.lightHeight, nextSeedLight.size);
+                Bounds nextSeedBounds = new Bounds(center, size);
                 
-                Bounds obstacleBounds = obstacleLight.GetWorldBounds();
-                
-                // 检查两个光源是否在XZ平面上重叠
-                if (IsOverlappingOnXZPlane(nextLightBounds, obstacleBounds))
+                // 检查与所有活跃障碍光源的碰撞
+                foreach (Lighting obstacleLight in obstacleActiveLights)
                 {
-                    return true; // 发现碰撞
+                    // 如果当前位置已经在该障碍光源内，且该光源不属于任何活跃植物，则跳过这个障碍光源的检测
+                    if (overlapLightIds.Contains(obstacleLight.GetInstanceID()) && 
+                        !IsLightBelongToActivePlant(obstacleLight))
+                    {
+                        continue;
+                    }
+                    
+                    Bounds obstacleBounds = obstacleLight.GetWorldBounds();
+                    
+                    // 情况1.1：对于不在activePlants中植物的lightSources中的障碍物光源
+                    // 矩形相交但坐标在障碍物光源内不算碰撞
+                    if (!IsLightBelongToActivePlant(obstacleLight))
+                    {
+                        if (IsOverlappingOnXZPlane(nextSeedBounds, obstacleBounds) && 
+                            !IsPointInXZBounds(currentPosition, obstacleBounds))
+                        {
+                            return true; // 发现碰撞
+                        }
+                    }
+                    // 情况1.2：对于activePlants中植物的lightSources中的障碍物光源
+                    // 矩形相交就算碰撞
+                    else
+                    {
+                        if (IsOverlappingOnXZPlane(nextSeedBounds, obstacleBounds))
+                        {
+                            return true; // 发现碰撞
+                        }
+                    }
                 }
             }
         }
         
+        // 情况1.3：处理种子光源的碰撞
+        if (nextStageSeedLights.Count > 0)
+        {
+            // 情况1.32：自身有isSeed光源，与其他种子光源矩形相交就算碰撞
+            foreach (LightingData nextSeedLight in nextStageSeedLights)
+            {
+                // 创建下一阶段种子光源的边界
+                Vector3 center = transform.position;
+                Vector3 size = new Vector3(nextSeedLight.size, nextSeedLight.lightHeight, nextSeedLight.size);
+                Bounds nextSeedBounds = new Bounds(center, size);
+                
+                // 检查与所有活跃种子光源的碰撞
+                foreach (Lighting seedLight in seedActiveLights)
+                {
+                    Bounds seedBounds = seedLight.GetWorldBounds();
+                    
+                    // 矩形相交就算碰撞
+                    if (IsOverlappingOnXZPlane(nextSeedBounds, seedBounds))
+                    {
+                        return true; // 发现碰撞
+                    }
+                }
+            }
+        }
+        else
+        {
+            // 情况1.31：自身无isSeed光源，认为不会与其他种子光源发生碰撞
+            // 不做任何处理，直接通过
+        }
+        
         return false; // 没有碰撞
+    }
+
+    // 添加方法：检查光源是否属于活跃植物
+    private bool IsLightBelongToActivePlant(Lighting light)
+    {
+        foreach (Plant plant in PlantManager.Instance.activePlants)
+        {
+            if (plant.lightSources.Contains(light))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     // 添加方法：检测两个边界在xz平面上是否重叠

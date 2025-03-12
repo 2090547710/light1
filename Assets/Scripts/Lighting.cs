@@ -186,7 +186,14 @@ public class Lighting : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
-        Gizmos.color = isObstacle ? Color.red : Color.yellow;
+        // 根据光源类型设置不同颜色
+        if (isObstacle)
+            Gizmos.color = Color.red;
+        else if (isSeed)
+            Gizmos.color = Color.green;
+        else
+            Gizmos.color = Color.yellow;
+            
         Gizmos.DrawWireCube(transform.position, new Vector3(size, 0, size));
         
         // 可选：绘制重叠光源关系线
