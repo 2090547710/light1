@@ -33,6 +33,8 @@ public class Plant : MonoBehaviour
     public int currentStage;
     public int maxStages = 3;
     public bool isWithered;
+    private bool hasTriedBloom = false; // 是否已尝试开花
+    private bool hasTriedFruit = false; // 是否已尝试结果
     
     [Header("阶段配置")]
     public List<PlantStage> growthStages = new List<PlantStage>();
@@ -90,20 +92,14 @@ public class Plant : MonoBehaviour
         lightSources.Clear();
         
         ApplyStageConfig(currentStage);
-        
-        // 从当前阶段获取植物信息
-        if (currentStage < growthStages.Count) {
-            plantID = growthStages[currentStage].plantID;
-            plantName = growthStages[currentStage].plantName;
-            growthRate = growthStages[currentStage].growthRate;
-            prerequisitePlantIDs = growthStages[currentStage].prerequisitePlantIDs;
-            prerequisiteWeights = growthStages[currentStage].prerequisiteWeights;
-            updatePlantIDs = growthStages[currentStage].updatePlantIDs;
-            updateWeights = growthStages[currentStage].updateWeights;
-        }
-        
-        PlantManager.Instance.UpdatePlantCounts();
         currentStage++;
+        if (currentStage >= 2 && PlantManager.Instance.IsPlantInDatabase(plantID)) {
+            PlantManager.Instance.UpdatePlantCounts(this, true);
+        }
+        // 如果刚成长为种子阶段，立即尝试开花
+        if (currentStage == 1 && PlantManager.Instance.IsValidSeedName(plantName)) {
+            TryBloom();
+        }
     }
 
     void ApplyStageConfig(int stageIndex)
@@ -115,6 +111,16 @@ public class Plant : MonoBehaviour
         }
 
         var stage = growthStages[stageIndex];
+        
+        // 更新植物信息
+        plantID = stage.plantID;
+        plantName = stage.plantName;
+        growthRate = stage.growthRate;
+        prerequisitePlantIDs = stage.prerequisitePlantIDs;
+        prerequisiteWeights = stage.prerequisiteWeights;
+        updatePlantIDs = stage.updatePlantIDs;
+        updateWeights = stage.updateWeights;
+        
         // 根据数据创建并初始化光源组件
         stage.associatedLights.ForEach(data => {
             var newLight = gameObject.AddComponent<Lighting>();
@@ -145,8 +151,11 @@ public class Plant : MonoBehaviour
 
     public void TryBloom()
     {
-        // 只在种子阶段尝试开花
-        if (currentStage != 1 || isWithered) return;
+        // 如果不是种子阶段、已经凋谢或者已经尝试过开花，则直接返回
+        if (currentStage != 1 || isWithered || hasTriedBloom) return;
+        
+        // 标记为已尝试开花
+        hasTriedBloom = true;
         
         // 计算区域内亮度情况及开花概率
         float brightnessRatio = CalculateBrightnessRatio();
@@ -172,10 +181,21 @@ public class Plant : MonoBehaviour
         }
     }
 
-      public void TryFruit()
+    public void TryFruit()
     {
-        // 只在花阶段尝试结果
-        if (currentStage != 2 || isWithered) return;
+        // 如果已经尝试结果或不是花阶段或已经凋谢，则直接返回
+        if (currentStage != 2 || isWithered || hasTriedFruit) return;
+        Debug.Log($"尝试让植物 {plantName} 结果");
+        // 先尝试获取更新后的植物阶段
+        PlantStage updatedStage = PlantManager.Instance.GetUpdatedPlantStage(growthStages[currentStage-1]);
+        if (updatedStage == null) {
+            // 如果没有可用的更新植物阶段，直接返回
+            Debug.Log($"花朵无法结果：没有可用的更新植物阶段");
+            return;
+        }
+        
+        // 标记为已尝试结果
+        hasTriedFruit = true;
         
         // 计算区域内亮度情况及结果概率
         float brightnessRatio = CalculateBrightnessRatio();
@@ -185,17 +205,10 @@ public class Plant : MonoBehaviour
         {
             Debug.Log($"花朵成功结果！亮度比例: {brightnessRatio:F2}, 结果概率: {bloomProbability:F2}");
             
-            // 获取当前阶段的配置
-            
-            // 尝试获取更新后的植物阶段
-            PlantStage updatedStage = PlantManager.Instance.GetUpdatedPlantStage(growthStages[currentStage-1]);
-            if (updatedStage != null) {
-                // 如果有更新的植物阶段，替换当前阶段
-                growthStages.Add(updatedStage);
-                maxStages = growthStages.Count;
-                Debug.Log($"植物已更新为: {updatedStage.plantName} (ID: {updatedStage.plantID})");
-            }
-
+            // 添加更新后的植物阶段
+            growthStages.Add(updatedStage);
+            maxStages = growthStages.Count;
+            Debug.Log($"植物已更新为: {updatedStage.plantName} (ID: {updatedStage.plantID})");
             
             Grow();
         }
@@ -244,8 +257,8 @@ public class Plant : MonoBehaviour
             return 0;
         }
         
-        // 计算实际亮度总和
-        float totalBrightness = leafNodes.Sum(node => node.Brightness);
+        // 计算实际亮度总和，超过1的亮度按1计算
+        float totalBrightness = leafNodes.Sum(node => Mathf.Min(node.Brightness, 1f));
         
         // 计算理论最大亮度总和（每个节点亮度为1）
         float maxPossibleBrightness = leafNodes.Count;
@@ -369,12 +382,16 @@ public class Plant : MonoBehaviour
                         }
                     }
                     // 情况1.2：对于activePlants中植物的lightSources中的障碍物光源
-                    // 矩形相交就算碰撞
+                    // 矩形相交就算碰撞，但需要排除自身
                     else
                     {
-                        if (IsOverlappingOnXZPlane(nextLightBounds, obstacleBounds))
+                        // 检查该光源是否属于自身
+                        if (!lightSources.Contains(obstacleLight))
                         {
-                            return true; // 发现碰撞
+                            if (IsOverlappingOnXZPlane(nextLightBounds, obstacleBounds))
+                            {
+                                return true; // 发现碰撞
+                            }
                         }
                     }
                 }
@@ -411,12 +428,16 @@ public class Plant : MonoBehaviour
                         }
                     }
                     // 情况1.2：对于activePlants中植物的lightSources中的障碍物光源
-                    // 矩形相交就算碰撞
+                    // 矩形相交就算碰撞，但需要排除自身
                     else
                     {
-                        if (IsOverlappingOnXZPlane(nextSeedBounds, obstacleBounds))
+                        // 检查该光源是否属于自身
+                        if (!lightSources.Contains(obstacleLight))
                         {
-                            return true; // 发现碰撞
+                            if (IsOverlappingOnXZPlane(nextSeedBounds, obstacleBounds))
+                            {
+                                return true; // 发现碰撞
+                            }
                         }
                     }
                 }
@@ -434,9 +455,15 @@ public class Plant : MonoBehaviour
                 Vector3 size = new Vector3(nextSeedLight.size, nextSeedLight.lightHeight, nextSeedLight.size);
                 Bounds nextSeedBounds = new Bounds(center, size);
                 
-                // 检查与所有活跃种子光源的碰撞
+                // 检查与所有活跃种子光源的碰撞，排除自身的光源
                 foreach (Lighting seedLight in seedActiveLights)
                 {
+                    // 跳过自身的光源
+                    if (lightSources.Contains(seedLight))
+                    {
+                        continue;
+                    }
+                    
                     Bounds seedBounds = seedLight.GetWorldBounds();
                     
                     // 矩形相交就算碰撞
@@ -487,6 +514,13 @@ public class Plant : MonoBehaviour
         bool insideZ = Mathf.Abs(point.z - bounds.center.z) <= bounds.size.z * 0.5f;
         
         return insideX && insideZ;
+    }
+
+    // 添加公共方法以检查植物是否可以尝试结果
+    public bool CanTryFruit()
+    {
+        // 如果是花阶段(第2阶段)且未凋谢且尚未尝试结果，则返回true
+        return currentStage == 2 && !isWithered && !hasTriedFruit;
     }
 
     [System.Serializable]

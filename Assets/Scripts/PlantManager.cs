@@ -6,9 +6,10 @@ using UnityEngine;
 
 public class PlantManager : MonoBehaviour
 {
+#region 类属性   
     // 单例模式
     public static PlantManager Instance { get; private set; }
-    
+        
     // 植物数据库
     private Dictionary<int, Plant.PlantStage> plantDatabase = new Dictionary<int, Plant.PlantStage>();
        
@@ -29,7 +30,7 @@ public class PlantManager : MonoBehaviour
     public List<Plant> activePlants = new List<Plant>();
     
     // 添加可更新植物列表
-    private List<int> updatablePlants = new List<int>();
+    public List<int> updatablePlants = new List<int>();
     
     [Serializable]
     public class SeedMapping
@@ -52,10 +53,12 @@ public class PlantManager : MonoBehaviour
         // 加载数据库
         LoadPlantDatabase();
         LoadSeedMappings();
-        PrintPlantDatabaseInfo();
+        // PrintPlantDatabaseInfo();
         // PrintPrerequisiteGraph();
     }
-    
+#endregion
+
+#region 加载数据库
     // 加载植物数据库
     private void LoadPlantDatabase()
     {
@@ -429,7 +432,9 @@ public class PlantManager : MonoBehaviour
                 return 1.0f;
         }
     }
-    
+#endregion
+
+#region 种子和花
     // 根据种子尺寸和生长速度获取种子阶段数据
     public Plant.PlantStage GetSeedPlantStage(SizeLevel size, GrowthRateLevel growthRate)
     {
@@ -538,6 +543,356 @@ public class PlantManager : MonoBehaviour
         }
     }
 
+     public Plant.PlantStage GetPlantStageBySeedFromName(string seedName)
+    {
+        // 去除前后空白字符
+        seedName = seedName.Trim();
+        
+        // 遍历所有尺寸枚举值，判断种子名字是否以该字符串开头
+        foreach (string sizeStr in Enum.GetNames(typeof(SizeLevel)))
+        {
+            if (seedName.StartsWith(sizeStr, StringComparison.OrdinalIgnoreCase))
+            {
+                // 获取种子名称中除尺寸外的部分，作为生长速度字符串
+                string growthRatePart = seedName.Substring(sizeStr.Length);
+                
+                // 尝试解析生长速度枚举（忽略大小写）
+                if (Enum.TryParse(growthRatePart, true, out GrowthRateLevel growthRate) &&
+                    Enum.TryParse(sizeStr, true, out SizeLevel sizeLevel))
+                {
+                    // 调用 GetPlantStageBySeed 方法返回植物阶段数据
+                    return GetPlantStageBySeed(sizeLevel, growthRate);
+                }
+            }
+        }
+        
+        Debug.LogWarning("无法从种子名字解析出尺寸和生长速度: " + seedName);
+        return null;
+    }
+#endregion
+
+#region 果实
+    // 更新植物ID和数量字典
+    public void UpdatePlantCounts(Plant plant, bool isAdding)
+    {
+        int plantId = plant.plantID;
+        
+        // 根据isAdding参数增加或减少植物计数
+        if (isAdding)
+        {
+            // 植物添加：计数增加
+            if (activePlantsCounts.ContainsKey(plantId))
+            {
+                activePlantsCounts[plantId]++;
+            }
+            else
+            {
+                activePlantsCounts[plantId] = 1;
+            }
+        }
+        else
+        {
+            // 植物移除：计数减少
+            if (activePlantsCounts.ContainsKey(plantId))
+            {
+                activePlantsCounts[plantId]--;
+                
+                // 如果计数为0，移除该植物ID
+                if (activePlantsCounts[plantId] <= 0)
+                {
+                    activePlantsCounts.Remove(plantId);
+                }
+            }
+        }
+        
+        // 更新可更新植物列表
+        UpdateUpdatablePlants(plant);
+    }
+
+    // 更新所有植物计数 (向后兼容，用于初始化和批量更新)
+    public void UpdateAllPlantCounts()
+    {
+        // 清空当前字典
+        activePlantsCounts.Clear();
+        
+        // 遍历活跃植物列表
+        foreach (Plant plant in activePlants)
+        {
+            int plantId = plant.plantID;
+            
+            // 如果字典中已存在该植物ID，则数量加1
+            if (activePlantsCounts.ContainsKey(plantId))
+            {
+                activePlantsCounts[plantId]++;
+            }
+            // 否则，添加新的植物ID，数量为1
+            else
+            {
+                activePlantsCounts[plantId] = 1;
+            }
+        }
+        
+        // 完全重建可更新植物列表
+        RebuildUpdatablePlants();
+    }
+    
+    // 更新可更新植物列表 - 增量更新
+    private void UpdateUpdatablePlants(Plant plant)
+    {
+        // 情况1：植物被添加 (isAdding = true)
+        // 添加当前植物可能允许哪些植物被解锁，需要检查所有以当前植物为前置的植物
+        
+        // 情况2：植物被移除 (isAdding = false)
+        // 移除当前植物可能导致某些植物不再满足前置条件，需要重新检查
+        
+        // 获取植物ID
+        int plantId = plant.plantID;
+        
+        // 获取所有以当前植物为前置的植物
+        List<int> affectedPlants = new List<int>();
+        
+        foreach (var entry in plantPrerequisites)
+        {
+            int potentialPlantId = entry.Key;
+            List<KeyValuePair<int, float>> prerequisites = entry.Value;
+            
+            // 检查当前植物是否为该植物的前置
+            bool isPrerequisite = prerequisites.Any(p => p.Key == plantId);
+            
+            if (isPrerequisite)
+            {
+                affectedPlants.Add(potentialPlantId);
+            }
+        }
+        
+        // 对每个受影响的植物，检查是否满足所有前置条件
+        foreach (int affectedPlantId in affectedPlants)
+        {
+            bool allPrerequisitesMet = true;
+            
+            foreach (var prerequisite in plantPrerequisites[affectedPlantId])
+            {
+                int prerequisiteId = prerequisite.Key;
+                float requiredCount = prerequisite.Value;
+                
+                // 获取当前植物数量
+                int currentCount = GetPlantCount(prerequisiteId);
+                
+                // 如果当前数量小于所需数量，则不满足条件
+                if (currentCount < requiredCount)
+                {
+                    allPrerequisitesMet = false;
+                    break;
+                }
+            }
+            
+            // 更新可更新植物列表
+            if (allPrerequisitesMet)
+            {
+                // 如果满足条件且不在列表中，添加
+                if (!updatablePlants.Contains(affectedPlantId))
+                {
+                    updatablePlants.Add(affectedPlantId);
+                }
+            }
+            else
+            {
+                // 如果不满足条件但在列表中，移除
+                if (updatablePlants.Contains(affectedPlantId))
+                {
+                    updatablePlants.Remove(affectedPlantId);
+                }
+            }
+        }
+        
+        // 更新完可更新植物列表后，尝试让活跃植物结果
+        TryFruitForEligiblePlants();
+    }
+
+    // 完全重建可更新植物列表（用于初始化和批量更新）
+    private void RebuildUpdatablePlants()
+    {
+        // 清空当前可更新植物列表
+        updatablePlants.Clear();
+        
+        // 遍历所有前置植物关系
+        foreach (var entry in plantPrerequisites)
+        {
+            int plantId = entry.Key;
+            List<KeyValuePair<int, float>> prerequisites = entry.Value;
+            
+            // 检查是否满足所有前置条件
+            bool allPrerequisitesMet = true;
+            
+            foreach (var prerequisite in prerequisites)
+            {
+                int prerequisiteId = prerequisite.Key;
+                float requiredCount = prerequisite.Value;
+                
+                // 获取当前植物数量
+                int currentCount = GetPlantCount(prerequisiteId);
+                
+                // 如果当前数量小于所需数量，则不满足条件
+                if (currentCount < requiredCount)
+                {
+                    allPrerequisitesMet = false;
+                    break;
+                }
+            }
+            
+            // 如果满足所有前置条件，则添加到可更新植物列表
+            if (allPrerequisitesMet)
+            {
+                updatablePlants.Add(plantId);
+            }
+        }
+        
+        // 更新完可更新植物列表后，尝试让活跃植物结果
+        TryFruitForEligiblePlants();
+    }
+    
+    // 尝试让符合条件的植物结果
+    private void TryFruitForEligiblePlants()
+    {
+        // 遍历所有活跃植物
+        foreach (Plant plant in activePlants)
+        {
+            // 检查植物是否可以尝试结果
+            if (plant.CanTryFruit())
+            {
+                // 调用植物的TryFruit方法
+                plant.TryFruit(); 
+            }
+        }
+    }
+    
+    // 获取可更新植物列表（只读）
+    public IReadOnlyList<int> GetUpdatablePlants()
+    {
+        return updatablePlants;
+    }
+    
+    // 检查植物是否可更新
+    public bool IsPlantUpdatable(int plantId)
+    {
+        return updatablePlants.Contains(plantId);
+    }
+    
+    // 获取植物数量字典（只读）
+    public IReadOnlyDictionary<int, int> GetPlantCounts()
+    {
+        return activePlantsCounts;
+    }
+    
+    // 获取特定植物ID的数量
+    public int GetPlantCount(int plantId)
+    {
+        if (activePlantsCounts.TryGetValue(plantId, out int count))
+        {
+            return count;
+        }
+        return 0;
+    }
+ 
+    // 根据当前植物阶段的更新植物列表和权重返回一个更新后的植物阶段
+    public Plant.PlantStage GetUpdatedPlantStage(Plant.PlantStage currentStage)
+    {
+        // 检查当前植物阶段是否有更新植物列表
+        if (currentStage.updatePlantIDs == null || currentStage.updatePlantIDs.Count == 0)
+        {
+            return null;
+        }
+        
+        // 查找可更新植物列表和当前植物阶段更新列表的交集
+        List<int> availableUpdatePlants = new List<int>();
+        List<float> availableUpdateWeights = new List<float>();
+        
+        for (int i = 0; i < currentStage.updatePlantIDs.Count; i++)
+        {
+            int updatePlantId = currentStage.updatePlantIDs[i];
+            
+            // 检查是否在可更新植物列表中
+            if (updatablePlants.Contains(updatePlantId))
+            {
+                availableUpdatePlants.Add(updatePlantId);
+                
+                // 获取权重（如果有）
+                float weight = 1.0f; // 默认权重
+                if (currentStage.updateWeights != null && i < currentStage.updateWeights.Count)
+                {
+                    weight = currentStage.updateWeights[i];
+                }
+                
+                availableUpdateWeights.Add(weight);
+            }
+        }
+        
+        // 检查是否有可用的更新植物
+        if (availableUpdatePlants.Count == 0)
+        {   
+            return null;
+        }
+        
+        // 如果只有一个可用的更新植物，直接返回
+        if (availableUpdatePlants.Count == 1)
+        {
+            int updatePlantId = availableUpdatePlants[0];
+            if (plantDatabase.TryGetValue(updatePlantId, out Plant.PlantStage updateStage))
+            {
+                return updateStage;
+            }
+            else
+            {
+                Debug.LogWarning($"无法在植物数据库中找到ID为 {updatePlantId} 的植物");
+                return null;
+            }
+        }
+        
+        // 如果有多个可用的更新植物，根据权重随机选择一个
+        float totalWeight = 0;
+        for (int i = 0; i < availableUpdateWeights.Count; i++)
+        {
+            totalWeight += availableUpdateWeights[i];
+        }
+        
+        // 生成随机数
+        float randomValue = UnityEngine.Random.Range(0, totalWeight);
+        float cumulativeWeight = 0;
+        
+        // 根据权重选择植物
+        for (int i = 0; i < availableUpdateWeights.Count; i++)
+        {
+            cumulativeWeight += availableUpdateWeights[i];
+            if (randomValue <= cumulativeWeight)
+            {
+                int selectedPlantId = availableUpdatePlants[i];
+                if (plantDatabase.TryGetValue(selectedPlantId, out Plant.PlantStage selectedStage))
+                {
+                    return selectedStage;
+                }
+                else
+                {
+                    Debug.LogWarning($"无法在植物数据库中找到ID为 {selectedPlantId} 的植物");
+                    return null;
+                }
+            }
+        }
+        
+        // 如果没有选中任何植物（理论上不应该发生），返回第一个植物
+        int fallbackPlantId = availableUpdatePlants[0];
+        if (plantDatabase.TryGetValue(fallbackPlantId, out Plant.PlantStage fallbackStage))
+        {
+            return fallbackStage;
+        }
+        else
+        {
+            Debug.LogWarning($"无法在植物数据库中找到ID为 {fallbackPlantId} 的植物");
+            return null;
+        }
+    }
+#endregion
+
+#region 前置植物关系图构建
     // 修改前置植物关系图构建
     private void BuildPrerequisiteGraph()
     {
@@ -576,7 +931,36 @@ public class PlantManager : MonoBehaviour
         }
     }
 
+    public Plant.PlantStage GetSeedPlantStageFromName(string seedName)
+    {
+        // 去除前后空白字符
+        seedName = seedName.Trim();
+        
+        // 遍历所有尺寸枚举值，判断种子名字是否以该字符串开头
+        foreach (string sizeStr in Enum.GetNames(typeof(SizeLevel)))
+        {
+            if (seedName.StartsWith(sizeStr, StringComparison.OrdinalIgnoreCase))
+            {
+                // 获取种子名称中除尺寸外的部分，作为生长速度字符串
+                string growthRatePart = seedName.Substring(sizeStr.Length);
+                
+                // 尝试解析生长速度枚举（忽略大小写）
+                if (Enum.TryParse(growthRatePart, true, out GrowthRateLevel growthRate) &&
+                    Enum.TryParse(sizeStr, true, out SizeLevel sizeLevel))
+                {
+                    // 调用已有的 GetSeedPlantStage 方法返回种子阶段数据
+                    return GetSeedPlantStage(sizeLevel, growthRate);
+                }
+            }
+        }
+        
+        Debug.LogWarning("无法从种子名字解析出尺寸和生长速度: " + seedName);
+        return null;
+    }
 
+#endregion
+
+#region 辅助方法
     // 获取植物数据库（只读）
     public IReadOnlyDictionary<int, Plant.PlantStage> GetPlantDatabase()
     {
@@ -651,33 +1035,6 @@ public class PlantManager : MonoBehaviour
         }
     }
 
-    public Plant.PlantStage GetSeedPlantStageFromName(string seedName)
-    {
-        // 去除前后空白字符
-        seedName = seedName.Trim();
-        
-        // 遍历所有尺寸枚举值，判断种子名字是否以该字符串开头
-        foreach (string sizeStr in Enum.GetNames(typeof(SizeLevel)))
-        {
-            if (seedName.StartsWith(sizeStr, StringComparison.OrdinalIgnoreCase))
-            {
-                // 获取种子名称中除尺寸外的部分，作为生长速度字符串
-                string growthRatePart = seedName.Substring(sizeStr.Length);
-                
-                // 尝试解析生长速度枚举（忽略大小写）
-                if (Enum.TryParse(growthRatePart, true, out GrowthRateLevel growthRate) &&
-                    Enum.TryParse(sizeStr, true, out SizeLevel sizeLevel))
-                {
-                    // 调用已有的 GetSeedPlantStage 方法返回种子阶段数据
-                    return GetSeedPlantStage(sizeLevel, growthRate);
-                }
-            }
-        }
-        
-        Debug.LogWarning("无法从种子名字解析出尺寸和生长速度: " + seedName);
-        return null;
-    }
-
     // 打印前置植物关系图用于调试
     public void PrintPrerequisiteGraph()
     {
@@ -748,105 +1105,14 @@ public class PlantManager : MonoBehaviour
         }
     }
 
-    // 更新植物ID和数量字典
-    public void UpdatePlantCounts()
+    // 检查植物ID是否在数据库中
+    public bool IsPlantInDatabase(int plantId)
     {
-        // 清空当前字典
-        activePlantsCounts.Clear();
-        
-        // 遍历活跃植物列表
-        foreach (Plant plant in activePlants)
-        {
-            int plantId = plant.plantID;
-            
-            // 如果字典中已存在该植物ID，则数量加1
-            if (activePlantsCounts.ContainsKey(plantId))
-            {
-                activePlantsCounts[plantId]++;
-            }
-            // 否则，添加新的植物ID，数量为1
-            else
-            {
-                activePlantsCounts[plantId] = 1;
-            }
-        }
-        
-        // 更新可更新植物列表
-        UpdateUpdatablePlants();
-        
-        // Debug.Log($"更新植物数量：共有 {plantCounts.Count} 种不同植物");
-    }
-    
-    // 更新可更新植物列表
-    private void UpdateUpdatablePlants()
-    {
-        // 清空当前可更新植物列表
-        updatablePlants.Clear();
-        
-        // 遍历所有前置植物关系
-        foreach (var entry in plantPrerequisites)
-        {
-            int plantId = entry.Key;
-            List<KeyValuePair<int, float>> prerequisites = entry.Value;
-            
-            // 检查是否满足所有前置条件
-            bool allPrerequisitesMet = true;
-            
-            foreach (var prerequisite in prerequisites)
-            {
-                int prerequisiteId = prerequisite.Key;
-                float requiredCount = prerequisite.Value;
-                
-                // 获取当前植物数量
-                int currentCount = GetPlantCount(prerequisiteId);
-                
-                // 如果当前数量小于所需数量，则不满足条件
-                if (currentCount < requiredCount)
-                {
-                    allPrerequisitesMet = false;
-                    break;
-                }
-            }
-            
-            // 如果满足所有前置条件，则添加到可更新植物列表
-            if (allPrerequisitesMet)
-            {
-                updatablePlants.Add(plantId);
-            }
-        }
-        
-        // Debug.Log($"更新可更新植物列表：共有 {updatablePlants.Count} 种可更新植物");
-    }
-    
-    // 获取可更新植物列表（只读）
-    public IReadOnlyList<int> GetUpdatablePlants()
-    {
-        return updatablePlants;
-    }
-    
-    // 检查植物是否可更新
-    public bool IsPlantUpdatable(int plantId)
-    {
-        return updatablePlants.Contains(plantId);
-    }
-    
-    // 获取植物数量字典（只读）
-    public IReadOnlyDictionary<int, int> GetPlantCounts()
-    {
-        return activePlantsCounts;
-    }
-    
-    // 获取特定植物ID的数量
-    public int GetPlantCount(int plantId)
-    {
-        if (activePlantsCounts.TryGetValue(plantId, out int count))
-        {
-            return count;
-        }
-        return 0;
+        return plantDatabase.ContainsKey(plantId);
     }
 
-    public Plant.PlantStage GetPlantStageBySeedFromName(string seedName)
+    // 检查种子名称是否由有效的尺寸和生长速度枚举构成
+    public bool IsValidSeedName(string seedName)
     {
         // 去除前后空白字符
         seedName = seedName.Trim();
@@ -860,115 +1126,16 @@ public class PlantManager : MonoBehaviour
                 string growthRatePart = seedName.Substring(sizeStr.Length);
                 
                 // 尝试解析生长速度枚举（忽略大小写）
-                if (Enum.TryParse(growthRatePart, true, out GrowthRateLevel growthRate) &&
-                    Enum.TryParse(sizeStr, true, out SizeLevel sizeLevel))
+                if (Enum.TryParse(growthRatePart, true, out GrowthRateLevel _) &&
+                    Enum.TryParse(sizeStr, true, out SizeLevel _))
                 {
-                    // 调用 GetPlantStageBySeed 方法返回植物阶段数据
-                    return GetPlantStageBySeed(sizeLevel, growthRate);
+                    return true;
                 }
             }
         }
         
-        Debug.LogWarning("无法从种子名字解析出尺寸和生长速度: " + seedName);
-        return null;
+        return false;
     }
 
-    // 根据当前植物阶段的更新植物列表和权重返回一个更新后的植物阶段
-    public Plant.PlantStage GetUpdatedPlantStage(Plant.PlantStage currentStage)
-    {
-        // 检查当前植物阶段是否有更新植物列表
-        if (currentStage.updatePlantIDs == null || currentStage.updatePlantIDs.Count == 0)
-        {
-            Debug.LogWarning($"植物 {currentStage.plantName} (ID: {currentStage.plantID}) 没有可更新的植物");
-            return null;
-        }
-        
-        // 查找可更新植物列表和当前植物阶段更新列表的交集
-        List<int> availableUpdatePlants = new List<int>();
-        List<float> availableUpdateWeights = new List<float>();
-        
-        for (int i = 0; i < currentStage.updatePlantIDs.Count; i++)
-        {
-            int updatePlantId = currentStage.updatePlantIDs[i];
-            
-            // 检查是否在可更新植物列表中
-            if (updatablePlants.Contains(updatePlantId))
-            {
-                availableUpdatePlants.Add(updatePlantId);
-                
-                // 获取权重（如果有）
-                float weight = 1.0f; // 默认权重
-                if (currentStage.updateWeights != null && i < currentStage.updateWeights.Count)
-                {
-                    weight = currentStage.updateWeights[i];
-                }
-                
-                availableUpdateWeights.Add(weight);
-            }
-        }
-        
-        // 检查是否有可用的更新植物
-        if (availableUpdatePlants.Count == 0)
-        {
-            Debug.LogWarning($"植物 {currentStage.plantName} (ID: {currentStage.plantID}) 没有可用的更新植物");
-            return null;
-        }
-        
-        // 如果只有一个可用的更新植物，直接返回
-        if (availableUpdatePlants.Count == 1)
-        {
-            int updatePlantId = availableUpdatePlants[0];
-            if (plantDatabase.TryGetValue(updatePlantId, out Plant.PlantStage updateStage))
-            {
-                return updateStage;
-            }
-            else
-            {
-                Debug.LogWarning($"无法在植物数据库中找到ID为 {updatePlantId} 的植物");
-                return null;
-            }
-        }
-        
-        // 如果有多个可用的更新植物，根据权重随机选择一个
-        float totalWeight = 0;
-        for (int i = 0; i < availableUpdateWeights.Count; i++)
-        {
-            totalWeight += availableUpdateWeights[i];
-        }
-        
-        // 生成随机数
-        float randomValue = UnityEngine.Random.Range(0, totalWeight);
-        float cumulativeWeight = 0;
-        
-        // 根据权重选择植物
-        for (int i = 0; i < availableUpdateWeights.Count; i++)
-        {
-            cumulativeWeight += availableUpdateWeights[i];
-            if (randomValue <= cumulativeWeight)
-            {
-                int selectedPlantId = availableUpdatePlants[i];
-                if (plantDatabase.TryGetValue(selectedPlantId, out Plant.PlantStage selectedStage))
-                {
-                    return selectedStage;
-                }
-                else
-                {
-                    Debug.LogWarning($"无法在植物数据库中找到ID为 {selectedPlantId} 的植物");
-                    return null;
-                }
-            }
-        }
-        
-        // 如果没有选中任何植物（理论上不应该发生），返回第一个植物
-        int fallbackPlantId = availableUpdatePlants[0];
-        if (plantDatabase.TryGetValue(fallbackPlantId, out Plant.PlantStage fallbackStage))
-        {
-            return fallbackStage;
-        }
-        else
-        {
-            Debug.LogWarning($"无法在植物数据库中找到ID为 {fallbackPlantId} 的植物");
-            return null;
-        }
-    }
+#endregion    
 }
