@@ -185,12 +185,11 @@ public class Plant : MonoBehaviour
     {
         // 如果已经尝试结果或不是花阶段或已经凋谢，则直接返回
         if (currentStage != 2 || isWithered || hasTriedFruit) return;
-        Debug.Log($"尝试让植物 {plantName} 结果");
+
         // 先尝试获取更新后的植物阶段
         PlantStage updatedStage = PlantManager.Instance.GetUpdatedPlantStage(growthStages[currentStage-1]);
         if (updatedStage == null) {
             // 如果没有可用的更新植物阶段，直接返回
-            Debug.Log($"花朵无法结果：没有可用的更新植物阶段");
             return;
         }
         

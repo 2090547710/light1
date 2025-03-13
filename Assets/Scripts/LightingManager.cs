@@ -14,6 +14,9 @@ public class LightingManager : MonoBehaviour
     private static int kernelNormal;
     private static RenderTexture compositeRT;
     
+    // 添加公共访问器属性
+    public static RenderTexture CompositeRT => compositeRT;
+    
     // 新增合成高度图相关字段
     public static int compositeSize = 4096;
     public static Texture2D compositeHeightmap;
