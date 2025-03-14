@@ -132,6 +132,13 @@ MonoBehaviour:
       heightMap: {fileID: 2800000, guid: ba44778c93d8d8b4abbcce8b2c95ba64, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
+    plantID: 0
+    plantName: 
+    growthRate: 0
+    prerequisitePlantIDs: 
+    prerequisiteWeights: []
+    updatePlantIDs: 
+    updateWeights: []
   - stageType: 1
     associatedLights:
     - size: 3
@@ -148,6 +155,13 @@ MonoBehaviour:
       heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
+    plantID: 0
+    plantName: 
+    growthRate: 0
+    prerequisitePlantIDs: 
+    prerequisiteWeights: []
+    updatePlantIDs: 
+    updateWeights: []
   - stageType: 2
     associatedLights:
     - size: 12
@@ -164,14 +178,22 @@ MonoBehaviour:
       heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
+    plantID: 0
+    plantName: 
+    growthRate: 0
+    prerequisitePlantIDs: 
+    prerequisiteWeights: []
+    updatePlantIDs: 
+    updateWeights: []
   bloomThreshold: 0.8
   bloomSteepness: 10
   bloomProbability: 0
   brightnessRatio: 0
   growthRate: 1
   growthRateInfluence: 0.3
-  cachedBloomThreshold: 0.8
-  cachedBloomSteepness: 10
-  cachedGrowthRate: 1
-  cachedGrowthRateInfluence: 0.3
-  isDirty: 1
+  plantID: 0
+  plantName: 
+  prerequisitePlantIDs: 
+  prerequisiteWeights: []
+  updatePlantIDs: 
+  updateWeights: []

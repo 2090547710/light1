@@ -232,6 +232,7 @@ GameObject:
   - component: {fileID: 877133420}
   - component: {fileID: 877133417}
   - component: {fileID: 877133419}
+  - component: {fileID: 877133422}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -310,6 +311,8 @@ MonoBehaviour:
     m_Bits: 256
   seedCooldown: 0.5
   darkCooldown: 0.5
+  selectedSize: 1
+  selectedGrowthRate: 1
 --- !u!114 &877133419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -350,6 +353,8 @@ MonoBehaviour:
   seedMappings: []
   plantDatabasePath: PlantData/PlantDatabase
   seedMappingPath: PlantData/SeedMapping
+  activePlants: []
+  updatablePlants: 
 --- !u!114 &877133421
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -371,10 +376,25 @@ MonoBehaviour:
   lightSourceCount: 0
   prerequisitePlants: "\u65E0"
   seedMode: 0
-  fruitMode: 0
   seedName: 
-  candidatePlantIds: 
-  availablePlants: []
+--- !u!114 &877133422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877133413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68af337fb09e04e4d86780987fdba12b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetTerrain: {fileID: 0}
+  heightScale: 0.1
+  smoothHeights: 1
+  smoothIterations: 2
+  terrainLayer: 8
+  terrainMaterial: {fileID: 2100000, guid: 12a3a78a40985e446b3cca4f32a1eb5c, type: 2}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -487,112 +507,6 @@ MonoBehaviour:
   maxZoom: 50
   smoothTime: 0.1
   initialZoom: 20
---- !u!1 &1305364066
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1305364070}
-  - component: {fileID: 1305364069}
-  - component: {fileID: 1305364068}
-  - component: {fileID: 1305364067}
-  m_Layer: 8
-  m_Name: Plane
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!64 &1305364067
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1305364066}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &1305364068
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1305364066}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 12a3a78a40985e446b3cca4f32a1eb5c, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &1305364069
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1305364066}
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &1305364070
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1305364066}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
-  m_LocalScale: {x: 12.8, y: 1, z: 12.8}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1773321643
 GameObject:
   m_ObjectHideFlags: 0
@@ -694,6 +608,8 @@ MonoBehaviour:
   markerPrefab: {fileID: 1323435036065331973, guid: d903664912025734989e641f0cb73d56, type: 3}
   markerScale: 0.3
   markerDuration: 1
+  rotationSpeed: 10
+  smoothRotation: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -701,5 +617,4 @@ SceneRoots:
   - {fileID: 705507995}
   - {fileID: 877133415}
   - {fileID: 1773321644}
-  - {fileID: 1305364070}
   - {fileID: 963194228}

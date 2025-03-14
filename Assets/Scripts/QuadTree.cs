@@ -539,10 +539,8 @@ public class QuadTree
        
     #region 路径规划
     // 新增路径规划方法
-    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, float maxStepHeight = 0.2f)
+    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
     {
-        float maxStep = maxStepHeight;
-        
         var startNode = FindLeafNode(startPos);
         var targetNode = FindLeafNode(targetPos);
         
@@ -551,7 +549,7 @@ public class QuadTree
         {
             // 在目标位置周围3倍节点尺寸范围内寻找最近的可行走节点
             var candidates = GetNeighborLeafNodes(targetPos, MinNodeSize.x * 3f)
-                .Where(n => n.IsWalkable && n.Size == MinNodeSize)
+                .Where(n => n.IsWalkable && n.Size == MinNodeSize && IsHeightAccessible(startNode, n))
                 .OrderBy(n => Vector3.Distance(
                     new Vector3(n.Center.x, 0, n.Center.y), 
                     targetPos))
@@ -561,8 +559,8 @@ public class QuadTree
             targetNode = candidates.First();
         }
         
-        // 直接返回null如果目标节点不可行走
-        if (targetNode == null || !targetNode.IsWalkable || targetNode.Size != MinNodeSize)
+        // 直接返回null如果目标节点不可行走或高度不可达
+        if (targetNode == null || !targetNode.IsWalkable || targetNode.Size != MinNodeSize || !IsHeightAccessible(startNode, targetNode))
         {
             return null;
         }
@@ -574,7 +572,7 @@ public class QuadTree
         ResetPathfindingData();
         
         startNode.GCost = 0;
-        startNode.HCost = Heuristic(startNode, targetNode, maxStep);
+        startNode.HCost = Heuristic(startNode, targetNode);
         openList.Add(startNode);
 
         while (openList.Count > 0)
@@ -587,19 +585,19 @@ public class QuadTree
             openList.Remove(currentNode);
             closedSet.Add(currentNode);
 
-            foreach (var neighbor in GetNeighbors(currentNode, maxStep))
+            foreach (var neighbor in GetNeighbors(currentNode))
             {
                 if (!neighbor.IsWalkable || closedSet.Contains(neighbor))
                     continue;
 
-                float tentativeGCost = currentNode.GCost + Heuristic(currentNode, neighbor, maxStep);
+                float tentativeGCost = currentNode.GCost + Heuristic(currentNode, neighbor);
                 
                 // Theta*核心优化
                 if (currentNode.ParentNode != null && 
-                    HasLineOfSight(currentNode.ParentNode, neighbor, maxStep))
+                    HasLineOfSight(currentNode.ParentNode, neighbor))
                 {
                     float alternativeCost = currentNode.ParentNode.GCost + 
-                                          Heuristic(currentNode.ParentNode, neighbor, maxStep);
+                                          Heuristic(currentNode.ParentNode, neighbor);
                     if (alternativeCost < tentativeGCost)
                     {
                         tentativeGCost = alternativeCost;
@@ -610,7 +608,7 @@ public class QuadTree
                 if (tentativeGCost < neighbor.GCost)
                 {
                     neighbor.GCost = tentativeGCost;
-                    neighbor.HCost = Heuristic(neighbor, targetNode, maxStep);
+                    neighbor.HCost = Heuristic(neighbor, targetNode);
                     neighbor.ParentNode = currentNode;
 
                     if (!openList.Contains(neighbor))
@@ -637,7 +635,7 @@ public class QuadTree
                          .FirstOrDefault(result => result != null);
     }
 
-    private List<QuadTreeNode> GetNeighbors(QuadTreeNode node, float maxStepHeight)
+    private List<QuadTreeNode> GetNeighbors(QuadTreeNode node)
     {
         if (neighborCache.TryGetValue(node, out var cached))
             return cached;
@@ -645,15 +643,14 @@ public class QuadTree
         Vector3 center = new Vector3(node.Center.x, 0, node.Center.y);
         float radius = Mathf.Max(node.Size.x, node.Size.y) * 1.0f;
         var neighbors = GetNeighborLeafNodes(center, radius)
-            .Where(n => n.IsWalkable && 
-                   Mathf.Abs(n.Height - node.Height) <= maxStepHeight) // 使用参数
+            .Where(n => n.IsWalkable && IsHeightAccessible(node, n))
             .ToList();
         
         neighborCache[node] = neighbors;
         return neighbors;
     }
 
-    private bool HasLineOfSight(QuadTreeNode from, QuadTreeNode to, float maxStepHeight)
+    private bool HasLineOfSight(QuadTreeNode from, QuadTreeNode to)
     {
         Vector2 start = from.Center;
         Vector2 end = to.Center;
@@ -667,8 +664,11 @@ public class QuadTree
             Vector2 point = Vector2.Lerp(start, end, t);
             var node = FindLeafNode(new Vector3(point.x, 0, point.y));
             
-            if (node == null || !node.IsWalkable || 
-                Mathf.Abs(prevNode.Height - node.Height) > maxStepHeight)
+            if (node == null || !node.IsWalkable)
+                return false;
+            
+            // 检查与前一个节点的高度差是否可接受
+            if (!IsHeightAccessible(prevNode, node))
                 return false;
             
             prevNode = node;
@@ -683,9 +683,17 @@ public class QuadTree
 
         while (currentNode != null && currentNode != startNode)
         {
-            path.Add(new Vector3(currentNode.Center.x, 0, currentNode.Center.y));
+            // 在路径点中包含高度信息
+            path.Add(new Vector3(currentNode.Center.x, currentNode.Height, currentNode.Center.y));
             currentNode = currentNode.ParentNode;
         }
+        
+        // 添加起点（包含高度）
+        if (currentNode == startNode)
+        {
+            path.Add(new Vector3(startNode.Center.x, startNode.Height, startNode.Center.y));
+        }
+        
         path.Reverse();
         return SimplifyPath(path);
     }
@@ -712,26 +720,37 @@ public class QuadTree
         float step = 0.5f;
         float distance = Vector2.Distance(start, end);
         
+        QuadTreeNode prevNode = FindLeafNode(a);
+        if (prevNode == null) return false;
+        
         for (float t = 0; t <= 1; t += step / distance)
         {
             Vector2 point = Vector2.Lerp(start, end, t);
             var node = FindLeafNode(new Vector3(point.x, 0, point.y));
-            if (node == null || !node.IsWalkable) return false;
+            
+            if (node == null || !node.IsWalkable) 
+                return false;
+            
+            // 检查高度可达性
+            if (prevNode != null && !IsHeightAccessible(prevNode, node))
+                return false;
+            
+            prevNode = node;
         }
         return true;
     }
 
-    private float Heuristic(QuadTreeNode a, QuadTreeNode b, float maxStepHeight = 0.2f)
+    private float Heuristic(QuadTreeNode a, QuadTreeNode b)
     {
-        float aHeight = Mathf.Max(a.Height, 0);
-        float bHeight = Mathf.Max(b.Height, 0);
+        // 基础距离计算
+        float baseDistance = Vector2.Distance(a.Center, b.Center);
         
-        float heightDifference = Mathf.Abs(aHeight - bHeight);
-        if (heightDifference > maxStepHeight)
-        {
-            return Mathf.Infinity;
-        }
-        return Vector2.Distance(a.Center, b.Center) + heightDifference * 0.2f;
+        // 考虑高度差异的惩罚因子
+        float heightDifference = Mathf.Abs(a.Height - b.Height);
+        float heightPenalty = heightDifference * 2.0f; // 高度差异惩罚系数，可以调整
+        
+        // 返回综合考虑平面距离和高度差异的启发式值
+        return baseDistance + heightPenalty;
     }
 
     private void ResetPathfindingData()
@@ -752,19 +771,13 @@ public class QuadTree
         }
     }
 
-    private QuadTreeNode FindNearestWalkableNode(Vector3 position, float radius, float maxStepHeight = 0.5f)
+    private QuadTreeNode FindNearestWalkableNode(Vector3 position, float radius)
     {
-        // 获取当前位置所在节点的高度作为参考
-        var referenceNode = FindLeafNode(position);
-        float referenceHeight = referenceNode?.Height ?? 0;
-
         var candidates = GetNeighborLeafNodes(position, radius)
-            .Where(n => n.IsWalkable && 
-                   Mathf.Abs(n.Height - referenceHeight) <= maxStepHeight) // 添加高度差过滤
+            .Where(n => n.IsWalkable)
             .OrderBy(n => Vector3.Distance(
                 new Vector3(n.Center.x, 0, n.Center.y), 
-                position))
-            .ThenBy(n => Mathf.Abs(n.Height - referenceHeight)); // 添加高度差排序
+                position));
         
         return candidates.FirstOrDefault();
     }
@@ -995,6 +1008,19 @@ public class QuadTree
                 FindNeighborLeafNodesCircle(child, position, radius, result);
             }
         }
+    }
+
+    // 新增方法：判断两个节点间的高度是否可达
+    private bool IsHeightAccessible(QuadTreeNode from, QuadTreeNode to)
+    {
+        // 定义最大可攀爬高度差
+        float maxClimbableHeight = 0.1f; // 可以根据需要调整
+        
+        // 计算高度差
+        float heightDifference = Mathf.Abs(from.Height - to.Height);
+        
+        // 如果高度差超过最大可攀爬高度，则不可达
+        return heightDifference <= maxClimbableHeight;
     }
     #endregion
 

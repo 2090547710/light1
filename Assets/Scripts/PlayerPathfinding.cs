@@ -51,8 +51,7 @@ public class PlayerPathfinding : MonoBehaviour
                 }
                 
                 // 请求路径
-                var path = quadTree.FindPath(transform.position, targetPos, 0.1f);
-                // Debug.Log(path.Count);
+                var path = quadTree.FindPath(transform.position, targetPos);
                 if (path != null && path.Count > 0)
                 {
                     // 转换路径点为世界坐标（保持高度）
@@ -70,6 +69,10 @@ public class PlayerPathfinding : MonoBehaviour
                     InsertToQuadTree();
                     
                     moveCoroutine = StartCoroutine(FollowPath());
+                }
+                else
+                {
+                    Debug.LogWarning("无法找到到目标点的可行路径！");
                 }
             }
         }
