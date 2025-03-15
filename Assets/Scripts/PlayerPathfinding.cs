@@ -127,8 +127,8 @@ public class PlayerPathfinding : MonoBehaviour
         }
     }
 
-    // 新增四叉树插入方法
-    private void InsertToQuadTree()
+    // 将InsertToQuadTree方法改为公共方法，以便其他类可以调用
+    public void InsertToQuadTree()
     {
         if (quadTree != null)
         {

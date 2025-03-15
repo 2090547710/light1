@@ -372,25 +372,25 @@ public class QuadTree
         Gizmos.DrawWireCube(center, size * 1.0f);
 
         // 修改为数字高度显示
-        if (node.Height > 0.01 && node.Size==MinNodeSize)
-        {
-            // 在节点中心上方显示高度值
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = Color.green;
-            style.fontSize = Mathf.RoundToInt(12 * (node.Size.x / MinNodeSize.x)); // 根据节点尺寸自动调整字体大小
-            style.alignment = TextAnchor.MiddleCenter;
-            style.fontStyle = FontStyle.Bold;
+        // if (node.Height > 0.01 && node.Size==MinNodeSize)
+        // {
+        //     // 在节点中心上方显示高度值
+        //     GUIStyle style = new GUIStyle();
+        //     style.normal.textColor = Color.green;
+        //     style.fontSize = Mathf.RoundToInt(12 * (node.Size.x / MinNodeSize.x)); // 根据节点尺寸自动调整字体大小
+        //     style.alignment = TextAnchor.MiddleCenter;
+        //     style.fontStyle = FontStyle.Bold;
             
-            // 显示两位小数的高度值
-            Handles.Label(
-                center + Vector3.up * 0.2f, // 稍微抬高避免重叠
-                node.Height.ToString("F2"), 
-                style);
+        //     // 显示两位小数的高度值
+        //     Handles.Label(
+        //         center + Vector3.up * 0.2f, // 稍微抬高避免重叠
+        //         node.Height.ToString("F2"), 
+        //         style);
             
-            // 保留线框显示（可选）
-            Gizmos.color = new Color(0, 0.5f, 0, 0.2f);
-            Gizmos.DrawWireCube(center, new Vector3(node.Size.x, 0, node.Size.y));
-        }
+        //     // 保留线框显示（可选）
+        //     Gizmos.color = new Color(0, 0.5f, 0, 0.2f);
+        //     Gizmos.DrawWireCube(center, new Vector3(node.Size.x, 0, node.Size.y));
+        // }
 
         // 递归绘制子节点
         if (node.Children != null)

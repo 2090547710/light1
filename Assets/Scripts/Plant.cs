@@ -5,6 +5,7 @@ using UnityEngine;
 using System.IO;
 using System.Linq;
 
+#region 枚举
 public enum StageType
 {        
     Seed,
@@ -25,9 +26,13 @@ public enum GrowthRateLevel
     Medium, // 中
     Fast // 快
 }
+#endregion
+
 
 public class Plant : MonoBehaviour
 {
+    
+    #region 字段和属性
     [Header("生长设置")]
     public List<Lighting> lightSources = new List<Lighting>(); // 多个光源组件
     public int currentStage;
@@ -61,6 +66,14 @@ public class Plant : MonoBehaviour
     public List<int> updatePlantIDs; // 更新植物ID列表 
     public List<float> updateWeights; // 更新权重列表
    
+    [Header("UI显示")]
+    private TextMesh nameText; // 用于显示植物名称的TextMesh组件
+    public float textHeight = 1.5f; // 文本悬浮高度
+    public Color textColor = Color.white; // 文本颜色
+    public float textSize = 1.0f; // 文本大小
+    #endregion
+   
+    #region Unity生命周期方法
     void Start()
     {
         currentStage=0;
@@ -69,9 +82,70 @@ public class Plant : MonoBehaviour
         {
             Grow();
         }
+        
+        // 创建并设置名称显示
+        CreateNameDisplay();
     }
-   
     
+    void Update()
+    {
+        // 更新名称显示
+        if (nameText != null)
+        {
+            // 如果植物已枯萎，在名称后添加"已枯萎"标记
+            string displayName = isWithered ? plantName + " (已枯萎)" : plantName;
+            
+            // 只有当显示名称变化时才更新
+            if (nameText.text != displayName)
+            {
+                nameText.text = displayName;
+            }
+        }
+    }
+    
+    private void OnEnable()
+    {
+        // 确保 PlantManager 实例存在
+        if (PlantManager.Instance != null)
+        {
+            PlantManager.Instance.RegisterPlant(this);
+        }
+    }
+    
+    private void OnDisable()
+    {
+        // 确保 PlantManager 实例存在
+        if (PlantManager.Instance != null)
+        {
+            PlantManager.Instance.UnregisterPlant(this);
+        }
+    }
+    #endregion
+   
+    #region UI相关方法
+    // 创建名称显示
+    private void CreateNameDisplay()
+    {
+        // 创建一个子物体用于显示名称
+        GameObject textObj = new GameObject("NameDisplay");
+        textObj.transform.SetParent(transform);
+        textObj.transform.localPosition = new Vector3(0, textHeight, 0);
+        
+        // 添加TextMesh组件
+        nameText = textObj.AddComponent<TextMesh>();
+        nameText.text = plantName;
+        nameText.fontSize = 90;
+        nameText.characterSize = textSize * 0.1f;
+        nameText.alignment = TextAlignment.Center;
+        nameText.anchor = TextAnchor.LowerCenter;
+        nameText.color = textColor;
+        
+        // 确保文本始终面向摄像机
+        textObj.AddComponent<Billboard>();
+    }
+    #endregion
+   
+    #region 生长和枯萎方法
     public void Grow()
     {
         if (isWithered || currentStage >= maxStages) return;
@@ -100,6 +174,9 @@ public class Plant : MonoBehaviour
         if (currentStage == 1 && PlantManager.Instance.IsValidSeedName(plantName)) {
             TryBloom();
         }
+        
+        // 植物生长后，检查玩家是否被卡住
+        CheckAndTeleportPlayerIfStuck();
     }
 
     void ApplyStageConfig(int stageIndex)
@@ -121,6 +198,12 @@ public class Plant : MonoBehaviour
         updatePlantIDs = stage.updatePlantIDs;
         updateWeights = stage.updateWeights;
         
+        // 更新名称显示，考虑枯萎状态
+        if (nameText != null)
+        {
+            nameText.text = isWithered ? plantName + " (已枯萎)" : plantName;
+        }
+        
         // 根据数据创建并初始化光源组件
         stage.associatedLights.ForEach(data => {
             var newLight = gameObject.AddComponent<Lighting>();
@@ -134,21 +217,66 @@ public class Plant : MonoBehaviour
     public void Wither()
     {
         isWithered = true;
-        // 修改为禁用并销毁组件
-        lightSources.ForEach(l => {
-            l.RemoveLighting();
-            l.enabled = false;
-            Destroy(l);
-        });
-        lightSources.Clear();
-        LightingManager.tree.Remove(gameObject);
+        
+        // 更新名称显示
+        if (nameText != null)
+        {
+            nameText.text = plantName + " (已枯萎)";
+        }
+        
+        // 根据当前阶段执行不同的删除逻辑
+        if (currentStage == 0)
+        {
+            // 情况1：种子阶段前
+            // 禁用并移除除了isObstacle的所有现有光源组件
+            foreach (var light in lightSources.ToList())
+            {
+                if (!light.isObstacle)
+                {
+                    light.RemoveLighting();
+                    lightSources.Remove(light);
+                    Destroy(light);
+                }
+            }
+            
+            // 从四叉树中移除
+            LightingManager.tree.Remove(gameObject);
+            
+            // 从植物管理器中注销
+            PlantManager.Instance.UnregisterPlant(this);
+        }
+        else if (currentStage == 1 || currentStage == 2)
+        {
+            // 情况2：种子或花阶段
+            // 禁用并移除除了isObstacle的所有现有光源组件
+            foreach (var light in lightSources.ToList())
+            {
+                if (!light.isObstacle)
+                {
+                    light.RemoveLighting();
+                    lightSources.Remove(light);
+                    Destroy(light);
+                }
+            }
+            
+            // 从四叉树中移除
+            LightingManager.tree.Remove(gameObject);
+            
+            // 更新植物计数
+            PlantManager.Instance.UpdatePlantCounts(this, false);
+            
+            // 从植物管理器中注销
+            PlantManager.Instance.UnregisterPlant(this);
+        }
+        else if (currentStage == 3)
+        {
+            // 情况3：果实阶段
+            // 什么也不做
+        }
     }
+    #endregion
 
-    void Update()
-    {
-
-    }
-
+    #region 开花和结果方法
     public void TryBloom()
     {
         // 如果不是种子阶段、已经凋谢或者已经尝试过开花，则直接返回
@@ -272,25 +400,16 @@ public class Plant : MonoBehaviour
         
         return brightnessRatio;
     }
-
-    private void OnEnable()
-    {
-        // 确保 PlantManager 实例存在
-        if (PlantManager.Instance != null)
-        {
-            PlantManager.Instance.RegisterPlant(this);
-        }
-    }
     
-    private void OnDisable()
+    // 添加公共方法以检查植物是否可以尝试结果
+    public bool CanTryFruit()
     {
-        // 确保 PlantManager 实例存在
-        if (PlantManager.Instance != null)
-        {
-            PlantManager.Instance.UnregisterPlant(this);
-        }
+        // 如果是花阶段(第2阶段)且未凋谢且尚未尝试结果，则返回true
+        return currentStage == 2 && !isWithered && !hasTriedFruit;
     }
+    #endregion
 
+    #region 碰撞检测方法
     // 修改碰撞检测方法
     private bool HasCollisionWithOtherPlants()
     {
@@ -514,14 +633,125 @@ public class Plant : MonoBehaviour
         
         return insideX && insideZ;
     }
+    #endregion
 
-    // 添加公共方法以检查植物是否可以尝试结果
-    public bool CanTryFruit()
+    #region 玩家碰撞处理
+    // 检查玩家是否被卡住，如果被卡住则瞬移到安全位置
+    private void CheckAndTeleportPlayerIfStuck()
     {
-        // 如果是花阶段(第2阶段)且未凋谢且尚未尝试结果，则返回true
-        return currentStage == 2 && !isWithered && !hasTriedFruit;
+        // 查找场景中的玩家对象
+        PlayerPathfinding player = FindObjectOfType<PlayerPathfinding>();
+        if (player == null) return;
+        
+        // 获取玩家位置
+        Vector3 playerPosition = player.transform.position;
+        
+        // 检查玩家是否在植物的障碍物光源范围内
+        bool playerStuck = false;
+        
+        foreach (var light in lightSources)
+        {
+            if (light.isObstacle)
+            {
+                // 获取光源的世界边界
+                Bounds lightBounds = light.GetWorldBounds();
+                
+                // 检查玩家是否在光源范围内
+                if (IsPointInXZBounds(playerPosition, lightBounds))
+                {
+                    playerStuck = true;
+                    break;
+                }
+            }
+        }
+        
+        // 如果玩家被卡住，尝试瞬移到安全位置
+        if (playerStuck)
+        {
+            TeleportPlayerToSafePosition(player);
+        }
     }
 
+    // 将玩家瞬移到安全位置
+    private void TeleportPlayerToSafePosition(PlayerPathfinding player)
+    {
+        // 搜索半径，可以根据需要调整
+        float searchRadius = 5.0f;
+        
+        // 获取四叉树
+        QuadTree quadTree = PlayerPathfinding.quadTree;
+        if (quadTree == null) return;
+        
+        // 获取玩家当前位置
+        Vector3 playerPosition = player.transform.position;
+        
+        // 获取当前位置周围的所有叶子节点
+        var nearbyNodes = quadTree.GetNeighborLeafNodes(playerPosition, searchRadius)
+            .Where(node => node.IsIlluminated) // 只选择被照亮的节点
+            .OrderBy(node => Vector3.Distance(
+                new Vector3(node.Center.x, playerPosition.y, node.Center.y), 
+                playerPosition)) // 按距离排序
+            .ToList();
+        
+        foreach (var node in nearbyNodes)
+        {
+            // 创建潜在的安全位置
+            Vector3 potentialPosition = new Vector3(node.Center.x, playerPosition.y, node.Center.y);
+            
+            // 检查该位置是否安全（没有植物障碍物光源）
+            if (IsSafePosition(potentialPosition))
+            {
+                // 瞬移玩家到安全位置
+                player.transform.position = potentialPosition;
+                
+                // 更新四叉树中的位置
+                quadTree.Remove(player.gameObject);
+                player.InsertToQuadTree();
+                
+                return;
+            }
+        }
+        
+        Debug.LogWarning($"无法找到安全位置瞬移玩家！植物: {plantName}");
+    }
+
+    // 检查位置是否安全（没有植物障碍物光源）
+    private bool IsSafePosition(Vector3 position)
+    {
+        // 检查位置是否被照亮
+        QuadTree quadTree = PlayerPathfinding.quadTree;
+        if (quadTree == null) return false;
+        
+        if (!quadTree.IsPositionIlluminated(position))
+        {
+            return false;
+        }
+        
+        // 检查所有植物的障碍物光源
+        foreach (var plant in PlantManager.Instance.activePlants)
+        {
+            foreach (var light in plant.lightSources)
+            {
+                if (light.isObstacle)
+                {
+                    // 获取光源的世界边界
+                    Bounds lightBounds = light.GetWorldBounds();
+                    
+                    // 检查位置是否在光源范围内
+                    if (IsPointInXZBounds(position, lightBounds))
+                    {
+                        // 该位置有植物的障碍物光源，不安全
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }
+    #endregion
+
+    #region 内部类-植物阶段
     [System.Serializable]
     public class PlantStage
     {
@@ -535,5 +765,5 @@ public class Plant : MonoBehaviour
         public List<int> updatePlantIDs; // 更新植物ID列表 
         public List<float> updateWeights; // 更新权重列表
     }
-
+    #endregion
 } 

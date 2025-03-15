@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class PlantManager : MonoBehaviour
 {
-#region 类属性   
+#region 字段和属性定义
     // 单例模式
     public static PlantManager Instance { get; private set; }
         
@@ -58,7 +58,7 @@ public class PlantManager : MonoBehaviour
     }
 #endregion
 
-#region 加载数据库
+#region 数据库加载与解析
     // 加载植物数据库
     private void LoadPlantDatabase()
     {
@@ -434,7 +434,7 @@ public class PlantManager : MonoBehaviour
     }
 #endregion
 
-#region 种子和花
+#region 种子和植物阶段获取
     // 根据种子尺寸和生长速度获取种子阶段数据
     public Plant.PlantStage GetSeedPlantStage(SizeLevel size, GrowthRateLevel growthRate)
     {
@@ -571,7 +571,7 @@ public class PlantManager : MonoBehaviour
     }
 #endregion
 
-#region 果实
+#region 植物生长与结果系统
     // 更新植物ID和数量字典
     public void UpdatePlantCounts(Plant plant, bool isAdding)
     {
@@ -892,7 +892,7 @@ public class PlantManager : MonoBehaviour
     }
 #endregion
 
-#region 前置植物关系图构建
+#region 前置植物关系管理
     // 修改前置植物关系图构建
     private void BuildPrerequisiteGraph()
     {
@@ -957,10 +957,9 @@ public class PlantManager : MonoBehaviour
         Debug.LogWarning("无法从种子名字解析出尺寸和生长速度: " + seedName);
         return null;
     }
-
 #endregion
 
-#region 辅助方法
+#region 调试与辅助功能
     // 获取植物数据库（只读）
     public IReadOnlyDictionary<int, Plant.PlantStage> GetPlantDatabase()
     {
@@ -1136,6 +1135,5 @@ public class PlantManager : MonoBehaviour
         
         return false;
     }
-
 #endregion    
 }
