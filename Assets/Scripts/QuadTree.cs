@@ -372,25 +372,25 @@ public class QuadTree
         Gizmos.DrawWireCube(center, size * 1.0f);
 
         // 修改为数字高度显示
-        // if (node.Height > 0.01 && node.Size==MinNodeSize)
-        // {
-        //     // 在节点中心上方显示高度值
-        //     GUIStyle style = new GUIStyle();
-        //     style.normal.textColor = Color.green;
-        //     style.fontSize = Mathf.RoundToInt(12 * (node.Size.x / MinNodeSize.x)); // 根据节点尺寸自动调整字体大小
-        //     style.alignment = TextAnchor.MiddleCenter;
-        //     style.fontStyle = FontStyle.Bold;
+        if (node.Height > 0.01 && node.Size==MinNodeSize)
+        {
+            // 在节点中心上方显示高度值
+            GUIStyle style = new GUIStyle();
+            style.normal.textColor = Color.green;
+            style.fontSize = Mathf.RoundToInt(12 * (node.Size.x / MinNodeSize.x)); // 根据节点尺寸自动调整字体大小
+            style.alignment = TextAnchor.MiddleCenter;
+            style.fontStyle = FontStyle.Bold;
             
-        //     // 显示两位小数的高度值
-        //     Handles.Label(
-        //         center + Vector3.up * 0.2f, // 稍微抬高避免重叠
-        //         node.Height.ToString("F2"), 
-        //         style);
+            // 显示两位小数的高度值
+            Handles.Label(
+                center + Vector3.up * 0.2f, // 稍微抬高避免重叠
+                node.Height.ToString("F2"), 
+                style);
             
-        //     // 保留线框显示（可选）
-        //     Gizmos.color = new Color(0, 0.5f, 0, 0.2f);
-        //     Gizmos.DrawWireCube(center, new Vector3(node.Size.x, 0, node.Size.y));
-        // }
+            // 保留线框显示（可选）
+            Gizmos.color = new Color(0, 0.5f, 0, 0.2f);
+            Gizmos.DrawWireCube(center, new Vector3(node.Size.x, 0, node.Size.y));
+        }
 
         // 递归绘制子节点
         if (node.Children != null)
@@ -827,7 +827,6 @@ public class QuadTree
         }
     }
 
-    #region 碰撞检测
     // 圆形与矩形碰撞检测
     private bool CircleRectOverlap(Vector2 circlePos, float radius, Rect rect)
     {
@@ -864,8 +863,6 @@ public class QuadTree
                sourceRect.yMax > targetRect.yMin;
     }
 
-#endregion
-
 
     // 重置光照状态
     public void ResetIllumination()
@@ -887,7 +884,6 @@ public class QuadTree
         }
     }
 
-    
 
     // 新增方法：获取所有被光照的叶子节点
     public List<QuadTreeNode> GetIlluminatedLeafNodes()
@@ -1021,6 +1017,43 @@ public class QuadTree
         
         // 如果高度差超过最大可攀爬高度，则不可达
         return heightDifference <= maxClimbableHeight;
+    }
+
+    // 新增方法：确保指定区域内的节点完全分裂到最小尺寸
+    public void PreSplitArea(Bounds area)
+    {
+        Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
+        Vector2 rectSize = new Vector2(area.size.x, area.size.z);
+        PreSplitAreaRecursive(root, rectCenter, rectSize, 0);
+    }
+
+    private void PreSplitAreaRecursive(QuadTreeNode node, Vector2 rectCenter, Vector2 rectSize, int currentDepth)
+    {
+        if (node == null) return;
+
+        Rect nodeRect = new Rect(
+            node.Center.x - node.Size.x/2,
+            node.Center.y - node.Size.y/2,
+            node.Size.x,
+            node.Size.y);
+
+        if (!RectangleRectOverlap(rectCenter, rectSize, nodeRect)) return;
+
+        // 如果当前深度小于最大深度且节点没有子节点，则分裂
+        if (currentDepth < maxDepth && node.Children == null)
+        {
+            node.Split();
+            RedistributeObjects(node);
+        }
+
+        // 如果有子节点，继续递归分裂
+        if (node.Children != null)
+        {
+            foreach (var child in node.Children)
+            {
+                PreSplitAreaRecursive(child, rectCenter, rectSize, currentDepth + 1);
+            }
+        }
     }
     #endregion
 

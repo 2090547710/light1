@@ -890,6 +890,53 @@ public class PlantManager : MonoBehaviour
             return null;
         }
     }
+    
+    // 确保只有一个火植物存活的方法，返回是否是唯一的火
+    public bool EnsureSingleFire(Fire newFire)
+    {
+        if (newFire == null) return true;
+        
+        // 查找所有其他的火植物
+        List<Fire> otherFires = new List<Fire>();
+        foreach (Plant plant in activePlants)
+        {
+            // 检查是否是Fire类型且不是新的火植物
+            if (plant is Fire && plant != newFire)
+            {
+                otherFires.Add(plant as Fire);
+            }
+        }
+        
+        // 如果没有其他火植物，当前火是唯一的火
+        return otherFires.Count == 0;
+    }
+    
+    // 使其他火植物枯萎的方法
+    public void WitherOtherFires(Fire exceptFire)
+    {
+        if (exceptFire == null) return;
+        
+        // 查找所有其他的火植物
+        List<Fire> otherFires = new List<Fire>();
+        foreach (Plant plant in activePlants)
+        {
+            // 检查是否是Fire类型且不是指定的火植物
+            if (plant is Fire && plant != exceptFire)
+            {
+                otherFires.Add(plant as Fire);
+            }
+        }
+        
+        // 使其他火植物枯萎
+        if (otherFires.Count > 0)
+        {
+            Debug.Log($"发现 {otherFires.Count} 个其他火植物，使它们枯萎以确保只有一个火");
+            foreach (Fire fire in otherFires)
+            {
+                fire.Wither();
+            }
+        }
+    }
 #endregion
 
 #region 前置植物关系管理

@@ -23,7 +23,7 @@ public class LightingManager : MonoBehaviour
     // 新增合成高度图相关字段
     public static int compositeSize = 4096;
     public static Texture2D compositeHeightmap;
-    
+
     public static QuadTree tree { get; set; }
     public static List<Lighting> activeLights = new List<Lighting>();
 
@@ -352,10 +352,20 @@ static void SaveCompositeMenuItem()
         Vector3 min = lightBounds.center - lightBounds.extents;
         Vector3 max = lightBounds.center + lightBounds.extents;
         
-        float uvMinX = Mathf.InverseLerp(rootBounds.min.x, rootBounds.max.x, min.x);
-        float uvMaxX = Mathf.InverseLerp(rootBounds.min.x, rootBounds.max.x, max.x);
-        float uvMinY = Mathf.InverseLerp(rootBounds.min.z, rootBounds.max.z, min.z);
-        float uvMaxY = Mathf.InverseLerp(rootBounds.min.z, rootBounds.max.z, max.z);
+        // 修改UV范围计算，不限制在[0,1]范围内
+        float uvMinX = (min.x - rootBounds.min.x) / rootBounds.size.x;
+        float uvMaxX = (max.x - rootBounds.min.x) / rootBounds.size.x;
+        float uvMinY = (min.z - rootBounds.min.z) / rootBounds.size.z;
+        float uvMaxY = (max.z - rootBounds.min.z) / rootBounds.size.z;
+        
+        // 保存原始UV值用于光照计算
+        Vector4 lightBoundsRawParam = new Vector4(uvMinX, uvMinY, uvMaxX, uvMaxY);
+        
+        // 现在再限制UV在[0,1]范围内，用于确定合成区域
+        uvMinX = Mathf.Clamp01(uvMinX);
+        uvMaxX = Mathf.Clamp01(uvMaxX);
+        uvMinY = Mathf.Clamp01(uvMinY);
+        uvMaxY = Mathf.Clamp01(uvMaxY);
         
         Vector4 lightBoundsParam = new Vector4(uvMinX, uvMinY, uvMaxX, uvMaxY);
         Vector4 rootBoundsParam = new Vector4(rootCenter.x, rootCenter.y, rootSize.x, rootSize.y);
@@ -389,6 +399,9 @@ static void SaveCompositeMenuItem()
         // 计算Dispatch所需的组数（每组16×16线程）
         int threadGroupsX = Mathf.CeilToInt(regionWidth / 16.0f);
         int threadGroupsY = Mathf.CeilToInt(regionHeight / 16.0f);
+        
+        // 发送原始UV值到Compute Shader
+        instance.lightingComputeShader.SetVector("_LightBoundsRaw", lightBoundsRawParam);
         
         // 派发计算
         instance.lightingComputeShader.Dispatch(kernel, threadGroupsX, threadGroupsY, 1);

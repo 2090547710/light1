@@ -247,7 +247,11 @@ public class ObjectSelector : MonoBehaviour
                 EditorGUILayout.LabelField($"当前阶段: {plant.currentStage}/{plant.maxStages}");
                 
                 // 显示是否枯萎
-                EditorGUILayout.LabelField($"是否枯萎: {(plant.isWithered ? "是" : "否")}");
+                EditorGUILayout.LabelField($"是否枯萎: {(plant.IsWithered ? "是" : "否")}");
+                
+                // 添加hasTriedBloom和hasTriedFruit的显示
+                EditorGUILayout.LabelField($"已尝试开花: {(plant.HasTriedBloom ? "是" : "否")}");
+                EditorGUILayout.LabelField($"已尝试结果: {(plant.HasTriedFruit ? "是" : "否")}");
                 
                 // 显示亮度比例
                 EditorGUILayout.LabelField($"亮度比例: {plant.BrightnessRatio:P2}");

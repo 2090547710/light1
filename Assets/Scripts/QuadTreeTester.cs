@@ -39,10 +39,10 @@ public class QuadTreeTester : MonoBehaviour
         {
             if(objects.Count > 0){
                 int i = objects.Count - 1;
-                // 先检查是否有 Plant 组件
-                Plant plant = objects[i].GetComponent<Plant>();
-                if(plant != null){
-                    plant.Wither(); // 调用 Wither 方法
+                // 获取所有 Plant 组件
+                Plant[] plants = objects[i].GetComponents<Plant>();
+                foreach(Plant plant in plants){
+                    plant.Wither(); // 对每个Plant组件调用 Wither 方法
                 }
                 Destroy(objects[i]);
                 objects.RemoveAt(i);
@@ -85,10 +85,10 @@ public class QuadTreeTester : MonoBehaviour
             {
                 for (int i = 0; i < objects.Count; i++)
                 {
-                    // 先检查是否有 Plant 组件
-                    Plant plant = objects[i].GetComponent<Plant>();
-                    if(plant != null){
-                        plant.Wither(); // 调用 Wither 方法
+                    // 获取所有 Plant 组件
+                    Plant[] plants = objects[i].GetComponents<Plant>();
+                    foreach(Plant plant in plants){
+                        plant.Wither(); // 对每个Plant组件调用 Wither 方法
                     }
                     Destroy(objects[i]);
                 }

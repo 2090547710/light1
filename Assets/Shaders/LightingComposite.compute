@@ -14,6 +14,9 @@ float _IsAdditive; // 新增加减操作参数，1为加，0为减
 int2 _CompositeOffset;
 int2 _CompositeRegionSize;
 
+// 添加原始光源边界参数
+float4 _LightBoundsRaw; // 原始UV范围，可能超出[0,1]
+
 [numthreads(16,16,1)]
 void CSObstacleLight(uint3 id : SV_DispatchThreadID)
 {
@@ -36,8 +39,20 @@ void CSObstacleLight(uint3 id : SV_DispatchThreadID)
     uint heightWidth, heightHeight;
     _HeightMap.GetDimensions(heightWidth, heightHeight);
     
-    // 计算光源图上对应的浮点采样坐标（两个通道均对应高度图维度）
-    float2 lightCoord = t * float2(heightWidth - 1, heightHeight - 1);
+    // 修改t计算方式，使用原始光源边界进行修正
+    float2 normalizedCoord = float2(
+        lerp(_LightBounds.x, _LightBounds.z, t.x),
+        lerp(_LightBounds.y, _LightBounds.w, t.y)
+    );
+    
+    // 将normalizedCoord映射回原始光源空间
+    float2 lightSpaceT = float2(
+        (normalizedCoord.x - _LightBoundsRaw.x) / (_LightBoundsRaw.z - _LightBoundsRaw.x),
+        (normalizedCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
+    );
+    
+    // 使用修正后的坐标计算lightCoord
+    float2 lightCoord = lightSpaceT * float2(heightWidth - 1, heightHeight - 1);
     
     // 双线性插值采样
     int2 coordInt = int2(floor(lightCoord));
@@ -81,10 +96,23 @@ void CSNormalLight(uint3 id : SV_DispatchThreadID)
     
     float2 t = (float2(compCoord - _CompositeOffset)) / (float2(_CompositeRegionSize - 1));
     
+    // 获取高度图尺寸
     uint heightWidth, heightHeight;
     _HeightMap.GetDimensions(heightWidth, heightHeight);
     
-    float2 lightCoord = t * float2(heightWidth - 1, heightHeight - 1);
+    // 同样需要添加边界修正代码 (与CSObstacleLight相同)
+    float2 normalizedCoord = float2(
+        lerp(_LightBounds.x, _LightBounds.z, t.x),
+        lerp(_LightBounds.y, _LightBounds.w, t.y)
+    );
+    
+    float2 lightSpaceT = float2(
+        (normalizedCoord.x - _LightBoundsRaw.x) / (_LightBoundsRaw.z - _LightBoundsRaw.x),
+        (normalizedCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
+    );
+    
+    float2 lightCoord = lightSpaceT * float2(heightWidth - 1, heightHeight - 1);
+    
     int2 coordInt = int2(floor(lightCoord));
     float2 frac = lightCoord - float2(coordInt);
     

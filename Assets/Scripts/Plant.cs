@@ -41,6 +41,11 @@ public class Plant : MonoBehaviour
     private bool hasTriedBloom = false; // 是否已尝试开花
     private bool hasTriedFruit = false; // 是否已尝试结果
     
+    // 添加公共属性用于访问私有字段
+    public bool HasTriedBloom => hasTriedBloom;
+    public bool HasTriedFruit => hasTriedFruit;
+    public bool IsWithered => isWithered;
+
     [Header("阶段配置")]
     public List<PlantStage> growthStages = new List<PlantStage>();
 
@@ -124,7 +129,7 @@ public class Plant : MonoBehaviour
    
     #region UI相关方法
     // 创建名称显示
-    private void CreateNameDisplay()
+    protected void CreateNameDisplay()
     {
         // 创建一个子物体用于显示名称
         GameObject textObj = new GameObject("NameDisplay");
@@ -146,7 +151,7 @@ public class Plant : MonoBehaviour
     #endregion
    
     #region 生长和枯萎方法
-    public void Grow()
+    public virtual void Grow()
     {
         if (isWithered || currentStage >= maxStages) return;
 
@@ -179,7 +184,7 @@ public class Plant : MonoBehaviour
         CheckAndTeleportPlayerIfStuck();
     }
 
-    void ApplyStageConfig(int stageIndex)
+    protected void ApplyStageConfig(int stageIndex)
     {
         if (stageIndex < 0 || stageIndex >= maxStages)
         {
@@ -217,7 +222,7 @@ public class Plant : MonoBehaviour
     public void Wither()
     {
         isWithered = true;
-        
+  
         // 更新名称显示
         if (nameText != null)
         {
@@ -411,7 +416,7 @@ public class Plant : MonoBehaviour
 
     #region 碰撞检测方法
     // 修改碰撞检测方法
-    private bool HasCollisionWithOtherPlants()
+    protected bool HasCollisionWithOtherPlants()
     {
         // 如果当前阶段无效或没有下一个阶段的数据，则无法检测碰撞
         if (currentStage >= growthStages.Count)
@@ -637,7 +642,7 @@ public class Plant : MonoBehaviour
 
     #region 玩家碰撞处理
     // 检查玩家是否被卡住，如果被卡住则瞬移到安全位置
-    private void CheckAndTeleportPlayerIfStuck()
+    protected void CheckAndTeleportPlayerIfStuck()
     {
         // 查找场景中的玩家对象
         PlayerPathfinding player = FindObjectOfType<PlayerPathfinding>();

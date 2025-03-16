@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: -6355687641031468626}
   - component: {fileID: 8593654199120966784}
   - component: {fileID: 9208226250262049673}
+  - component: {fileID: -5409350084634927064}
   m_Layer: 7
   m_Name: "\u6D4B\u8BD5\u82B1"
   m_TagString: Untagged
@@ -113,14 +114,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3803225260541865786}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de5b6a563c58f6e4da4f1f9481160b8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   lightSources: []
   currentStage: 0
-  maxStages: 1
+  maxStages: 2
   isWithered: 0
   growthStages:
   - stageType: 1
@@ -133,7 +134,23 @@ MonoBehaviour:
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
     plantID: 0
-    plantName: 
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    growthRate: 0
+    prerequisitePlantIDs: 
+    prerequisiteWeights: []
+    updatePlantIDs: 
+    updateWeights: []
+  - stageType: 1
+    associatedLights:
+    - size: 17.1
+      isObstacle: 1
+      isSeed: 0
+      lightHeight: 1
+      heightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
+      tiling: {x: 0, y: 0}
+      offset: {x: 0, y: 0}
+    plantID: 0
+    plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
     growthRate: 0
     prerequisitePlantIDs: 
     prerequisiteWeights: []
@@ -151,3 +168,56 @@ MonoBehaviour:
   prerequisiteWeights: []
   updatePlantIDs: 
   updateWeights: []
+  textHeight: 1.5
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  textSize: 1
+--- !u!114 &-5409350084634927064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3803225260541865786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 396cc76aa21b1584faf60f908cf2610a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightSources: []
+  currentStage: 0
+  maxStages: 1
+  isWithered: 0
+  growthStages:
+  - stageType: 1
+    associatedLights:
+    - size: 13.1
+      isObstacle: 0
+      isSeed: 0
+      lightHeight: 0
+      heightMap: {fileID: 2800000, guid: 7ae641bebe1bf344085539ad37ff5916, type: 3}
+      tiling: {x: 0, y: 0}
+      offset: {x: 0, y: 0}
+    plantID: 99
+    plantName: "\u706B"
+    growthRate: 0
+    prerequisitePlantIDs: 
+    prerequisiteWeights: []
+    updatePlantIDs: 
+    updateWeights: []
+  bloomThreshold: 0.8
+  bloomSteepness: 10
+  bloomProbability: 0
+  brightnessRatio: 0
+  growthRate: 1
+  growthRateInfluence: 0.3
+  plantID: 0
+  plantName: 
+  prerequisitePlantIDs: 
+  prerequisiteWeights: []
+  updatePlantIDs: 
+  updateWeights: []
+  textHeight: 1.5
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  textSize: 1
+  minLightSize: 10
+  maxLightSize: 50
