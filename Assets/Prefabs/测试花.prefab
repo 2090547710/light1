@@ -123,6 +123,7 @@ MonoBehaviour:
   currentStage: 0
   maxStages: 2
   isWithered: 0
+  isImmortal: 1
   growthStages:
   - stageType: 1
     associatedLights:
@@ -187,6 +188,7 @@ MonoBehaviour:
   currentStage: 0
   maxStages: 1
   isWithered: 0
+  isImmortal: 0
   growthStages:
   - stageType: 1
     associatedLights:

@@ -937,6 +937,7 @@ public class PlantManager : MonoBehaviour
             }
         }
     }
+    
 #endregion
 
 #region 前置植物关系管理
@@ -1181,6 +1182,66 @@ public class PlantManager : MonoBehaviour
         }
         
         return false;
+    }
+
+    // 检查所有植物是否在火光源范围内，不在范围内的植物将枯萎
+    public void CheckPlantsInFireLight(Fire fire)
+    {
+        if (fire == null || fire.lightSources.Count == 0)
+        {
+            return;
+        }
+        
+        // 获取火的最大光源范围
+        float maxFireLightSize = 0f;
+        Bounds maxFireLightBounds = new Bounds();
+        
+        foreach (Lighting fireLight in fire.lightSources)
+        {
+            if (fireLight.size > maxFireLightSize)
+            {
+                maxFireLightSize = fireLight.size;
+                maxFireLightBounds = fireLight.GetWorldBounds();
+            }
+        }
+        
+        // 如果没有有效的火光源，直接返回
+        if (maxFireLightSize <= 0f)
+        {
+            return;
+        }
+        
+        // 检查所有植物是否在火光源范围内
+        foreach (Plant plant in activePlants.ToList()) // 使用ToList()创建副本以避免集合修改异常
+        {
+            // 跳过火植物本身和已经枯萎的植物
+            if (plant is Fire || plant.IsWithered)
+            {
+                continue;
+            }
+            
+            // 获取植物位置
+            Vector3 plantPosition = plant.transform.position;
+            
+            // 检查植物是否在火光源范围内
+            bool isInFireLight = IsPointInXZBounds(plantPosition, maxFireLightBounds);
+            
+            // 如果不在火光源范围内，将植物标记为枯萎
+            if (!isInFireLight)
+            {
+                plant.Wither();
+            }
+        }
+    }
+
+    // 检测点是否在边界的XZ平面投影内
+    private bool IsPointInXZBounds(Vector3 point, Bounds bounds)
+    {
+        // 只检查x和z轴方向，忽略y轴
+        bool insideX = Mathf.Abs(point.x - bounds.center.x) <= bounds.size.x * 0.5f;
+        bool insideZ = Mathf.Abs(point.z - bounds.center.z) <= bounds.size.z * 0.5f;
+        
+        return insideX && insideZ;
     }
 #endregion    
 }

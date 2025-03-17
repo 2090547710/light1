@@ -39,19 +39,19 @@ void CSObstacleLight(uint3 id : SV_DispatchThreadID)
     uint heightWidth, heightHeight;
     _HeightMap.GetDimensions(heightWidth, heightHeight);
     
-    // 修改t计算方式，使用原始光源边界进行修正
+    // 在区域的uv中插值得到像素在合成图中的uv
     float2 normalizedCoord = float2(
         lerp(_LightBounds.x, _LightBounds.z, t.x),
         lerp(_LightBounds.y, _LightBounds.w, t.y)
     );
     
-    // 将normalizedCoord映射回原始光源空间
+    // 将normalizedCoord映射回原始高度图uv
     float2 lightSpaceT = float2(
         (normalizedCoord.x - _LightBoundsRaw.x) / (_LightBoundsRaw.z - _LightBoundsRaw.x),
         (normalizedCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
     );
     
-    // 使用修正后的坐标计算lightCoord
+    // 使用修正后的坐标计算原始高度图的lightCoord
     float2 lightCoord = lightSpaceT * float2(heightWidth - 1, heightHeight - 1);
     
     // 双线性插值采样
@@ -100,7 +100,7 @@ void CSNormalLight(uint3 id : SV_DispatchThreadID)
     uint heightWidth, heightHeight;
     _HeightMap.GetDimensions(heightWidth, heightHeight);
     
-    // 同样需要添加边界修正代码 (与CSObstacleLight相同)
+    // 插值得到像素在合成图中的uv
     float2 normalizedCoord = float2(
         lerp(_LightBounds.x, _LightBounds.z, t.x),
         lerp(_LightBounds.y, _LightBounds.w, t.y)

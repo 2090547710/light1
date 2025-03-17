@@ -40,11 +40,13 @@ public class Plant : MonoBehaviour
     public bool isWithered;
     private bool hasTriedBloom = false; // 是否已尝试开花
     private bool hasTriedFruit = false; // 是否已尝试结果
+    [SerializeField] private bool isImmortal = false; // 添加不会枯萎标记，默认为false
     
     // 添加公共属性用于访问私有字段
     public bool HasTriedBloom => hasTriedBloom;
     public bool HasTriedFruit => hasTriedFruit;
     public bool IsWithered => isWithered;
+    public bool IsImmortal => isImmortal; // 添加公共属性用于访问不会枯萎标记
 
     [Header("阶段配置")]
     public List<PlantStage> growthStages = new List<PlantStage>();
@@ -81,6 +83,8 @@ public class Plant : MonoBehaviour
     #region Unity生命周期方法
     void Start()
     {
+         // 检查植物是否在火光源范围内
+        CheckIfInFireLight();
         currentStage=0;
         lightSources.Clear();
         if (growthStages.Count > 0 && currentStage <= growthStages.Count)
@@ -221,6 +225,12 @@ public class Plant : MonoBehaviour
 
     public void Wither()
     {
+        // 如果植物被标记为不会枯萎，则直接返回
+        if (isImmortal)
+        {
+            return;
+        }
+
         isWithered = true;
   
         // 更新名称显示
@@ -278,6 +288,13 @@ public class Plant : MonoBehaviour
             // 情况3：果实阶段
             // 什么也不做
         }
+    }
+
+    // 添加设置不会枯萎标记的方法
+    public void SetImmortal(bool immortal)
+    {
+        isImmortal = immortal;
+        Debug.Log($"植物 {plantName} 的不会枯萎标记已设置为: {immortal}");
     }
     #endregion
 
@@ -771,4 +788,60 @@ public class Plant : MonoBehaviour
         public List<float> updateWeights; // 更新权重列表
     }
     #endregion
+
+    // 检查植物是否在火光源范围内
+    private void CheckIfInFireLight()
+    {
+        // 如果是火植物本身，不需要检查
+        if (this is Fire)
+        {
+            return;
+        }
+        
+        // 获取所有活跃的火光源
+        List<Lighting> fireLights = new List<Lighting>();
+        
+        // 从 PlantManager 获取所有 Fire 类型的植物
+        foreach (Plant plant in PlantManager.Instance.activePlants)
+        {
+            if (plant is Fire)
+            {
+                // 将火植物的所有光源添加到列表中
+                fireLights.AddRange(plant.lightSources);
+            }
+        }
+        
+        // 如果没有火光源，将植物标记为枯萎
+        if (fireLights.Count == 0)
+        {
+            Wither();
+            return;
+        }
+        
+        // 获取植物当前位置
+        Vector3 plantPosition = transform.position;
+        
+        // 检查植物是否在任何火光源范围内
+        bool isInFireLight = false;
+        
+        foreach (Lighting fireLight in fireLights)
+        {
+            // 获取火光源的边界
+            Bounds fireBounds = fireLight.GetWorldBounds();
+            
+            // 检查植物是否在火光源范围内
+            if (IsPointInXZBounds(plantPosition, fireBounds))
+            {
+                isInFireLight = true;
+                break;
+            }
+        }
+        
+        // 如果不在任何火光源范围内，将植物标记为枯萎
+        if (!isInFireLight)
+        {
+            Debug.Log($"植物 {plantName} 不在任何火光源范围内，标记为枯萎");
+            Wither();
+        }
+    }
 } 

@@ -549,7 +549,7 @@ public class QuadTree
         {
             // 在目标位置周围3倍节点尺寸范围内寻找最近的可行走节点
             var candidates = GetNeighborLeafNodes(targetPos, MinNodeSize.x * 3f)
-                .Where(n => n.IsWalkable && n.Size == MinNodeSize && IsHeightAccessible(startNode, n))
+                .Where(n => n.IsWalkable && n.Size == MinNodeSize)
                 .OrderBy(n => Vector3.Distance(
                     new Vector3(n.Center.x, 0, n.Center.y), 
                     targetPos))
@@ -559,7 +559,7 @@ public class QuadTree
             targetNode = candidates.First();
         }
         
-        // 直接返回null如果目标节点不可行走或高度不可达
+        // 直接返回null如果目标节点不可行走
         if (targetNode == null || !targetNode.IsWalkable || targetNode.Size != MinNodeSize || !IsHeightAccessible(startNode, targetNode))
         {
             return null;

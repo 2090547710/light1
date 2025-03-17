@@ -352,13 +352,13 @@ static void SaveCompositeMenuItem()
         Vector3 min = lightBounds.center - lightBounds.extents;
         Vector3 max = lightBounds.center + lightBounds.extents;
         
-        // 修改UV范围计算，不限制在[0,1]范围内
+        // 修改UV范围计算
         float uvMinX = (min.x - rootBounds.min.x) / rootBounds.size.x;
         float uvMaxX = (max.x - rootBounds.min.x) / rootBounds.size.x;
         float uvMinY = (min.z - rootBounds.min.z) / rootBounds.size.z;
         float uvMaxY = (max.z - rootBounds.min.z) / rootBounds.size.z;
         
-        // 保存原始UV值用于光照计算
+        // 保存原始UV值用于光照计算，不限制在[0,1]范围内
         Vector4 lightBoundsRawParam = new Vector4(uvMinX, uvMinY, uvMaxX, uvMaxY);
         
         // 现在再限制UV在[0,1]范围内，用于确定合成区域

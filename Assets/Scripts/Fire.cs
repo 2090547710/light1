@@ -95,6 +95,9 @@ public class Fire : Plant
         
         ApplyStageConfig(currentStage);
         currentStage++;
+        
+        // 火成长后，检查所有植物是否在火光源范围内
+        PlantManager.Instance.CheckPlantsInFireLight(this);
     }
     
     // 基于安全区面积更新光源大小
