@@ -84,14 +84,16 @@ public class Plant : MonoBehaviour
     void Start()
     {
          // 检查植物是否在火光源范围内
-        CheckIfInFireLight();
-        currentStage=0;
-        lightSources.Clear();
-        if (growthStages.Count > 0 && currentStage <= growthStages.Count)
-        {
-            Grow();
-        }
-        
+        if(currentStage==0){
+            CheckIfInFireLight();
+            plantName="种子";
+            plantID=0;
+            lightSources.Clear();
+            if (growthStages.Count > 0 && currentStage <= growthStages.Count)
+            {
+                Grow();
+            }
+         }
         // 创建并设置名称显示
         CreateNameDisplay();
     }
@@ -126,7 +128,16 @@ public class Plant : MonoBehaviour
         // 确保 PlantManager 实例存在
         if (PlantManager.Instance != null)
         {
-            PlantManager.Instance.UnregisterPlant(this);
+            // 如果是枯萎植物，从枯萎植物列表中移除
+            if (isWithered)
+            {
+                PlantManager.Instance.RemoveFromWitheredPlants(this);
+            }
+            else
+            {
+                // 非枯萎植物，从活跃植物列表中移除
+                PlantManager.Instance.UnregisterPlant(this);
+            }
         }
     }
     #endregion
@@ -257,8 +268,8 @@ public class Plant : MonoBehaviour
             // 从四叉树中移除
             LightingManager.tree.Remove(gameObject);
             
-            // 从植物管理器中注销
-            PlantManager.Instance.UnregisterPlant(this);
+            // 添加到枯萎植物列表
+            PlantManager.Instance.AddToWitheredPlants(this);
         }
         else if (currentStage == 1 || currentStage == 2)
         {
@@ -280,13 +291,13 @@ public class Plant : MonoBehaviour
             // 更新植物计数
             PlantManager.Instance.UpdatePlantCounts(this, false);
             
-            // 从植物管理器中注销
-            PlantManager.Instance.UnregisterPlant(this);
+            // 添加到枯萎植物列表
+            PlantManager.Instance.AddToWitheredPlants(this);
         }
         else if (currentStage == 3)
         {
             // 情况3：果实阶段
-            // 什么也不做
+            // 认为不会枯萎
         }
     }
 
@@ -294,7 +305,6 @@ public class Plant : MonoBehaviour
     public void SetImmortal(bool immortal)
     {
         isImmortal = immortal;
-        Debug.Log($"植物 {plantName} 的不会枯萎标记已设置为: {immortal}");
     }
     #endregion
 
@@ -789,6 +799,7 @@ public class Plant : MonoBehaviour
     }
     #endregion
 
+    #region 火光源检测方法
     // 检查植物是否在火光源范围内
     private void CheckIfInFireLight()
     {
@@ -844,12 +855,14 @@ public class Plant : MonoBehaviour
             Wither();
         }
     }
-
+    #endregion
+    
+    #region 植物数据存档与读取
     // 获取植物存档数据
-    public PlantSaveData GetSaveData()
+    public  virtual PlantSaveData GetSaveData()
     {
         PlantSaveData saveData = new PlantSaveData();
-        
+               
         // 创建可序列化的植物阶段列表
         saveData.growthStages = new List<SerializablePlantStage>();
         foreach (var stage in growthStages)
@@ -879,15 +892,23 @@ public class Plant : MonoBehaviour
     // 从存档数据创建植物
     public static Plant CreateFromSaveData(PlantSaveData saveData)
     {
-        // 创建植物游戏对象
         GameObject plantObj = new GameObject(saveData.plantName);
+        
+        // 根据类型添加不同组件
+        Plant plant;
+        if (saveData.plantType == "Fire")
+        {
+            plant = plantObj.AddComponent<Fire>();
+            // 这里可以添加Fire特有的初始化代码
+        }
+        else
+        {
+            plant = plantObj.AddComponent<Plant>();
+        }
         
         // 设置位置和旋转 - 使用转换方法
         plantObj.transform.position = saveData.position.ToVector3();
         plantObj.transform.rotation = saveData.rotation.ToQuaternion();
-        
-        // 添加植物组件
-        Plant plant = plantObj.AddComponent<Plant>();
         
         // 设置基本属性 - 使用转换方法将序列化阶段转换为原始阶段
         plant.growthStages = saveData.ConvertToPlantStages();
@@ -906,6 +927,7 @@ public class Plant : MonoBehaviour
         if (stageIndex >= 0 && stageIndex < plant.growthStages.Count)
         {
             plant.ApplyStageConfig(stageIndex);
+            Debug.Log("2");
             plant.currentStage = saveData.currentStage;
         }
         
@@ -917,4 +939,5 @@ public class Plant : MonoBehaviour
         
         return plant;
     }
+#endregion
 } 

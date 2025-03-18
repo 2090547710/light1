@@ -29,6 +29,9 @@ public class PlantManager : MonoBehaviour
     // 添加活跃植物列表
     public List<Plant> activePlants = new List<Plant>();
     
+    // 添加枯萎植物列表
+    public List<Plant> witheredPlants = new List<Plant>();
+    
     // 添加可更新植物列表
     public List<int> updatablePlants = new List<int>();
     
@@ -1023,6 +1026,13 @@ public class PlantManager : MonoBehaviour
             plants.Add(saveData);
         }
         
+        // 从枯萎植物中获取存档数据
+        foreach(Plant plant in witheredPlants)
+        {
+            PlantSaveData saveData = plant.GetSaveData();
+            plants.Add(saveData);
+        }
+        
         // 将数据序列化为JSON
         string jsonData = JsonUtility.ToJson(new PlantSaveDataWrapper { plants = plants }, true);
         
@@ -1044,9 +1054,30 @@ public class PlantManager : MonoBehaviour
         // 清除现有植物
         foreach(Plant plant in activePlants.ToList())
         {
+            foreach (var light in plant.lightSources.ToList())
+            {
+                light.RemoveLighting();
+                plant.lightSources.Remove(light);
+                Destroy(light);
+            }
+            // 从四叉树中移除
+            LightingManager.tree.Remove(plant.gameObject);
             Destroy(plant.gameObject);
         }
         activePlants.Clear();
+        
+        // 清除枯萎植物
+        foreach(Plant plant in witheredPlants.ToList())
+        {
+            foreach (var light in plant.lightSources.ToList())
+            {
+                light.RemoveLighting();
+                plant.lightSources.Remove(light);
+                Destroy(light);
+            }
+            Destroy(plant.gameObject);
+        }
+        witheredPlants.Clear();
         
         // 读取JSON数据
         string jsonData = System.IO.File.ReadAllText(saveFilePath);
@@ -1067,12 +1098,6 @@ public class PlantManager : MonoBehaviour
         Debug.Log($"已加载 {plants.Count} 个植物从 {saveFilePath}");
     }
 
-    // 包装类，用于JSON序列化List
-    [System.Serializable]
-    private class PlantSaveDataWrapper
-    {
-        public List<PlantSaveData> plants = new List<PlantSaveData>();
-    }
 #endregion
 
 #region 调试与辅助功能
@@ -1310,6 +1335,41 @@ public class PlantManager : MonoBehaviour
         bool insideZ = Mathf.Abs(point.z - bounds.center.z) <= bounds.size.z * 0.5f;
         
         return insideX && insideZ;
+    }
+
+    // 将植物添加到枯萎植物列表
+    public void AddToWitheredPlants(Plant plant)
+    {
+        if (plant == null) return;
+        
+        // 将植物从活跃植物列表中移除
+        if (activePlants.Contains(plant))
+        {
+            activePlants.Remove(plant);
+        }
+        
+        // 将植物添加到枯萎植物列表（如果尚未添加）
+        if (!witheredPlants.Contains(plant))
+        {
+            witheredPlants.Add(plant);
+        }
+    }
+    
+    // 从枯萎植物列表中移除植物
+    public void RemoveFromWitheredPlants(Plant plant)
+    {
+        if (plant == null) return;
+        
+        if (witheredPlants.Contains(plant))
+        {
+            witheredPlants.Remove(plant);
+        }
+    }
+    
+    // 获取枯萎植物列表（只读）
+    public IReadOnlyList<Plant> GetWitheredPlants()
+    {
+        return witheredPlants;
     }
 
 #endregion    

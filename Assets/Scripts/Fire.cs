@@ -32,14 +32,16 @@ public class Fire : Plant
         // 初始化安全区域
         UpdateSafetyZone();
         // 初始化当前阶段
-        currentStage = 0;
-        lightSources.Clear();
-        if (growthStages.Count > 0 && currentStage <= growthStages.Count)
-        {
-            Grow();
+        if(currentStage==0){
+
+            plantName="火";
+            plantID=99;
+            lightSources.Clear();
+            if (growthStages.Count > 0 && currentStage <= growthStages.Count)
+            {
+                Grow();
+            }   
         }
-        
-        
         
         // 创建并设置名称显示
         CreateNameDisplay();
@@ -260,5 +262,17 @@ public class Fire : Plant
             Gizmos.DrawCube(safetyZone.center, safetyZone.size);
         
         }
+    }
+
+    // 在Fire类中添加保存特有参数的逻辑
+    public override PlantSaveData GetSaveData()
+    {
+        PlantSaveData saveData = base.GetSaveData();
+        
+        // 保存Fire特有参数
+        saveData.plantType = "Fire";
+        // 可以添加更多Fire特有参数的保存
+        
+        return saveData;
     }
 } 

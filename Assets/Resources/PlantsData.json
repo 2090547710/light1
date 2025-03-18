@@ -1,6 +1,7 @@
 {
     "plants": [
         {
+            "plantType": "Plant",
             "plantID": 0,
             "plantName": "花（照明）",
             "currentStage": 1,
@@ -10,9 +11,9 @@
             "hasTriedFruit": false,
             "isImmortal": true,
             "position": {
-                "x": -62.01459503173828,
-                "y": 1.0853064916904872e-16,
-                "z": -62.56365966796875
+                "x": -54.696197509765628,
+                "y": 1.0831777258404698e-16,
+                "z": -62.44094467163086
             },
             "rotation": {
                 "x": 0.0,
@@ -78,6 +79,7 @@
             ]
         },
         {
+            "plantType": "Plant",
             "plantID": 0,
             "plantName": "花（照明）",
             "currentStage": 1,
@@ -87,9 +89,9 @@
             "hasTriedFruit": false,
             "isImmortal": true,
             "position": {
-                "x": -54.0726432800293,
-                "y": 1.0420685037578094e-16,
-                "z": -60.071163177490237
+                "x": -61.93817138671875,
+                "y": 1.0657309647093993e-16,
+                "z": -61.435211181640628
             },
             "rotation": {
                 "x": 0.0,
@@ -155,6 +157,7 @@
             ]
         },
         {
+            "plantType": "Plant",
             "plantID": 0,
             "plantName": "花（照明）",
             "currentStage": 1,
@@ -164,9 +167,9 @@
             "hasTriedFruit": false,
             "isImmortal": true,
             "position": {
-                "x": -58.719573974609378,
-                "y": 9.453343633311631e-17,
-                "z": -54.49481201171875
+                "x": -52.6756477355957,
+                "y": 1.0748707149080692e-16,
+                "z": -61.962074279785159
             },
             "rotation": {
                 "x": 0.0,
@@ -232,160 +235,7 @@
             ]
         },
         {
-            "plantID": 0,
-            "plantName": "花（照明）",
-            "currentStage": 1,
-            "maxStages": 2,
-            "isWithered": false,
-            "hasTriedBloom": false,
-            "hasTriedFruit": false,
-            "isImmortal": true,
-            "position": {
-                "x": -49.341121673583987,
-                "y": 9.380079915585564e-17,
-                "z": -54.072486877441409
-            },
-            "rotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            },
-            "growthStages": [
-                {
-                    "stageType": 1,
-                    "plantID": 0,
-                    "plantName": "花（照明）",
-                    "growthRate": 0.0,
-                    "prerequisitePlantIDs": [],
-                    "prerequisiteWeights": [],
-                    "updatePlantIDs": [],
-                    "updateWeights": [],
-                    "associatedLights": [
-                        {
-                            "size": 17.100000381469728,
-                            "isObstacle": false,
-                            "isSeed": false,
-                            "lightHeight": 1.0,
-                            "heightMapPath": "test",
-                            "tiling": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        }
-                    ]
-                },
-                {
-                    "stageType": 1,
-                    "plantID": 0,
-                    "plantName": "花（障碍物）",
-                    "growthRate": 0.0,
-                    "prerequisitePlantIDs": [],
-                    "prerequisiteWeights": [],
-                    "updatePlantIDs": [],
-                    "updateWeights": [],
-                    "associatedLights": [
-                        {
-                            "size": 17.100000381469728,
-                            "isObstacle": true,
-                            "isSeed": false,
-                            "lightHeight": 1.0,
-                            "heightMapPath": "test",
-                            "tiling": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "plantID": 0,
-            "plantName": "花（照明）",
-            "currentStage": 1,
-            "maxStages": 2,
-            "isWithered": false,
-            "hasTriedBloom": false,
-            "hasTriedFruit": false,
-            "isImmortal": true,
-            "position": {
-                "x": -54.87185287475586,
-                "y": 9.06958741562419e-17,
-                "z": -52.28261947631836
-            },
-            "rotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            },
-            "growthStages": [
-                {
-                    "stageType": 1,
-                    "plantID": 0,
-                    "plantName": "花（照明）",
-                    "growthRate": 0.0,
-                    "prerequisitePlantIDs": [],
-                    "prerequisiteWeights": [],
-                    "updatePlantIDs": [],
-                    "updateWeights": [],
-                    "associatedLights": [
-                        {
-                            "size": 17.100000381469728,
-                            "isObstacle": false,
-                            "isSeed": false,
-                            "lightHeight": 1.0,
-                            "heightMapPath": "test",
-                            "tiling": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        }
-                    ]
-                },
-                {
-                    "stageType": 1,
-                    "plantID": 0,
-                    "plantName": "花（障碍物）",
-                    "growthRate": 0.0,
-                    "prerequisitePlantIDs": [],
-                    "prerequisiteWeights": [],
-                    "updatePlantIDs": [],
-                    "updateWeights": [],
-                    "associatedLights": [
-                        {
-                            "size": 17.100000381469728,
-                            "isObstacle": true,
-                            "isSeed": false,
-                            "lightHeight": 1.0,
-                            "heightMapPath": "test",
-                            "tiling": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        }
-                    ]
-                }
-            ]
-        },
-        {
+            "plantType": "Fire",
             "plantID": 99,
             "plantName": "火",
             "currentStage": 1,
@@ -395,9 +245,9 @@
             "hasTriedFruit": false,
             "isImmortal": false,
             "position": {
-                "x": -48.044044494628909,
-                "y": 1.0067969268685073e-16,
-                "z": -58.03789138793945
+                "x": -50.437496185302737,
+                "y": 1.0902671930856413e-16,
+                "z": -62.84962844848633
             },
             "rotation": {
                 "x": 0.0,
@@ -436,18 +286,121 @@
             ]
         },
         {
+            "plantType": "Fire",
+            "plantID": 99,
+            "plantName": "火",
+            "currentStage": 1,
+            "maxStages": 1,
+            "isWithered": true,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": false,
+            "position": {
+                "x": -62.14132308959961,
+                "y": 1.0750479300825026e-16,
+                "z": -61.9723014831543
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 99,
+                    "plantName": "火",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 10.0,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 0.0,
+                            "heightMapPath": "test5",
+                            "tiling": {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Fire",
+            "plantID": 99,
+            "plantName": "火",
+            "currentStage": 0,
+            "maxStages": 1,
+            "isWithered": true,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": false,
+            "position": {
+                "x": -54.833038330078128,
+                "y": 1.0823742356806603e-16,
+                "z": -62.394630432128909
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 99,
+                    "plantName": "火",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 13.100000381469727,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 0.0,
+                            "heightMapPath": "test5",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
             "plantID": 0,
             "plantName": "MediumMedium",
             "currentStage": 1,
             "maxStages": 1,
-            "isWithered": false,
+            "isWithered": true,
             "hasTriedBloom": true,
             "hasTriedFruit": false,
             "isImmortal": false,
             "position": {
-                "x": -49.81368637084961,
-                "y": 1.0105753555577515e-16,
-                "z": -58.25569534301758
+                "x": -59.733428955078128,
+                "y": 1.0787110167071324e-16,
+                "z": -62.1834602355957
             },
             "rotation": {
                 "x": 0.0,
@@ -486,18 +439,19 @@
             ]
         },
         {
-            "plantID": 3,
-            "plantName": "向日葵",
-            "currentStage": 2,
-            "maxStages": 2,
-            "isWithered": false,
-            "hasTriedBloom": true,
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "种子",
+            "currentStage": 0,
+            "maxStages": 1,
+            "isWithered": true,
+            "hasTriedBloom": false,
             "hasTriedFruit": false,
             "isImmortal": false,
             "position": {
-                "x": -45.67372512817383,
-                "y": 9.760457265906849e-17,
-                "z": -56.26520919799805
+                "x": -59.31319046020508,
+                "y": 9.798282580957674e-17,
+                "z": -56.48325729370117
             },
             "rotation": {
                 "x": 0.0,
@@ -522,52 +476,6 @@
                             "isSeed": true,
                             "lightHeight": 0.30000001192092898,
                             "heightMapPath": "seed",
-                            "tiling": {
-                                "x": 1.0,
-                                "y": 1.0
-                            },
-                            "offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        }
-                    ]
-                },
-                {
-                    "stageType": 1,
-                    "plantID": 3,
-                    "plantName": "向日葵",
-                    "growthRate": 0.5,
-                    "prerequisitePlantIDs": [],
-                    "prerequisiteWeights": [],
-                    "updatePlantIDs": [
-                        4
-                    ],
-                    "updateWeights": [
-                        1.0
-                    ],
-                    "associatedLights": [
-                        {
-                            "size": 25.0,
-                            "isObstacle": false,
-                            "isSeed": false,
-                            "lightHeight": 0.800000011920929,
-                            "heightMapPath": "test3",
-                            "tiling": {
-                                "x": 1.0,
-                                "y": 1.0
-                            },
-                            "offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        {
-                            "size": 5.0,
-                            "isObstacle": true,
-                            "isSeed": false,
-                            "lightHeight": 0.5,
-                            "heightMapPath": "test3",
                             "tiling": {
                                 "x": 1.0,
                                 "y": 1.0

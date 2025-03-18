@@ -6,6 +6,8 @@ using UnityEngine;
 [System.Serializable]
 public class PlantSaveData
 {
+    // 添加类型标识字段
+    public string plantType = "Plant";  // 新增字段
     // 基本植物状态
     public int plantID;
     public string plantName;
@@ -189,7 +191,7 @@ public class SerializableLightingData
     public bool isSeed;
     public float lightHeight;
     // 注意：Texture2D不能直接序列化，我们可以存储路径或者编码后的字符串
-    public string heightMapPath; // 假设使用资源路径
+    public string heightMapPath; // 使用资源路径
     public SerializableVector2 tiling;
     public SerializableVector2 offset;
     
