@@ -32,6 +32,9 @@ public class PlantManager : MonoBehaviour
     // 添加可更新植物列表
     public List<int> updatablePlants = new List<int>();
     
+    // 添加植物存档数据列表
+    public List<PlantSaveData> plants = new List<PlantSaveData>();
+    
     [Serializable]
     public class SeedMapping
     {
@@ -1007,6 +1010,71 @@ public class PlantManager : MonoBehaviour
     }
 #endregion
 
+#region 植物数据存档与读取
+  // 保存所有植物数据
+    public void SaveAllPlants(string saveFilePath)
+    {
+        plants.Clear();
+        
+        // 从活跃植物中获取存档数据
+        foreach(Plant plant in activePlants)
+        {
+            PlantSaveData saveData = plant.GetSaveData();
+            plants.Add(saveData);
+        }
+        
+        // 将数据序列化为JSON
+        string jsonData = JsonUtility.ToJson(new PlantSaveDataWrapper { plants = plants }, true);
+        
+        // 保存到文件
+        System.IO.File.WriteAllText(saveFilePath, jsonData);
+        
+        Debug.Log($"已保存 {plants.Count} 个植物到 {saveFilePath}");
+    }
+
+    // 加载所有植物数据
+    public void LoadAllPlants(string saveFilePath)
+    {
+        if (!System.IO.File.Exists(saveFilePath))
+        {
+            Debug.LogWarning($"植物存档文件不存在: {saveFilePath}");
+            return;
+        }
+        
+        // 清除现有植物
+        foreach(Plant plant in activePlants.ToList())
+        {
+            Destroy(plant.gameObject);
+        }
+        activePlants.Clear();
+        
+        // 读取JSON数据
+        string jsonData = System.IO.File.ReadAllText(saveFilePath);
+        PlantSaveDataWrapper wrapper = JsonUtility.FromJson<PlantSaveDataWrapper>(jsonData);
+        plants = wrapper.plants;
+        
+        // 从存档数据创建植物
+        foreach(PlantSaveData saveData in plants)
+        {
+            Plant plant = Plant.CreateFromSaveData(saveData);
+            // 注: 植物创建后会自动注册到PlantManager
+        }
+        
+        // 重建植物计数和可更新植物列表
+        UpdateAllPlantCounts();
+        RebuildUpdatablePlants();
+        
+        Debug.Log($"已加载 {plants.Count} 个植物从 {saveFilePath}");
+    }
+
+    // 包装类，用于JSON序列化List
+    [System.Serializable]
+    private class PlantSaveDataWrapper
+    {
+        public List<PlantSaveData> plants = new List<PlantSaveData>();
+    }
+#endregion
+
 #region 调试与辅助功能
     // 获取植物数据库（只读）
     public IReadOnlyDictionary<int, Plant.PlantStage> GetPlantDatabase()
@@ -1243,5 +1311,6 @@ public class PlantManager : MonoBehaviour
         
         return insideX && insideZ;
     }
+
 #endregion    
 }

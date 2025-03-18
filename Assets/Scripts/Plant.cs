@@ -844,4 +844,77 @@ public class Plant : MonoBehaviour
             Wither();
         }
     }
+
+    // 获取植物存档数据
+    public PlantSaveData GetSaveData()
+    {
+        PlantSaveData saveData = new PlantSaveData();
+        
+        // 创建可序列化的植物阶段列表
+        saveData.growthStages = new List<SerializablePlantStage>();
+        foreach (var stage in growthStages)
+        {
+            saveData.growthStages.Add(new SerializablePlantStage(stage));
+        }
+        
+        // 其他属性保持不变
+        saveData.currentStage = currentStage;
+        saveData.maxStages = maxStages;
+        saveData.isWithered = isWithered;
+        saveData.hasTriedBloom = hasTriedBloom;
+        saveData.hasTriedFruit = hasTriedFruit;
+        saveData.isImmortal = isImmortal;
+        
+        // 保存位置和旋转
+        saveData.position = new SerializableVector3(transform.position);
+        saveData.rotation = new SerializableQuaternion(transform.rotation);
+        
+        // 保存植物标识信息
+        saveData.plantName = plantName;
+        saveData.plantID = plantID;
+        
+        return saveData;
+    }
+
+    // 从存档数据创建植物
+    public static Plant CreateFromSaveData(PlantSaveData saveData)
+    {
+        // 创建植物游戏对象
+        GameObject plantObj = new GameObject(saveData.plantName);
+        
+        // 设置位置和旋转 - 使用转换方法
+        plantObj.transform.position = saveData.position.ToVector3();
+        plantObj.transform.rotation = saveData.rotation.ToQuaternion();
+        
+        // 添加植物组件
+        Plant plant = plantObj.AddComponent<Plant>();
+        
+        // 设置基本属性 - 使用转换方法将序列化阶段转换为原始阶段
+        plant.growthStages = saveData.ConvertToPlantStages();
+        plant.maxStages = saveData.maxStages;
+        plant.hasTriedBloom = saveData.hasTriedBloom;
+        plant.hasTriedFruit = saveData.hasTriedFruit;
+        plant.plantName = saveData.plantName;
+        plant.plantID = saveData.plantID;
+        
+        // 设置不会枯萎标记
+        plant.SetImmortal(saveData.isImmortal);
+        
+        // 应用当前生长阶段
+        // 注意：需要减1，因为currentStage是从1开始计数
+        int stageIndex = saveData.currentStage - 1;
+        if (stageIndex >= 0 && stageIndex < plant.growthStages.Count)
+        {
+            plant.ApplyStageConfig(stageIndex);
+            plant.currentStage = saveData.currentStage;
+        }
+        
+        // 如果植物已枯萎，调用枯萎方法
+        if (saveData.isWithered)
+        {
+            plant.Wither();
+        }
+        
+        return plant;
+    }
 } 
