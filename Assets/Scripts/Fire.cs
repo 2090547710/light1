@@ -33,9 +33,6 @@ public class Fire : Plant
         UpdateSafetyZone();
         // 初始化当前阶段
         if(currentStage==0){
-
-            plantName="火";
-            plantID=99;
             lightSources.Clear();
             if (growthStages.Count > 0 && currentStage <= growthStages.Count)
             {
@@ -196,7 +193,7 @@ public class Fire : Plant
     }
     
     // 计算火区域亮度
-    private float CalculateFireAreaBrightness()
+    public float CalculateFireAreaBrightness()
     {
         if (LightingManager.tree == null)
         {
@@ -274,5 +271,25 @@ public class Fire : Plant
         // 可以添加更多Fire特有参数的保存
         
         return saveData;
+    }
+
+    // 添加一个获取安全区域尺寸的公共方法
+    public Vector3 GetSafetyZoneSize()
+    {
+        // 确保安全区域已更新
+        UpdateSafetyZone();
+        
+        // 返回安全区域的尺寸
+        return safetyZone.size;
+    }
+
+    // 添加一个获取安全区域的方法
+    public Bounds GetSafetyZone()
+    {
+        // 确保安全区域已更新
+        UpdateSafetyZone();
+        
+        // 返回安全区域
+        return safetyZone;
     }
 } 

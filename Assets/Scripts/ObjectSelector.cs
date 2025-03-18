@@ -389,65 +389,128 @@ public class ObjectSelector : MonoBehaviour
             }
             
             // 新增：光照组件列表编辑
-            if (selectedObject.TryGetComponent<Plant>(out var plantComponent) && plantComponent.lightSources != null && plantComponent.lightSources.Count > 0) {
-                EditorGUILayout.Space();
-                EditorGUILayout.LabelField("光照组件列表编辑", EditorStyles.boldLabel);
-                for (int i = 0; i < plantComponent.lightSources.Count; i++) {
-                    var lightElement = plantComponent.lightSources[i];
-                    EditorGUILayout.LabelField($"光照组件 {i}", EditorStyles.boldLabel);
-                    Undo.RecordObject(lightElement, "Modify Lighting Properties");
-
-                    float newSize = EditorGUILayout.FloatField("大小:", lightElement.size);
-                    if (newSize != lightElement.size) {
-                        lightElement.size = Mathf.Max(0.01f, newSize);
-                    }
-
-                    bool newIsSeed = EditorGUILayout.Toggle("是否为种子:", lightElement.isSeed);
-                    if (newIsSeed != lightElement.isSeed) {
-                        lightElement.isSeed = newIsSeed;
-                        if (newIsSeed && lightElement.isObstacle) {
-                            lightElement.isObstacle = false;
-                            EditorGUILayout.HelpBox("种子不能同时为障碍物", MessageType.Warning);
-                        }
-                    }
-
-                    bool newIsObstacle = EditorGUILayout.Toggle("是否为障碍物:", lightElement.isObstacle);
-                    if (newIsObstacle != lightElement.isObstacle) {
-                        lightElement.isObstacle = newIsObstacle;
-                        if (newIsObstacle && lightElement.isSeed) {
-                            lightElement.isSeed = false;
-                            EditorGUILayout.HelpBox("障碍物不能同时为种子", MessageType.Warning);
-                        }
-                    }
-
-                    float newLightHeight = EditorGUILayout.Slider("光照高度:", lightElement.lightHeight, 0, 1);
-                    if (newLightHeight != lightElement.lightHeight) {
-                        lightElement.lightHeight = newLightHeight;
-                    }
-
-                    Texture2D newHeightMap = (Texture2D)EditorGUILayout.ObjectField("高度图:", lightElement.heightMap, typeof(Texture2D), false);
-                    if (newHeightMap != lightElement.heightMap) {
-                        lightElement.heightMap = newHeightMap;
-                    }
-
-                    Vector2 newTiling = EditorGUILayout.Vector2Field("平铺:", lightElement.tiling);
-                    if (newTiling != lightElement.tiling) {
-                        lightElement.tiling = newTiling;
-                    }
-
-                    Vector2 newOffset = EditorGUILayout.Vector2Field("偏移:", lightElement.offset);
-                    if (newOffset != lightElement.offset) {
-                        lightElement.offset = newOffset;
-                    }
-
-                    if (GUI.changed)
-                    {
-                        EditorUtility.SetDirty(lightElement);
-                        lightElement.OnValidate(); // 触发验证和更新
+            // 获取所有Plant组件（包括继承自Plant的子类）
+            var plantComponents = selectedObject.GetComponents<Plant>();
             
+            if (plantComponents != null && plantComponents.Length > 0) {
+                EditorGUILayout.Space();
+                
+                // 遍历所有Plant组件
+                foreach (var plantComponent in plantComponents) {
+                    // 检查该组件是否有光源
+                    if (plantComponent.lightSources == null || plantComponent.lightSources.Count == 0) {
+                        continue;
                     }
                     
-                    EditorGUILayout.Space();
+                    // 检查是否为Fire类型并显示不同的标题
+                    bool isFire = plantComponent is Fire;
+                    string componentTypeName = plantComponent.GetType().Name;
+                    
+                    EditorGUILayout.LabelField($"{componentTypeName}光源组件列表编辑 ({plantComponent.plantName})", EditorStyles.boldLabel);
+                    
+                    // 如果是Fire类型，显示安全区域信息
+                    if (isFire) {
+                        Fire fireComponent = (Fire)plantComponent;
+                        EditorGUILayout.Space(5);
+                        EditorGUILayout.LabelField("安全区域信息", EditorStyles.boldLabel);
+                        
+                        // 计算并显示安全区域亮度
+                        if (Application.isPlaying) {
+                            float areaBrightness = fireComponent.CalculateFireAreaBrightness();
+                            EditorGUILayout.LabelField($"安全区域亮度: {areaBrightness:P2}");
+                            
+                            // 显示安全区域尺寸
+                            Vector3 safetyZoneSize = fireComponent.GetSafetyZoneSize();
+                            EditorGUILayout.Vector3Field("安全区域尺寸:", safetyZoneSize);
+                        }
+                        
+                        // 显示光源大小设置
+                        EditorGUILayout.Space(5);
+                        EditorGUILayout.LabelField("光源大小设置", EditorStyles.boldLabel);
+                        
+                        // 记录修改前的值
+                        float oldMinSize = fireComponent.minLightSize;
+                        float oldMaxSize = fireComponent.maxLightSize;
+                        
+                        // 编辑光源大小范围
+                        fireComponent.minLightSize = EditorGUILayout.Slider("最小光源大小:", fireComponent.minLightSize, 1f, 10f);
+                        fireComponent.maxLightSize = EditorGUILayout.Slider("最大光源大小:", fireComponent.maxLightSize, 10f, 50f);
+                        
+                        // 确保最小值不大于最大值
+                        if (fireComponent.minLightSize > fireComponent.maxLightSize) {
+                            fireComponent.minLightSize = fireComponent.maxLightSize;
+                        }
+                        
+                        // 立即应用修改
+                        if (oldMinSize != fireComponent.minLightSize || oldMaxSize != fireComponent.maxLightSize) {
+                            EditorUtility.SetDirty(fireComponent);
+                        }
+                        
+                        EditorGUILayout.Space(5);
+                    }
+                    
+                    // 显示该Plant组件的所有光源
+                    for (int i = 0; i < plantComponent.lightSources.Count; i++) {
+                        var lightElement = plantComponent.lightSources[i];
+                        EditorGUILayout.LabelField($"光照组件 {i}", EditorStyles.boldLabel);
+                        Undo.RecordObject(lightElement, "Modify Lighting Properties");
+
+                        float newSize = EditorGUILayout.FloatField("大小:", lightElement.size);
+                        if (newSize != lightElement.size) {
+                            lightElement.size = Mathf.Max(0.01f, newSize);
+                        }
+
+                        bool newIsSeed = EditorGUILayout.Toggle("是否为种子:", lightElement.isSeed);
+                        if (newIsSeed != lightElement.isSeed) {
+                            lightElement.isSeed = newIsSeed;
+                            if (newIsSeed && lightElement.isObstacle) {
+                                lightElement.isObstacle = false;
+                                EditorGUILayout.HelpBox("种子不能同时为障碍物", MessageType.Warning);
+                            }
+                        }
+
+                        bool newIsObstacle = EditorGUILayout.Toggle("是否为障碍物:", lightElement.isObstacle);
+                        if (newIsObstacle != lightElement.isObstacle) {
+                            lightElement.isObstacle = newIsObstacle;
+                            if (newIsObstacle && lightElement.isSeed) {
+                                lightElement.isSeed = false;
+                                EditorGUILayout.HelpBox("障碍物不能同时为种子", MessageType.Warning);
+                            }
+                        }
+
+                        float newLightHeight = EditorGUILayout.Slider("光照高度:", lightElement.lightHeight, 0, 1);
+                        if (newLightHeight != lightElement.lightHeight) {
+                            lightElement.lightHeight = newLightHeight;
+                        }
+
+                        Texture2D newHeightMap = (Texture2D)EditorGUILayout.ObjectField("高度图:", lightElement.heightMap, typeof(Texture2D), false);
+                        if (newHeightMap != lightElement.heightMap) {
+                            lightElement.heightMap = newHeightMap;
+                        }
+
+                        Vector2 newTiling = EditorGUILayout.Vector2Field("平铺:", lightElement.tiling);
+                        if (newTiling != lightElement.tiling) {
+                            lightElement.tiling = newTiling;
+                        }
+
+                        Vector2 newOffset = EditorGUILayout.Vector2Field("偏移:", lightElement.offset);
+                        if (newOffset != lightElement.offset) {
+                            lightElement.offset = newOffset;
+                        }
+
+                        if (GUI.changed) {
+                            EditorUtility.SetDirty(lightElement);
+                            lightElement.OnValidate(); // 触发验证和更新
+                        }
+                        
+                        EditorGUILayout.Space();
+                    }
+                    
+                    // 为每个Plant组件之间添加分隔线
+                    EditorGUILayout.Space(10);
+                    Rect rect = EditorGUILayout.GetControlRect(false, 1);
+                    EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 1));
+                    EditorGUILayout.Space(10);
                 }
             }
             

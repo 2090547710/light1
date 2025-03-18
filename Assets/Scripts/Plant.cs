@@ -85,9 +85,9 @@ public class Plant : MonoBehaviour
     {
          // 检查植物是否在火光源范围内
         if(currentStage==0){
-            CheckIfInFireLight();
-            plantName="种子";
             plantID=0;
+            plantName="种子";
+            CheckIfInFireLight();
             lightSources.Clear();
             if (growthStages.Count > 0 && currentStage <= growthStages.Count)
             {
@@ -173,7 +173,14 @@ public class Plant : MonoBehaviour
         // 添加碰撞检测逻辑
         if (currentStage < growthStages.Count && HasCollisionWithOtherPlants())
         {
-            Debug.Log($"植物 {plantName} 无法生长，检测到与其他植物的碰撞");
+            if(currentStage!=0){
+                Debug.Log($"植物 {plantName} 无法生长，检测到与其他植物的碰撞");
+            }else{
+                LightingManager.tree.Remove(gameObject);
+                PlantManager.Instance.UnregisterPlant(this);
+                Destroy(gameObject);
+                Debug.Log("无法播种，检测到与其他植物的碰撞");
+            }
             return;
         }
 

@@ -21,12 +21,12 @@ public class QuadTreeTester : MonoBehaviour
     [SerializeField] private SizeLevel selectedSize = SizeLevel.Medium;
     [SerializeField] private GrowthRateLevel selectedGrowthRate = GrowthRateLevel.Medium;
     private string seedName = "MediumMedium"; // 默认种子名称
-    private bool showSeedUI = false;
-    private Rect seedUIRect = new Rect(10, 10, 200, 150);
 
     void Start()
     {
         mainCamera = Camera.main;
+        // 初始化种子名称
+        UpdateSeedName();
     }
 
     void Update()
@@ -95,61 +95,18 @@ public class QuadTreeTester : MonoBehaviour
                 objects.Clear();
             }
         }
-
-        // 按Tab键显示/隐藏种子选择UI
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            showSeedUI = !showSeedUI;
-        }
     }
 
-    void OnGUI()
+    // 添加新方法来更新种子名称
+    private void UpdateSeedName()
     {
-        if (showSeedUI)
-        {
-            seedUIRect = GUI.Window(0, seedUIRect, DrawSeedSelectionWindow, "种子选择");
-        }
-    }
-
-    void DrawSeedSelectionWindow(int windowID)
-    {
-        GUILayout.BeginVertical(GUI.skin.box);
-        
-        GUILayout.Label("选择种子大小:");
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Toggle(selectedSize == SizeLevel.Small, "小", GUI.skin.button))
-            selectedSize = SizeLevel.Small;
-        if (GUILayout.Toggle(selectedSize == SizeLevel.Medium, "中", GUI.skin.button))
-            selectedSize = SizeLevel.Medium;
-        if (GUILayout.Toggle(selectedSize == SizeLevel.Large, "大", GUI.skin.button))
-            selectedSize = SizeLevel.Large;
-        GUILayout.EndHorizontal();
-        
-        GUILayout.Space(10);
-        
-        GUILayout.Label("选择生长速度:");
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Toggle(selectedGrowthRate == GrowthRateLevel.Slow, "慢", GUI.skin.button))
-            selectedGrowthRate = GrowthRateLevel.Slow;
-        if (GUILayout.Toggle(selectedGrowthRate == GrowthRateLevel.Medium, "中", GUI.skin.button))
-            selectedGrowthRate = GrowthRateLevel.Medium;
-        if (GUILayout.Toggle(selectedGrowthRate == GrowthRateLevel.Fast, "快", GUI.skin.button))
-            selectedGrowthRate = GrowthRateLevel.Fast;
-        GUILayout.EndHorizontal();
-        
-        GUILayout.Space(10);
-        
-        // 更新种子名称
         seedName = selectedSize.ToString() + selectedGrowthRate.ToString();
-        GUILayout.Label($"当前选择: {seedName}");
-        
-        GUILayout.EndVertical();
-        
-        // 允许窗口拖动
-        GUI.DragWindow();
     }
 
     public void TestSeed(Vector3 position){
+        // 在放置种子前更新种子名称，确保使用最新的Inspector设置
+        UpdateSeedName();
+        
         // 随机选择一个预制体
         GameObject prefab = prefabToSpawn[0];
         GameObject newObj = Instantiate(
