@@ -35,18 +35,21 @@ public class QuadTreeTester : MonoBehaviour
         seedCooldownTimer -= Time.deltaTime;
         darkCooldownTimer -= Time.deltaTime;
 
+        // 按Z键枯萎所有植物
         if (Input.GetKeyDown(KeyCode.Z))
         {
-            if(objects.Count > 0){
-                int i = objects.Count - 1;
-                // 获取所有 Plant 组件
-                Plant[] plants = objects[i].GetComponents<Plant>();
-                foreach(Plant plant in plants){
-                    plant.Wither(); // 对每个Plant组件调用 Wither 方法
+            if (objects.Count >= 1)
+            {
+                for (int i = 0; i < objects.Count; i++)
+                {
+                    // 获取所有 Plant 组件
+                    Plant[] plants = objects[i].GetComponents<Plant>();
+                    foreach(Plant plant in plants){
+                        plant.Wither(); // 对每个Plant组件调用 Wither 方法
+                    }
                 }
-                Destroy(objects[i]);
-                objects.RemoveAt(i);
             }
+            
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -78,22 +81,15 @@ public class QuadTreeTester : MonoBehaviour
             }
         }
 
-        // 按C键清除所有对象
+        // 按C键清除所有植物
         if (Input.GetKeyDown(KeyCode.C))
         {
             if (objects.Count >= 1)
             {
-                for (int i = 0; i < objects.Count; i++)
-                {
-                    // 获取所有 Plant 组件
-                    Plant[] plants = objects[i].GetComponents<Plant>();
-                    foreach(Plant plant in plants){
-                        plant.Wither(); // 对每个Plant组件调用 Wither 方法
-                    }
-                    Destroy(objects[i]);
-                }
+                PlantManager.Instance.ClearAllPlants();
                 objects.Clear();
             }
+
         }
     }
 

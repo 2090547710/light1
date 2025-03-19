@@ -1042,15 +1042,9 @@ public class PlantManager : MonoBehaviour
         Debug.Log($"已保存 {plants.Count} 个植物到 {saveFilePath}");
     }
 
-    // 加载所有植物数据
-    public void LoadAllPlants(string saveFilePath)
+    // 清除所有植物的方法
+    public void ClearAllPlants()
     {
-        if (!System.IO.File.Exists(saveFilePath))
-        {
-            Debug.LogWarning($"植物存档文件不存在: {saveFilePath}");
-            return;
-        }
-        
         // 清除现有植物
         foreach(Plant plant in activePlants.ToList())
         {
@@ -1078,6 +1072,19 @@ public class PlantManager : MonoBehaviour
             Destroy(plant.gameObject);
         }
         witheredPlants.Clear();
+    }
+
+    // 加载所有植物数据
+    public void LoadAllPlants(string saveFilePath)
+    {
+        if (!System.IO.File.Exists(saveFilePath))
+        {
+            Debug.LogWarning($"植物存档文件不存在: {saveFilePath}");
+            return;
+        }
+        
+        // 清除所有现有植物
+        ClearAllPlants();
         
         // 读取JSON数据
         string jsonData = System.IO.File.ReadAllText(saveFilePath);

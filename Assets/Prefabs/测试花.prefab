@@ -114,7 +114,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3803225260541865786}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de5b6a563c58f6e4da4f1f9481160b8a, type: 3}
   m_Name: 
@@ -147,7 +147,7 @@ MonoBehaviour:
       isObstacle: 1
       isSeed: 0
       lightHeight: 1
-      heightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
+      heightMap: {fileID: 2800000, guid: 6cb0369d7ea57b448a7c9cf1b3ca1c70, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
     plantID: 0
@@ -179,7 +179,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3803225260541865786}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 396cc76aa21b1584faf60f908cf2610a, type: 3}
   m_Name: 
@@ -196,7 +196,7 @@ MonoBehaviour:
       isObstacle: 0
       isSeed: 0
       lightHeight: 0
-      heightMap: {fileID: 2800000, guid: 6c080eabebc408e48bf4267656aa70ad, type: 3}
+      heightMap: {fileID: 2800000, guid: 6cb0369d7ea57b448a7c9cf1b3ca1c70, type: 3}
       tiling: {x: 0, y: 0}
       offset: {x: 0, y: 0}
     plantID: 99
@@ -222,4 +222,4 @@ MonoBehaviour:
   textColor: {r: 1, g: 1, b: 1, a: 1}
   textSize: 1
   minLightSize: 10
-  maxLightSize: 50
+  maxLightSize: 30

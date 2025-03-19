@@ -65,7 +65,7 @@ public class Fire : Plant
         {
             // 检查火区域亮度条件
             float fireAreaBrightness = CalculateFireAreaBrightness();
-            float minRequiredBrightness = 0.9f; // 可以根据需要调整
+            float minRequiredBrightness = 0.9f; // 根据需要调整
             
             if (fireAreaBrightness < minRequiredBrightness)
             {
@@ -241,25 +241,15 @@ public class Fire : Plant
     // 在Unity编辑器中可视化安全区域
     private void OnDrawGizmos()
     {
-        if (GameManager.Instance != null && this.enabled)
+        if (GameManager.Instance != null && this.currentStage==1 && !this.isWithered)
         {
-            Vector2 size = GameManager.Instance.size;
-            Vector3 lighthouse = new Vector3(-size.x/2, 0, -size.y/2);
-            
-            // 绘制灯塔位置
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(lighthouse, 1f);
-            
-            // 绘制火的当前位置
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(transform.position, 0.5f);
-            
-            // 更新并绘制安全区域
+           // 更新并绘制安全区域
             Gizmos.color = new Color(0, 1, 0, 0.2f); // 绿色表示安全区域
             Gizmos.DrawCube(safetyZone.center, safetyZone.size);
         
         }
     }
+    
 
     // 在Fire类中添加保存特有参数的逻辑
     public override PlantSaveData GetSaveData()
