@@ -1,0 +1,1954 @@
+{
+    "plants": [
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -60.13444900512695,
+                "y": 1.0728496148865817e-16,
+                "z": -61.845577239990237
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -54.9471549987793,
+                "y": 1.0146012105118226e-16,
+                "z": -58.4877815246582
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（障碍物）",
+            "currentStage": 2,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -47.93080520629883,
+                "y": 9.561871714912058e-17,
+                "z": -55.12043380737305
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "slope",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -46.86702346801758,
+                "y": 1.0783195948412723e-16,
+                "z": -62.160888671875
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -54.9233512878418,
+                "y": 9.178192259585462e-17,
+                "z": -52.90867233276367
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -40.83024215698242,
+                "y": 9.797963620113474e-17,
+                "z": -56.481422424316409
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -42.86369323730469,
+                "y": 8.66385863388938e-17,
+                "z": -49.94374465942383
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -48.12385940551758,
+                "y": 8.526174090057684e-17,
+                "z": -49.15005111694336
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -43.72806167602539,
+                "y": 7.333795222295964e-17,
+                "z": -42.27645492553711
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -31.156021118164064,
+                "y": 6.642813537194488e-17,
+                "z": -38.293209075927737
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -23.87577247619629,
+                "y": 6.101578674489201e-17,
+                "z": -35.17321014404297
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -15.193275451660157,
+                "y": 4.012957223087912e-17,
+                "z": -23.13312339782715
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -19.4102840423584,
+                "y": 4.6633064730118036e-17,
+                "z": -26.882131576538087
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -6.669291019439697,
+                "y": 3.187911067387516e-17,
+                "z": -18.377056121826173
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": -1.236761450767517,
+                "y": 2.3983751136395316e-17,
+                "z": -13.825693130493164
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 5.228174209594727,
+                "y": 1.0791394135463737e-17,
+                "z": -6.220815181732178
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 13.15698528289795,
+                "y": -2.1595342804674498e-18,
+                "z": 1.2448867559432984
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 17.789852142333986,
+                "y": -1.462472528350494e-17,
+                "z": 8.43057918548584
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 23.55730628967285,
+                "y": -2.118536603690392e-17,
+                "z": 12.212531089782715
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 8.780856132507325,
+                "y": 3.1617291466389877e-17,
+                "z": -18.226125717163087
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 14.778825759887696,
+                "y": 4.406989009216732e-17,
+                "z": -25.40456199645996
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 20.5371150970459,
+                "y": 6.01997300572166e-17,
+                "z": -34.70278549194336
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 29.412572860717775,
+                "y": 7.417572074735335e-17,
+                "z": -42.7593879699707
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 36.138362884521487,
+                "y": 8.614650651865335e-17,
+                "z": -49.66008377075195
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "plantType": "Plant",
+            "plantID": 0,
+            "plantName": "花（照明）",
+            "currentStage": 1,
+            "maxStages": 2,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": true,
+            "position": {
+                "x": 42.03632736206055,
+                "y": 9.38890891057171e-17,
+                "z": -54.12337875366211
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（照明）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 17.100000381469728,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "stageType": 1,
+                    "plantID": 0,
+                    "plantName": "花（障碍物）",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 6.800000190734863,
+                            "isObstacle": true,
+                            "isSeed": false,
+                            "lightHeight": 1.0,
+                            "heightMapPath": "test",
+                            "tiling": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

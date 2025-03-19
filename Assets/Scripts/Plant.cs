@@ -899,51 +899,61 @@ public class Plant : MonoBehaviour
     // 从存档数据创建植物
     public static Plant CreateFromSaveData(PlantSaveData saveData)
     {
-        GameObject plantObj = new GameObject(saveData.plantName);
-        
-        // 根据类型添加不同组件
-        Plant plant;
-        if (saveData.plantType == "Fire")
+        // 从 Resources 文件夹加载预制体
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/测试植物");
+        if (prefab == null)
         {
-            plant = plantObj.AddComponent<Fire>();
-            // 这里可以添加Fire特有的初始化代码
+            Debug.LogError($"无法找到植物预制体: {saveData.plantName}");
+            return null;
         }
-        else
+
+        // 实例化预制体
+        GameObject plantObj = GameObject.Instantiate(prefab);
+        plantObj.name = saveData.plantName;
+
+        // 获取或添加 Plant 组件
+        Plant plant = plantObj.GetComponent<Plant>();
+        if (plant == null)
         {
-            plant = plantObj.AddComponent<Plant>();
+            if (saveData.plantType == "Fire")
+            {
+                plant = plantObj.AddComponent<Fire>();
+            }
+            else
+            {
+                plant = plantObj.AddComponent<Plant>();
+            }
         }
-        
-        // 设置位置和旋转 - 使用转换方法
+
+        // 设置位置和旋转
         plantObj.transform.position = saveData.position.ToVector3();
         plantObj.transform.rotation = saveData.rotation.ToQuaternion();
-        
-        // 设置基本属性 - 使用转换方法将序列化阶段转换为原始阶段
+
+        // 设置基本属性
         plant.growthStages = saveData.ConvertToPlantStages();
         plant.maxStages = saveData.maxStages;
         plant.hasTriedBloom = saveData.hasTriedBloom;
         plant.hasTriedFruit = saveData.hasTriedFruit;
         plant.plantName = saveData.plantName;
         plant.plantID = saveData.plantID;
-        
+
         // 设置不会枯萎标记
         plant.SetImmortal(saveData.isImmortal);
-        
+
         // 应用当前生长阶段
-        // 注意：需要减1，因为currentStage是从1开始计数
         int stageIndex = saveData.currentStage - 1;
         if (stageIndex >= 0 && stageIndex < plant.growthStages.Count)
         {
             plant.ApplyStageConfig(stageIndex);
-            Debug.Log("2");
             plant.currentStage = saveData.currentStage;
         }
-        
+
         // 如果植物已枯萎，调用枯萎方法
         if (saveData.isWithered)
         {
             plant.Wither();
         }
-        
+
         return plant;
     }
 #endregion

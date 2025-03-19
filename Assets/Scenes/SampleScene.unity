@@ -251,7 +251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec8a6dfcf46693e498cf74142c7c4337, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxDepth: 8
+  maxDepth: 6
   capacity: 2
   preSplit: 0
   size: {x: 128, y: 128}
@@ -353,7 +353,481 @@ MonoBehaviour:
   plantDatabasePath: PlantData/PlantDatabase
   seedMappingPath: PlantData/SeedMapping
   activePlants: []
+  witheredPlants: []
   updatablePlants: 
+  plants:
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    position:
+      x: -60.13445
+      y: 1.0728496e-16
+      z: -61.845577
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    position:
+      x: -54.947155
+      y: 1.0146012e-16
+      z: -58.48778
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+    currentStage: 2
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    position:
+      x: -47.930805
+      y: 9.561872e-17
+      z: -55.120434
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    position:
+      x: -46.867023
+      y: 1.0783196e-16
+      z: -62.16089
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    position:
+      x: -54.92335
+      y: 9.178192e-17
+      z: -52.908672
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    position:
+      x: -40.830242
+      y: 9.7979636e-17
+      z: -56.481422
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    position:
+      x: -42.863693
+      y: 8.6638586e-17
+      z: -49.943745
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    position:
+      x: -48.12386
+      y: 8.526174e-17
+      z: -49.15005
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        tiling:
+          x: 0
+          y: 0
+        offset:
+          x: 0
+          y: 0
 --- !u!114 &877133421
 MonoBehaviour:
   m_ObjectHideFlags: 0

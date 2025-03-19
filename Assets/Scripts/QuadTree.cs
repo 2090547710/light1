@@ -560,14 +560,13 @@ public class QuadTree
         }
         
         // 直接返回null如果目标节点不可行走
-        if (targetNode == null || !targetNode.IsWalkable || targetNode.Size != MinNodeSize || !IsHeightAccessible(startNode, targetNode))
+        if (targetNode == null || !targetNode.IsWalkable || targetNode.Size != MinNodeSize)
         {
             return null;
         }
         
         var openList = new List<QuadTreeNode>();
         var closedSet = new HashSet<QuadTreeNode>();
-
         // 初始化节点数据
         ResetPathfindingData();
         
@@ -579,8 +578,10 @@ public class QuadTree
         {
             var currentNode = openList.OrderBy(n => n.FCost).First();
             
-            if (currentNode == targetNode)
+            if (currentNode == targetNode){
                 return RetracePath(startNode, targetNode);
+            }
+                
 
             openList.Remove(currentNode);
             closedSet.Add(currentNode);
@@ -640,11 +641,32 @@ public class QuadTree
         if (neighborCache.TryGetValue(node, out var cached))
             return cached;
 
-        Vector3 center = new Vector3(node.Center.x, 0, node.Center.y);
-        float radius = Mathf.Max(node.Size.x, node.Size.y) * 1.0f;
-        var neighbors = GetNeighborLeafNodes(center, radius)
-            .Where(n => n.IsWalkable && IsHeightAccessible(node, n))
-            .ToList();
+        // 定向获取8个方位的邻居，而不是整个区域搜索
+        var neighbors = new List<QuadTreeNode>(8);
+        float offset = node.Size.x; // 基于节点尺寸的偏移量
+        
+        // 8个方向的偏移量
+        Vector2[] directions = new Vector2[] {
+            new Vector2(offset, 0),          // 右
+            new Vector2(-offset, 0),         // 左
+            new Vector2(0, offset),          // 上
+            new Vector2(0, -offset),         // 下
+            new Vector2(offset, offset),     // 右上
+            new Vector2(-offset, offset),    // 左上
+            new Vector2(-offset, -offset),   // 左下
+            new Vector2(offset, -offset)     // 右下
+        };
+        
+        foreach (var dir in directions)
+        {
+            Vector2 neighborPos = node.Center + dir;
+            var neighborNode = FindLeafNode(new Vector3(neighborPos.x, 0, neighborPos.y));
+            if (neighborNode != null && neighborNode.IsWalkable && 
+                IsHeightAccessible(node, neighborNode))
+            {
+                neighbors.Add(neighborNode);
+            }
+        }
         
         neighborCache[node] = neighbors;
         return neighbors;
@@ -654,8 +676,14 @@ public class QuadTree
     {
         Vector2 start = from.Center;
         Vector2 end = to.Center;
-        float step = Mathf.Min(from.Size.x, from.Size.y) * 0.1f;
+        
+        // 如果距离很近，直接返回true
         float distance = Vector2.Distance(start, end);
+        if (distance < MinNodeSize.x * 2)
+            return true;
+        
+        // 减少检查点数量，使用较大步长
+        float step = Mathf.Max(MinNodeSize.x * 0.5f, distance / 5);
         
         QuadTreeNode prevNode = from;
         
@@ -702,6 +730,8 @@ public class QuadTree
     {
         if (path.Count < 3) return path;
         
+        //输出路径信息
+
         List<Vector3> simplified = new List<Vector3> { path[0] };
         for (int i = 1; i < path.Count - 1; i++)
         {
@@ -1010,7 +1040,7 @@ public class QuadTree
     private bool IsHeightAccessible(QuadTreeNode from, QuadTreeNode to)
     {
         // 定义最大可攀爬高度差
-        float maxClimbableHeight = 0.1f; // 可以根据需要调整
+        float maxClimbableHeight = 0.15f; // 可以根据需要调整
         
         // 计算高度差
         float heightDifference = Mathf.Abs(from.Height - to.Height);

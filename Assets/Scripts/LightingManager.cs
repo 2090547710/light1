@@ -407,4 +407,5 @@ static void SaveCompositeMenuItem()
         instance.lightingComputeShader.Dispatch(kernel, threadGroupsX, threadGroupsY, 1);
     }
     #endregion
+
 }
