@@ -1087,6 +1087,191 @@ public class QuadTree
     }
     #endregion
 
-  
+    #region 边界提取方法
+    // 获取光照区域边界的线段序列
+    public List<Vector4> GetIlluminatedAreaBoundarySegments()
+    {
+        // 使用HashSet存储边界线段，可以避免重复
+        HashSet<Vector4> boundarySegments = new HashSet<Vector4>();
+        
+        // 获取所有被照亮的叶子节点
+        List<QuadTreeNode> illuminatedNodes = GetIlluminatedLeafNodes();
+        
+        // 遍历所有被照亮的节点
+        foreach (var node in illuminatedNodes)
+        {
+            // 查找节点的四个边界，检查是否为边界线段
+            Vector2 halfSize = node.Size * 0.5f;
+            
+            // 节点的四个顶点
+            Vector2[] corners = new Vector2[4] {
+                new Vector2(node.Center.x + halfSize.x, node.Center.y + halfSize.y), // 右上
+                new Vector2(node.Center.x - halfSize.x, node.Center.y + halfSize.y), // 左上
+                new Vector2(node.Center.x - halfSize.x, node.Center.y - halfSize.y), // 左下
+                new Vector2(node.Center.x + halfSize.x, node.Center.y - halfSize.y)  // 右下
+            };
+            
+            // 检查四条边是否为边界（通过检查相邻位置是否被照亮）
+            // 上边界
+            if (!IsPositionIlluminated(new Vector3(node.Center.x, 0, node.Center.y + node.Size.y)))
+            {
+                // 上边界是边缘，添加线段(右上 -> 左上)
+                AddSegmentToSet(corners[0], corners[1], boundarySegments);
+            }
+            
+            // 左边界
+            if (!IsPositionIlluminated(new Vector3(node.Center.x - node.Size.x, 0, node.Center.y)))
+            {
+                // 左边界是边缘，添加线段(左上 -> 左下)
+                AddSegmentToSet(corners[1], corners[2], boundarySegments);
+            }
+            
+            // 下边界
+            if (!IsPositionIlluminated(new Vector3(node.Center.x, 0, node.Center.y - node.Size.y)))
+            {
+                // 下边界是边缘，添加线段(左下 -> 右下)
+                AddSegmentToSet(corners[2], corners[3], boundarySegments);
+            }
+            
+            // 右边界
+            if (!IsPositionIlluminated(new Vector3(node.Center.x + node.Size.x, 0, node.Center.y)))
+            {
+                // 右边界是边缘，添加线段(右下 -> 右上)
+                AddSegmentToSet(corners[3], corners[0], boundarySegments);
+            }
+        }
+        
+        // 将HashSet转换为List返回
+        return new List<Vector4>(boundarySegments);
+    }
+
+    // 辅助方法：按规范化顺序添加线段到集合
+    private void AddSegmentToSet(Vector2 start, Vector2 end, HashSet<Vector4> segments)
+    {
+        // 确保线段表示的标准化（起点坐标小于终点坐标）
+        if (start.x < end.x || (start.x == end.x && start.y < end.y))
+        {
+            segments.Add(new Vector4(start.x, start.y, end.x, end.y));
+        }
+        else
+        {
+            segments.Add(new Vector4(end.x, end.y, start.x, start.y));
+        }
+    }
+
+    // 获取合并后的边界线段
+    public List<Vector4> GetMergedBoundarySegments()
+    {
+        // 获取原始边界线段
+        List<Vector4> rawSegments = GetIlluminatedAreaBoundarySegments();
+        
+        // 如果线段少于2条，无需合并
+        if (rawSegments.Count < 2)
+            return rawSegments;
+        
+        // 合并共线且相邻的线段
+        List<Vector4> mergedSegments = new List<Vector4>();
+        HashSet<int> processedIndices = new HashSet<int>();
+        
+        for (int i = 0; i < rawSegments.Count; i++)
+        {
+            if (processedIndices.Contains(i))
+                continue;
+            
+            Vector4 currentSegment = rawSegments[i];
+            Vector2 start = new Vector2(currentSegment.x, currentSegment.y);
+            Vector2 end = new Vector2(currentSegment.z, currentSegment.w);
+            
+            bool merged = true;
+            while (merged)
+            {
+                merged = false;
+                
+                for (int j = 0; j < rawSegments.Count; j++)
+                {
+                    if (i == j || processedIndices.Contains(j))
+                        continue;
+                    
+                    Vector4 otherSegment = rawSegments[j];
+                    Vector2 otherStart = new Vector2(otherSegment.x, otherSegment.y);
+                    Vector2 otherEnd = new Vector2(otherSegment.z, otherSegment.w);
+                    
+                    // 检查是否共线
+                    if (AreCollinear(start, end, otherStart, otherEnd))
+                    {
+                        // 检查是否连接
+                        if (Vector2.Distance(end, otherStart) < MinNodeSize.x * 0.1f)
+                        {
+                            // end连接otherStart
+                            end = otherEnd;
+                            processedIndices.Add(j);
+                            merged = true;
+                        }
+                        else if (Vector2.Distance(start, otherEnd) < MinNodeSize.x * 0.1f)
+                        {
+                            // start连接otherEnd
+                            start = otherStart;
+                            processedIndices.Add(j);
+                            merged = true;
+                        }
+                        else if (Vector2.Distance(start, otherStart) < MinNodeSize.x * 0.1f)
+                        {
+                            // start连接otherStart
+                            start = otherEnd;
+                            processedIndices.Add(j);
+                            merged = true;
+                        }
+                        else if (Vector2.Distance(end, otherEnd) < MinNodeSize.x * 0.1f)
+                        {
+                            // end连接otherEnd
+                            end = otherStart;
+                            processedIndices.Add(j);
+                            merged = true;
+                        }
+                    }
+                }
+            }
+            
+            // 将合并后的线段添加到结果中
+            mergedSegments.Add(new Vector4(start.x, start.y, end.x, end.y));
+            processedIndices.Add(i);
+        }
+        
+        return mergedSegments;
+    }
+
+    // 检查两条线段是否共线
+    private bool AreCollinear(Vector2 a, Vector2 b, Vector2 c, Vector2 d)
+    {
+        // 计算两条线段的方向向量
+        Vector2 dir1 = (b - a).normalized;
+        Vector2 dir2 = (d - c).normalized;
+        
+        // 计算两个方向向量的点积，如果接近1或-1，则它们共线
+        float dotProduct = Mathf.Abs(Vector2.Dot(dir1, dir2));
+        return Mathf.Abs(dotProduct - 1.0f) < 0.01f;
+    }
+
+    // 在Gizmos中绘制光照区域边界
+    public void DrawIlluminatedAreaBoundary()
+    {
+        List<Vector4> boundarySegments = GetMergedBoundarySegments();
+        
+        // 设置线条颜色为明亮的黄色
+        Gizmos.color = new Color(1f, 0.92f, 0.016f, 1f);
+        
+        // 绘制每个线段
+        foreach (var segment in boundarySegments)
+        {
+            Vector3 start = new Vector3(segment.x, 0.1f, segment.y);
+            Vector3 end = new Vector3(segment.z, 0.1f, segment.w);
+            Gizmos.DrawLine(start, end);
+            
+            // 在线段端点绘制小球以便更好地可视化
+            Gizmos.DrawSphere(start, MinNodeSize.x * 0.1f);
+            Gizmos.DrawSphere(end, MinNodeSize.x * 0.1f);
+        }
+    }
+    #endregion
 }
 

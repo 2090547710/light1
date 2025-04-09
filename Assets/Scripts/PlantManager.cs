@@ -9,7 +9,7 @@ public class PlantManager : MonoBehaviour
 #region 字段和属性定义
     // 单例模式
     public static PlantManager Instance { get; private set; }
-        
+    
     // 植物数据库
     private Dictionary<int, Plant.PlantStage> plantDatabase = new Dictionary<int, Plant.PlantStage>();
        

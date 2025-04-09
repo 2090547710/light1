@@ -28,6 +28,7 @@ public class CameraController : MonoBehaviour
         Vector3 initialDir = new Vector3(0, 0, -initialZoom);
         transform.position = target.position + initialRot * initialDir;
         transform.LookAt(target.position);
+
     }
 
     void Update()

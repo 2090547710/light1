@@ -4,6 +4,8 @@ Shader "Custom/HeightmapLightingUnlit"
     {
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
+        _OutlineTex ("Outline Texture", 2D) = "black" {}
+        _OutlineColor ("Outline Color", Color) = (0,0,0,1)
         _MinBrightness ("Min Brightness", Range(0,1)) = 0.2
         _BrightnessMultiplier ("Brightness Multiplier", Range(0.1,3.0)) = 1.0
     }
@@ -35,6 +37,9 @@ Shader "Custom/HeightmapLightingUnlit"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            sampler2D _OutlineTex;
+            float4 _OutlineTex_ST;
+            fixed4 _OutlineColor;
             sampler2D _CompositeMap; // GPU中的RenderTexture
             uniform float4 _HeightmapParams;
             fixed4 _Color;
@@ -56,6 +61,12 @@ Shader "Custom/HeightmapLightingUnlit"
                 float2 heightmapUV = (i.worldPos.xz - _HeightmapParams.xy + _HeightmapParams.zw*0.5) / _HeightmapParams.zw;
                 heightmapUV = clamp(heightmapUV, 0, 1);
                 
+                // 从主纹理获取颜色
+                fixed4 mainColor = tex2D(_MainTex, i.uv) * _Color;
+                
+                // 从边缘描线贴图获取颜色
+                fixed4 outlineColor = tex2D(_OutlineTex, i.uv);
+                
                 // 从CompositeMap获取光照数据
                 float4 lightData = tex2D(_CompositeMap, heightmapUV);
                 float lightIntensity = lightData.r; // 使用红色通道存储的光照数据
@@ -64,11 +75,20 @@ Shader "Custom/HeightmapLightingUnlit"
                 // 应用亮度调整
                 float adjustedIntensity = lerp(_MinBrightness, 1.0, lightIntensity) * _BrightnessMultiplier;
                 
-                // 计算最终颜色 - 不受Unity光照系统影响
-                fixed4 col = tex2D(_MainTex, i.uv) * _Color;
-                col.rgb *= adjustedIntensity;
+                // 处理主贴图的光照
+                fixed4 finalColor = mainColor;
+                finalColor.rgb *= adjustedIntensity;
                 
-                return col;
+                // 应用边缘描线效果 (只有当不满足丢弃条件时)
+                // 规则1: 透明度==0不要
+                // 规则2: r>0.99f不要
+                if(outlineColor.a > 0.001 && outlineColor.r <= 0.99)
+                {
+                    // 混合描线颜色
+                    finalColor = lerp(finalColor, _OutlineColor, outlineColor.a);
+                }
+                
+                return finalColor;
             }
             ENDCG
         }

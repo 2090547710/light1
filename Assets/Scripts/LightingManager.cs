@@ -240,6 +240,9 @@ public class LightingManager : MonoBehaviour
 
         // 更新GPU中的合成高度图参数
         UpdateHeightmapParams(tree.RootCenter, tree.RootSize);
+
+        var boundarySegments = GetLightingBoundarySegments();
+        Debug.Log($"光照边界线段数量: {boundarySegments.Count}");
     }
     #endregion
 
@@ -405,6 +408,26 @@ static void SaveCompositeMenuItem()
         
         // 派发计算
         instance.lightingComputeShader.Dispatch(kernel, threadGroupsX, threadGroupsY, 1);
+    }
+    #endregion
+
+    #region 光照边界提取
+    // 获取光照区域边界线段
+    public static List<Vector4> GetLightingBoundarySegments()
+    {
+        if (tree == null)
+            return new List<Vector4>();
+        
+        return tree.GetMergedBoundarySegments();
+    }
+
+    // 在编辑器中可视化光照边界
+    private void OnDrawGizmosSelected()
+    {
+        if (tree != null)
+        {
+            tree.DrawIlluminatedAreaBoundary();
+        }
     }
     #endregion
 
