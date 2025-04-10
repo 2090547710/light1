@@ -46,6 +46,9 @@ public class LightingManager : MonoBehaviour
     public static float defaultImageWidth = 0.0f;
     public static float defaultRotationAngle = 0.0f;
     public static bool autoUpdateBoundaryImages = true;
+
+    // 添加缓存变量，存储上一次的边界线段
+    private static List<Vector4> cachedSimplifiedBoundarySegments = new List<Vector4>();
     #endregion
 
     #region Unity生命周期方法
@@ -275,14 +278,8 @@ public class LightingManager : MonoBehaviour
         // 自动更新边界和显示图片
         if (autoUpdateBoundaryImages)
         {
-            // 清除之前创建的所有图片对象
-            ClearAllSegmentImages();
-            
-            // 更新边界线段
-            simplifiedBoundarySegments = GetSimplifiedBoundaryWithLength(targetSegmentLength);
-            
-            // 在所有边界线段上显示图片
-            displayedImages = DisplayImagesOnAllSegments(
+            // 使用增量更新代替完全重建
+            UpdateBoundaryImagesIncremental(
                 defaultImageResource, 
                 defaultImageHeight, 
                 defaultImageWidth, 
@@ -603,43 +600,6 @@ static void HideSimplifiedBoundaryMenu()
         return tree.GetSimplifiedBoundarySegments(targetSegmentLength);
     }
 
-    // 添加新方法：在所有线段上显示图片
-    public static List<GameObject> DisplayImagesOnAllSegments(string resourcePath, float height = 1.0f, float width = 0.0f, float rotationAngle = 0.0f, float segmentLength = 1.0f)
-    {
-        List<GameObject> createdObjects = new List<GameObject>();
-        
-        // 获取指定长度的简化边界线段
-        List<Vector4> segments = GetSimplifiedBoundaryWithLength(segmentLength);
-        
-        if (segments == null || segments.Count == 0)
-        {
-            Debug.LogWarning("没有可用的边界线段");
-            return createdObjects;
-        }
-        
-        // 从Resources加载纹理
-        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
-        if (texture == null)
-        {
-            Debug.LogError($"无法加载纹理：{resourcePath}");
-            return createdObjects;
-        }
-        
-        // 在每个线段上显示图片
-        int count = 0;
-        foreach (var segment in segments)
-        {
-            GameObject imageObj = DisplayImageOnSegment(segment, texture, height, width, false, rotationAngle);
-            if (imageObj != null)
-            {
-                imageObj.name = $"SegmentImage_{count++}";
-                createdObjects.Add(imageObj);
-            }
-        }
-        
-        Debug.Log($"已在{createdObjects.Count}个线段上显示图片，使用纹理：{resourcePath}");
-        return createdObjects;
-    }
 
     // 添加新方法：清除所有线段图片并清空列表
     public static void ClearAllSegmentImages()
@@ -682,5 +642,119 @@ static void HideSimplifiedBoundaryMenu()
         }
         
         Debug.Log($"已清除所有线段图片");
+    }
+
+    // 添加新方法：使用差集对边界线段进行增量更新
+    public static void UpdateBoundaryImagesIncremental(string resourcePath, float height = 1.0f, float width = 0.0f, float rotationAngle = 0.0f, float segmentLength = 1.0f)
+    {
+        if (tree == null) return;
+        
+        // 获取当前的边界线段
+        List<Vector4> currentSegments = GetSimplifiedBoundaryWithLength(segmentLength);
+        
+        // 计算需要添加的新线段（当前线段中不在缓存中的线段）
+        List<Vector4> segmentsToAdd = new List<Vector4>();
+        foreach (var segment in currentSegments)
+        {
+            if (!cachedSimplifiedBoundarySegments.Any(s => 
+                Mathf.Approximately(s.x, segment.x) && 
+                Mathf.Approximately(s.y, segment.y) && 
+                Mathf.Approximately(s.z, segment.z) && 
+                Mathf.Approximately(s.w, segment.w)))
+            {
+                segmentsToAdd.Add(segment);
+            }
+        }
+        
+        // 计算需要移除的线段（缓存中不在当前线段的线段）
+        List<Vector4> segmentsToRemove = new List<Vector4>();
+        foreach (var segment in cachedSimplifiedBoundarySegments)
+        {
+            if (!currentSegments.Any(s => 
+                Mathf.Approximately(s.x, segment.x) && 
+                Mathf.Approximately(s.y, segment.y) && 
+                Mathf.Approximately(s.z, segment.z) && 
+                Mathf.Approximately(s.w, segment.w)))
+            {
+                segmentsToRemove.Add(segment);
+            }
+        }
+        
+        // 移除不再需要的图片
+        List<GameObject> imagesToRemove = new List<GameObject>();
+        foreach (var segment in segmentsToRemove)
+        {
+            // 找到对应这个线段的图片
+            for (int i = 0; i < displayedImages.Count; i++)
+            {
+                GameObject img = displayedImages[i];
+                if (img == null) continue;
+                
+                // 比较图片位置与线段中点位置来确定是否为该线段上的图片
+                Vector3 segmentMidPoint = new Vector3(
+                    (segment.x + segment.z) * 0.5f,
+                    0,
+                    (segment.y + segment.w) * 0.5f
+                );
+                
+                Vector3 imgPosition = img.transform.position;
+                // 只比较xz平面上的位置
+                Vector3 imgPositionXZ = new Vector3(imgPosition.x, 0, imgPosition.z);
+                
+                if (Vector3.Distance(imgPositionXZ, segmentMidPoint) < 0.1f) // 使用小阈值判断
+                {
+                    imagesToRemove.Add(img);
+                    displayedImages.RemoveAt(i);
+                    i--; // 调整索引
+                    break;
+                }
+            }
+        }
+        
+        // 销毁移除的图片
+        foreach (var img in imagesToRemove)
+        {
+            if (img != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(img);
+                }
+                else
+                {
+                    #if UNITY_EDITOR
+                    DestroyImmediate(img);
+                    #endif
+                }
+            }
+        }
+        
+        // 为新增的线段添加图片
+        if (segmentsToAdd.Count > 0)
+        {
+            // 从Resources加载纹理
+            Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+            if (texture == null)
+            {
+                Debug.LogError($"无法加载纹理：{resourcePath}");
+                return;
+            }
+            
+            int count = displayedImages.Count;
+            foreach (var segment in segmentsToAdd)
+            {
+                GameObject imageObj = DisplayImageOnSegment(segment, texture, height, width, false, rotationAngle);
+                if (imageObj != null)
+                {
+                    imageObj.name = $"SegmentImage_{count++}";
+                    displayedImages.Add(imageObj);
+                }
+            }
+        }
+        
+        // 更新缓存
+        cachedSimplifiedBoundarySegments = new List<Vector4>(currentSegments);
+        
+        Debug.Log($"边界图片增量更新完成: 添加了 {segmentsToAdd.Count} 个, 移除了 {segmentsToRemove.Count} 个");
     }
 }
