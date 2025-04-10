@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 // 新增光照系统管理器
 public class LightingManager : MonoBehaviour
@@ -29,6 +32,20 @@ public class LightingManager : MonoBehaviour
 
     // 新增参数更新方法
     public static Vector4 _heightmapParams;
+
+    // 边界线段可视化相关字段
+    private static List<Vector4> simplifiedBoundarySegments = new List<Vector4>();
+    private static bool showSimplifiedBoundary = false;
+    public static float targetSegmentLength = 1.0f;
+    
+    // 新增用于储存显示的图片对象
+    private static List<GameObject> displayedImages = new List<GameObject>();
+    // 默认图片设置
+    public static string defaultImageResource = "1";
+    public static float defaultImageHeight = 2.0f;
+    public static float defaultImageWidth = 0.0f;
+    public static float defaultRotationAngle = 0.0f;
+    public static bool autoUpdateBoundaryImages = true;
     #endregion
 
     #region Unity生命周期方法
@@ -76,6 +93,20 @@ public class LightingManager : MonoBehaviour
     void OnDrawGizmos()
     {
         tree?.DrawGizmos();
+
+         if (showSimplifiedBoundary && simplifiedBoundarySegments != null && simplifiedBoundarySegments.Count > 0)
+        {
+            Gizmos.color = Color.yellow;
+            foreach (var segment in simplifiedBoundarySegments)
+            {
+                Vector3 start = new Vector3(segment.x, 0.1f, segment.y);
+                Vector3 end = new Vector3(segment.z, 0.1f, segment.w);
+                Gizmos.DrawLine(start, end);
+                
+                Gizmos.DrawSphere(start, 0.2f);
+                Gizmos.DrawSphere(end, 0.2f);
+            }
+        }
     }
     
     void OnDestroy()
@@ -240,9 +271,25 @@ public class LightingManager : MonoBehaviour
 
         // 更新GPU中的合成高度图参数
         UpdateHeightmapParams(tree.RootCenter, tree.RootSize);
-
-        var boundarySegments = GetLightingBoundarySegments();
-        Debug.Log($"光照边界线段数量: {boundarySegments.Count}");
+    
+        // 自动更新边界和显示图片
+        if (autoUpdateBoundaryImages)
+        {
+            // 清除之前创建的所有图片对象
+            ClearAllSegmentImages();
+            
+            // 更新边界线段
+            simplifiedBoundarySegments = GetSimplifiedBoundaryWithLength(targetSegmentLength);
+            
+            // 在所有边界线段上显示图片
+            displayedImages = DisplayImagesOnAllSegments(
+                defaultImageResource, 
+                defaultImageHeight, 
+                defaultImageWidth, 
+                defaultRotationAngle, 
+                targetSegmentLength
+            );
+        }
     }
     #endregion
 
@@ -411,24 +458,229 @@ static void SaveCompositeMenuItem()
     }
     #endregion
 
-    #region 光照边界提取
-    // 获取光照区域边界线段
-    public static List<Vector4> GetLightingBoundarySegments()
+    #region 边界线段可视化
+    // 获取并显示简化边界线段
+    public static void ShowSimplifiedBoundary(float segmentLength = 1.0f)
     {
-        if (tree == null)
-            return new List<Vector4>();
+        if (tree == null) return;
         
-        return tree.GetMergedBoundarySegments();
+        targetSegmentLength = segmentLength;
+        simplifiedBoundarySegments = tree.GetSimplifiedBoundarySegments(targetSegmentLength);
+        showSimplifiedBoundary = true;
+        
+        Debug.Log($"已生成{simplifiedBoundarySegments.Count}条等长边界线段，目标长度: {targetSegmentLength}");
     }
 
-    // 在编辑器中可视化光照边界
-    private void OnDrawGizmosSelected()
+    // 隐藏边界线段
+    public static void HideSimplifiedBoundary()
     {
-        if (tree != null)
+        showSimplifiedBoundary = false;
+    }
+
+    // 切换边界显示状态
+    public static void ToggleSimplifiedBoundary(float segmentLength = 1.0f)
+    {
+        if (showSimplifiedBoundary)
         {
-            tree.DrawIlluminatedAreaBoundary();
+            HideSimplifiedBoundary();
+        }
+        else
+        {
+            ShowSimplifiedBoundary(segmentLength);
         }
     }
+
+#if UNITY_EDITOR
+[UnityEditor.MenuItem("Tools/显示简化边界线段 (1.0长度)")]
+static void ShowSimplifiedBoundaryMenu()
+{
+    ShowSimplifiedBoundary(1.0f);
+}
+
+[UnityEditor.MenuItem("Tools/显示简化边界线段 (0.5长度)")]
+static void ShowDenseSimplifiedBoundaryMenu()
+{
+    ShowSimplifiedBoundary(0.5f);
+}
+
+[UnityEditor.MenuItem("Tools/显示简化边界线段 (2.0长度)")]
+static void ShowSparseSimplifiedBoundaryMenu()
+{
+    ShowSimplifiedBoundary(2.0f);
+}
+
+[UnityEditor.MenuItem("Tools/隐藏边界线段")]
+static void HideSimplifiedBoundaryMenu()
+{
+    HideSimplifiedBoundary();
+}
+#endif
     #endregion
 
+    // 修改方法：基于线段底边显示图片，并支持旋转
+    public static GameObject DisplayImageOnSegment(Vector4 segment, Texture2D texture, float height = 1.0f, float width = 0.0f, bool maintainAspect = true, float rotationAngle = 0.0f)
+    {
+        if (texture == null)
+        {
+            Debug.LogError("无法显示图片：纹理为空");
+            return null;
+        }
+        
+        // 创建一个新的游戏对象作为图片容器
+        GameObject imageObj = new GameObject("SegmentImage");
+        
+        // 创建一个Quad作为图片显示
+        GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        quad.transform.SetParent(imageObj.transform);
+        
+        // 计算线段属性
+        Vector3 startPoint = new Vector3(segment.x, 0, segment.y);
+        Vector3 endPoint = new Vector3(segment.z, 0, segment.w);
+        Vector3 midPoint = (startPoint + endPoint) * 0.5f;
+        float segmentLength = Vector3.Distance(startPoint, endPoint);
+        
+        // 计算线段方向向量，用于旋转
+        Vector3 segmentDirection = (endPoint - startPoint).normalized;
+        Vector3 normal = new Vector3(-segmentDirection.z, 0, segmentDirection.x); // 垂直于线段的法向量
+        
+        // 计算宽度（如果未指定则基于纹理比例）
+        if (width <= 0 && maintainAspect)
+        {
+            // 保持纹理比例
+            float aspect = (float)texture.width / texture.height;
+            width = height * aspect;
+        }
+        else if (width <= 0)
+        {
+            // 默认使用线段长度作为宽度
+            width = segmentLength;
+        }
+        
+        // 设置Quad的变换
+        imageObj.transform.position = midPoint + new Vector3(0, height * 0.5f, 0);
+        
+        // 设置Quad的旋转，使其垂直于线段并面向法线方向
+        Quaternion baseRotation = Quaternion.LookRotation(normal, Vector3.up);
+        Quaternion addedRotation = Quaternion.Euler(0, rotationAngle, 0);
+        imageObj.transform.rotation = baseRotation * addedRotation;
+            
+        // 设置Quad的缩放以匹配所需尺寸
+        quad.transform.localScale = new Vector3(width, height, 1);
+        quad.transform.localPosition = Vector3.zero;
+        
+        // 创建一个材质并分配纹理 - 修改为支持透明度的着色器
+        Material material = new Material(Shader.Find("Unlit/Transparent"));
+        material.mainTexture = texture;
+        material.renderQueue = 3000; // 设置渲染队列为透明队列
+        
+        // 应用材质
+        Renderer renderer = quad.GetComponent<Renderer>();
+        renderer.material = material;
+        
+        return imageObj;
+    }
+
+    // 修改辅助方法：从资源加载纹理并显示，支持旋转角度
+    public static GameObject DisplayImageFromResource(Vector4 segment, string resourcePath, float height = 1.0f, float width = 0.0f, float rotationAngle = 0.0f)
+    {
+        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+        if (texture == null)
+        {
+            Debug.LogError($"无法加载纹理：{resourcePath}");
+            return null;
+        }
+        
+        return DisplayImageOnSegment(segment, texture, height, width, false, rotationAngle);
+    }
+
+
+    // 添加新方法：按指定长度简化边界线段并返回结果
+    public static List<Vector4> GetSimplifiedBoundaryWithLength(float segmentLength)
+    {
+        if (tree == null) return new List<Vector4>();
+        
+        targetSegmentLength = segmentLength;
+        return tree.GetSimplifiedBoundarySegments(targetSegmentLength);
+    }
+
+    // 添加新方法：在所有线段上显示图片
+    public static List<GameObject> DisplayImagesOnAllSegments(string resourcePath, float height = 1.0f, float width = 0.0f, float rotationAngle = 0.0f, float segmentLength = 1.0f)
+    {
+        List<GameObject> createdObjects = new List<GameObject>();
+        
+        // 获取指定长度的简化边界线段
+        List<Vector4> segments = GetSimplifiedBoundaryWithLength(segmentLength);
+        
+        if (segments == null || segments.Count == 0)
+        {
+            Debug.LogWarning("没有可用的边界线段");
+            return createdObjects;
+        }
+        
+        // 从Resources加载纹理
+        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+        if (texture == null)
+        {
+            Debug.LogError($"无法加载纹理：{resourcePath}");
+            return createdObjects;
+        }
+        
+        // 在每个线段上显示图片
+        int count = 0;
+        foreach (var segment in segments)
+        {
+            GameObject imageObj = DisplayImageOnSegment(segment, texture, height, width, false, rotationAngle);
+            if (imageObj != null)
+            {
+                imageObj.name = $"SegmentImage_{count++}";
+                createdObjects.Add(imageObj);
+            }
+        }
+        
+        Debug.Log($"已在{createdObjects.Count}个线段上显示图片，使用纹理：{resourcePath}");
+        return createdObjects;
+    }
+
+    // 添加新方法：清除所有线段图片并清空列表
+    public static void ClearAllSegmentImages()
+    {
+        // 销毁所有已创建的图片对象
+        foreach (var img in displayedImages)
+        {
+            if (img != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(img);
+                }
+                else
+                {
+                    #if UNITY_EDITOR
+                    DestroyImmediate(img);
+                    #endif
+                }
+            }
+        }
+        
+        // 清空列表
+        displayedImages.Clear();
+        
+        // 查找场景中可能遗漏的图片对象并销毁
+        GameObject[] segmentImages = GameObject.FindObjectsOfType<GameObject>().Where(go => go.name.StartsWith("SegmentImage")).ToArray();
+        foreach (var img in segmentImages)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(img);
+            }
+            else
+            {
+                #if UNITY_EDITOR
+                DestroyImmediate(img);
+                #endif
+            }
+        }
+        
+        Debug.Log($"已清除所有线段图片");
+    }
 }

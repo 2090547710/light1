@@ -1087,8 +1087,6 @@ public class QuadTree
     }
     #endregion
 
-    #region 边界提取方法
-    // 获取光照区域边界的线段序列
     public List<Vector4> GetIlluminatedAreaBoundarySegments()
     {
         // 使用HashSet存储边界线段，可以避免重复
@@ -1159,119 +1157,184 @@ public class QuadTree
         }
     }
 
-    // 获取合并后的边界线段
-    public List<Vector4> GetMergedBoundarySegments()
+    public List<Vector4> GetSimplifiedBoundarySegments(float targetSegmentLength = 1.0f)
     {
-        // 获取原始边界线段
-        List<Vector4> rawSegments = GetIlluminatedAreaBoundarySegments();
+        // 第一步：获取原始边界线段
+        List<Vector4> originalSegments = GetIlluminatedAreaBoundarySegments();
+        if (originalSegments.Count == 0) return new List<Vector4>();
         
-        // 如果线段少于2条，无需合并
-        if (rawSegments.Count < 2)
-            return rawSegments;
+        // 第二步：构建连接的轮廓
+        List<List<Vector2>> contours = BuildContours(originalSegments);
         
-        // 合并共线且相邻的线段
-        List<Vector4> mergedSegments = new List<Vector4>();
-        HashSet<int> processedIndices = new HashSet<int>();
-        
-        for (int i = 0; i < rawSegments.Count; i++)
+        // 第三步：对每个轮廓进行等长细分
+        List<Vector4> simplifiedSegments = new List<Vector4>();
+        foreach (var contour in contours)
         {
-            if (processedIndices.Contains(i))
-                continue;
+            if (contour.Count < 2) continue;
             
-            Vector4 currentSegment = rawSegments[i];
-            Vector2 start = new Vector2(currentSegment.x, currentSegment.y);
-            Vector2 end = new Vector2(currentSegment.z, currentSegment.w);
-            
-            bool merged = true;
-            while (merged)
+            // 计算轮廓总长度
+            float totalLength = 0;
+            for (int i = 0; i < contour.Count - 1; i++)
             {
-                merged = false;
+                totalLength += Vector2.Distance(contour[i], contour[i + 1]);
+            }
+            // 闭合轮廓的最后一段
+            totalLength += Vector2.Distance(contour[contour.Count - 1], contour[0]);
+            
+            // 计算需要的线段数量
+            int segmentCount = Mathf.Max(3, Mathf.RoundToInt(totalLength / targetSegmentLength));
+            
+            // 创建等长线段
+            List<Vector2> simplifiedPoints = new List<Vector2>();
+            float distancePerSegment = totalLength / segmentCount;
+            
+            // 沿轮廓等距离采样点
+            float accumulatedDistance = 0;
+            int currentIndex = 0;
+            simplifiedPoints.Add(contour[0]); // 添加起始点
+            
+            for (int i = 1; i <= segmentCount; i++)
+            {
+                float targetDistance = i * distancePerSegment;
                 
-                for (int j = 0; j < rawSegments.Count; j++)
+                // 沿轮廓前进直到达到目标距离
+                while (accumulatedDistance < targetDistance)
                 {
-                    if (i == j || processedIndices.Contains(j))
-                        continue;
+                    int nextIndex = (currentIndex + 1) % contour.Count;
+                    float segmentLength = Vector2.Distance(contour[currentIndex], contour[nextIndex]);
                     
-                    Vector4 otherSegment = rawSegments[j];
-                    Vector2 otherStart = new Vector2(otherSegment.x, otherSegment.y);
-                    Vector2 otherEnd = new Vector2(otherSegment.z, otherSegment.w);
-                    
-                    // 检查是否共线
-                    if (AreCollinear(start, end, otherStart, otherEnd))
+                    if (accumulatedDistance + segmentLength >= targetDistance)
                     {
-                        // 检查是否连接
-                        if (Vector2.Distance(end, otherStart) < MinNodeSize.x * 0.1f)
-                        {
-                            // end连接otherStart
-                            end = otherEnd;
-                            processedIndices.Add(j);
-                            merged = true;
-                        }
-                        else if (Vector2.Distance(start, otherEnd) < MinNodeSize.x * 0.1f)
-                        {
-                            // start连接otherEnd
-                            start = otherStart;
-                            processedIndices.Add(j);
-                            merged = true;
-                        }
-                        else if (Vector2.Distance(start, otherStart) < MinNodeSize.x * 0.1f)
-                        {
-                            // start连接otherStart
-                            start = otherEnd;
-                            processedIndices.Add(j);
-                            merged = true;
-                        }
-                        else if (Vector2.Distance(end, otherEnd) < MinNodeSize.x * 0.1f)
-                        {
-                            // end连接otherEnd
-                            end = otherStart;
-                            processedIndices.Add(j);
-                            merged = true;
-                        }
+                        // 在当前线段上插值获取点
+                        float t = (targetDistance - accumulatedDistance) / segmentLength;
+                        Vector2 point = Vector2.Lerp(contour[currentIndex], contour[nextIndex], t);
+                        simplifiedPoints.Add(point);
+                        break;
                     }
+                    
+                    accumulatedDistance += segmentLength;
+                    currentIndex = nextIndex;
                 }
             }
             
-            // 将合并后的线段添加到结果中
-            mergedSegments.Add(new Vector4(start.x, start.y, end.x, end.y));
-            processedIndices.Add(i);
-        }
-        
-        return mergedSegments;
-    }
-
-    // 检查两条线段是否共线
-    private bool AreCollinear(Vector2 a, Vector2 b, Vector2 c, Vector2 d)
-    {
-        // 计算两条线段的方向向量
-        Vector2 dir1 = (b - a).normalized;
-        Vector2 dir2 = (d - c).normalized;
-        
-        // 计算两个方向向量的点积，如果接近1或-1，则它们共线
-        float dotProduct = Mathf.Abs(Vector2.Dot(dir1, dir2));
-        return Mathf.Abs(dotProduct - 1.0f) < 0.01f;
-    }
-
-    // 在Gizmos中绘制光照区域边界
-    public void DrawIlluminatedAreaBoundary()
-    {
-        List<Vector4> boundarySegments = GetMergedBoundarySegments();
-        
-        // 设置线条颜色为明亮的黄色
-        Gizmos.color = new Color(1f, 0.92f, 0.016f, 1f);
-        
-        // 绘制每个线段
-        foreach (var segment in boundarySegments)
-        {
-            Vector3 start = new Vector3(segment.x, 0.1f, segment.y);
-            Vector3 end = new Vector3(segment.z, 0.1f, segment.w);
-            Gizmos.DrawLine(start, end);
+            // 转换为线段
+            for (int i = 0; i < simplifiedPoints.Count - 1; i++)
+            {
+                simplifiedSegments.Add(new Vector4(
+                    simplifiedPoints[i].x, simplifiedPoints[i].y,
+                    simplifiedPoints[i + 1].x, simplifiedPoints[i + 1].y));
+            }
             
-            // 在线段端点绘制小球以便更好地可视化
-            Gizmos.DrawSphere(start, MinNodeSize.x * 0.1f);
-            Gizmos.DrawSphere(end, MinNodeSize.x * 0.1f);
+            // 闭合轮廓
+            if (simplifiedPoints.Count > 1)
+            {
+                simplifiedSegments.Add(new Vector4(
+                    simplifiedPoints[simplifiedPoints.Count - 1].x, simplifiedPoints[simplifiedPoints.Count - 1].y,
+                    simplifiedPoints[0].x, simplifiedPoints[0].y));
+            }
+        }
+        
+        return simplifiedSegments;
+    }
+
+    // 构建连续的轮廓
+    private List<List<Vector2>> BuildContours(List<Vector4> segments)
+    {
+        if (segments.Count == 0) return new List<List<Vector2>>();
+        
+        // 创建端点字典用于快速查找
+        Dictionary<Vector2, List<Vector2>> connections = new Dictionary<Vector2, List<Vector2>>(new Vector2EqualityComparer());
+        
+        // 添加所有线段到连接字典
+        foreach (var segment in segments)
+        {
+            Vector2 start = new Vector2(segment.x, segment.y);
+            Vector2 end = new Vector2(segment.z, segment.w);
+            
+            if (!connections.ContainsKey(start))
+                connections[start] = new List<Vector2>();
+            if (!connections.ContainsKey(end))
+                connections[end] = new List<Vector2>();
+            
+            connections[start].Add(end);
+            connections[end].Add(start); // 双向连接
+        }
+        
+        // 查找并构建轮廓
+        List<List<Vector2>> contours = new List<List<Vector2>>();
+        HashSet<Vector2> visited = new HashSet<Vector2>(new Vector2EqualityComparer());
+        
+        foreach (var startPoint in connections.Keys)
+        {
+            if (visited.Contains(startPoint)) continue;
+            
+            List<Vector2> currentContour = new List<Vector2>();
+            Vector2 current = startPoint;
+            
+            while (true)
+            {
+                if (visited.Contains(current)) break;
+                
+                visited.Add(current);
+                currentContour.Add(current);
+                
+                bool foundNext = false;
+                foreach (var next in connections[current])
+                {
+                    if (!visited.Contains(next))
+                    {
+                        current = next;
+                        foundNext = true;
+                        break;
+                    }
+                }
+                
+                if (!foundNext)
+                {
+                    // 如果没有未访问的邻居，检查是否可以闭合轮廓
+                    if (connections[current].Contains(startPoint))
+                    {
+                        // 轮廓已闭合
+                        break;
+                    }
+                    else
+                    {
+                        // 无法闭合的轮廓
+                        break;
+                    }
+                }
+                
+                // 检查是否回到起点
+                if (current.Equals(startPoint))
+                {
+                    break;
+                }
+            }
+            
+            if (currentContour.Count > 2)
+            {
+                contours.Add(currentContour);
+            }
+        }
+        
+        return contours;
+    }
+
+    // Vector2比较器
+    private class Vector2EqualityComparer : IEqualityComparer<Vector2>
+    {
+        private const float Epsilon = 0.001f;
+        
+        public bool Equals(Vector2 a, Vector2 b)
+        {
+            return Vector2.Distance(a, b) < Epsilon;
+        }
+        
+        public int GetHashCode(Vector2 v)
+        {
+            return Mathf.RoundToInt(v.x * 100) ^ Mathf.RoundToInt(v.y * 100);
         }
     }
-    #endregion
+
 }
 

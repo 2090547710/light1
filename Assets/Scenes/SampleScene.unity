@@ -227,6 +227,7 @@ GameObject:
   m_Component:
   - component: {fileID: 877133415}
   - component: {fileID: 877133414}
+  - component: {fileID: 877133422}
   - component: {fileID: 877133416}
   - component: {fileID: 877133421}
   - component: {fileID: 877133420}
@@ -850,6 +851,23 @@ MonoBehaviour:
   prerequisitePlants: "\u65E0"
   seedMode: 0
   seedName: 
+--- !u!114 &877133422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877133413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03a3b7b712eac7344a82d39c780c4ea7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showAllBoundaries: 1
+  targetsToVisualize: []
+  pointSize: 0.5
+  boundaryColor: {r: 0, g: 1, b: 1, a: 1}
+  spacing: 1
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1051,6 +1069,7 @@ GameObject:
   - component: {fileID: 1580535723}
   - component: {fileID: 1580535722}
   - component: {fileID: 1580535721}
+  - component: {fileID: 1580535725}
   m_Layer: 8
   m_Name: Plane
   m_TagString: Untagged
@@ -1145,6 +1164,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!328 &1580535725
+VideoPlayer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580535720}
+  m_Enabled: 1
+  m_VideoClip: {fileID: 32900000, guid: 632feef915f0b524ca327916296385db, type: 3}
+  m_TargetCameraAlpha: 1
+  m_TargetCamera3DLayout: 0
+  m_TargetCamera: {fileID: 0}
+  m_TargetTexture: {fileID: 0}
+  m_TimeReference: 0
+  m_TargetMaterialRenderer: {fileID: 0}
+  m_TargetMaterialProperty: <noninit>
+  m_RenderMode: 3
+  m_AspectRatio: 2
+  m_DataSource: 0
+  m_TimeUpdateMode: 2
+  m_PlaybackSpeed: 1
+  m_AudioOutputMode: 2
+  m_TargetAudioSources:
+  - {fileID: 0}
+  m_DirectAudioVolumes:
+  - 1
+  m_Url: 
+  m_EnabledAudioTracks: 01
+  m_DirectAudioMutes: 00
+  m_ControlledAudioTrackCount: 1
+  m_PlayOnAwake: 1
+  m_SkipOnDrop: 1
+  m_Looping: 0
+  m_WaitForFirstFrame: 1
+  m_FrameReadyEventEnabled: 0
+  m_VideoShaders: []
 --- !u!1 &1773321643
 GameObject:
   m_ObjectHideFlags: 0
