@@ -49,6 +49,8 @@ public class LightingManager : MonoBehaviour
 
     // 添加缓存变量，存储上一次的边界线段
     private static List<Vector4> cachedSimplifiedBoundarySegments = new List<Vector4>();
+    
+    public static float raycastDistance = 10.0f; // 射线检测距离
     #endregion
 
     #region Unity生命周期方法
@@ -514,12 +516,35 @@ static void HideSimplifiedBoundaryMenu()
 #endif
     #endregion
 
-    // 修改方法：基于线段底边显示图片，并支持旋转
+    // 修改方法：基于线段底边显示图片，并支持旋转，当Z轴方向上存在指定层物体时才创建
     public static GameObject DisplayImageOnSegment(Vector4 segment, Texture2D texture, float height = 1.0f, float width = 0.0f, bool maintainAspect = true, float rotationAngle = 0.0f)
     {
         if (texture == null)
         {
             Debug.LogError("无法显示图片：纹理为空");
+            return null;
+        }
+        
+        // 计算线段属性
+        Vector3 startPoint = new Vector3(segment.x, 0, segment.y);
+        Vector3 endPoint = new Vector3(segment.z, 0, segment.w);
+        Vector3 midPoint = (startPoint + endPoint) * 0.5f;
+        float segmentLength = Vector3.Distance(startPoint, endPoint);
+        
+        // 进行射线检测，确认下方是否有地面(射线发射高度未考虑)
+        RaycastHit hit;
+
+        // 检测地面 (layer 8)
+        if (!Physics.Raycast(midPoint + Vector3.up * 10f, Vector3.down, out hit, raycastDistance, 1 << 8))
+        {
+            // 没有检测到地面，不创建对象
+            return null;
+        }
+        
+        // 检测layer 7，如果检测到则不创建对象
+        if (Physics.Raycast(midPoint + Vector3.up * 10f, Vector3.down, out hit, raycastDistance, 1 << 7))
+        {
+            // 检测到layer 7的碰撞体，不创建对象
             return null;
         }
         
@@ -529,12 +554,6 @@ static void HideSimplifiedBoundaryMenu()
         // 创建一个Quad作为图片显示
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         quad.transform.SetParent(imageObj.transform);
-        
-        // 计算线段属性
-        Vector3 startPoint = new Vector3(segment.x, 0, segment.y);
-        Vector3 endPoint = new Vector3(segment.z, 0, segment.w);
-        Vector3 midPoint = (startPoint + endPoint) * 0.5f;
-        float segmentLength = Vector3.Distance(startPoint, endPoint);
         
         // 计算线段方向向量，用于旋转
         Vector3 segmentDirection = (endPoint - startPoint).normalized;

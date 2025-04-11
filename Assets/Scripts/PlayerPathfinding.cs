@@ -24,6 +24,9 @@ public class PlayerPathfinding : MonoBehaviour
     public float rotationSpeed = 10f; // 旋转速度
     public bool smoothRotation = true; // 是否使用平滑旋转
     
+    [Header("地图设置")]
+    public LayerMask mapLayer; // MAP层属性
+    
     void Start()
     {
         playerObject = this.gameObject;
@@ -36,10 +39,27 @@ public class PlayerPathfinding : MonoBehaviour
         if (Input.GetMouseButtonDown(0)) // 左键点击
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+            
+            // 使用RaycastAll检测所有碰撞体
+            RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
+            
+            // 检查是否有MAP层的物体被击中
+            bool validHit = false;
+            RaycastHit mapHit = new RaycastHit();
+            
+            foreach (RaycastHit hit in hits)
+            {
+                if (((1 << hit.collider.gameObject.layer) & mapLayer) != 0)
+                {
+                    mapHit = hit;
+                    validHit = true;
+                    break;
+                }
+            }
+            if (validHit)
             {
                 // 保持玩家当前高度
-                Vector3 targetPos = hit.point;
+                Vector3 targetPos = mapHit.point;
                 targetPos.y = transform.position.y;
                 
                 // 生成并配置标记

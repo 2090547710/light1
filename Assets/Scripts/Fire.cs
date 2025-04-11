@@ -22,8 +22,18 @@ public class Fire : Plant
         // 初始化灯塔位置
         if (GameManager.Instance != null)
         {
-            Vector2 size = GameManager.Instance.size;
-            lighthousePosition = new Vector3(-size.x/2, 0, -size.y/2);
+            if (GameManager.Instance.lighthouse != null)
+            {
+                // 使用lighthouse的transform.position作为灯塔位置
+                lighthousePosition = GameManager.Instance.lighthouse.transform.position;
+            }
+            else
+            {
+                // 若lighthouse未设置，回退到原来的计算方式
+                Vector2 size = GameManager.Instance.size;
+                lighthousePosition = new Vector3(-size.x/2, 0, -size.y/2);
+                Debug.LogWarning("GameManager的lighthouse未设置，使用默认位置作为灯塔位置");
+            }
         }
         else
         {
