@@ -35,7 +35,7 @@ public class LightingManager : MonoBehaviour
 
     // 边界线段可视化相关字段
     private static List<Vector4> simplifiedBoundarySegments = new List<Vector4>();
-    private static bool showSimplifiedBoundary = false;
+    private static bool showSimplifiedBoundary = true;
     public static float targetSegmentLength = 1.0f;
     
     // 新增用于储存显示的图片对象
@@ -539,6 +539,13 @@ static void HideSimplifiedBoundaryMenu()
         // 计算线段方向向量，用于旋转
         Vector3 segmentDirection = (endPoint - startPoint).normalized;
         Vector3 normal = new Vector3(-segmentDirection.z, 0, segmentDirection.x); // 垂直于线段的法向量
+
+        // 检查normal向量是否接近零向量
+        if (normal.sqrMagnitude < 0.0001f)
+        {
+            // 如果normal接近零向量，使用默认方向
+            normal = Vector3.forward;
+        }
         
         // 计算宽度（如果未指定则基于纹理比例）
         if (width <= 0 && maintainAspect)
@@ -565,10 +572,10 @@ static void HideSimplifiedBoundaryMenu()
         quad.transform.localScale = new Vector3(width, height, 1);
         quad.transform.localPosition = Vector3.zero;
         
-        // 创建一个材质并分配纹理 - 修改为支持透明度的着色器
-        Material material = new Material(Shader.Find("Unlit/Transparent"));
+        // 创建一个材质并使用自定义的双面透明着色器
+        Material material = new Material(Shader.Find("Custom/DoubleSidedTransparent"));
         material.mainTexture = texture;
-        material.renderQueue = 3000; // 设置渲染队列为透明队列
+        // 如果需要设置颜色，可以使用：material.SetColor("_Color", Color.white);
         
         // 应用材质
         Renderer renderer = quad.GetComponent<Renderer>();
@@ -640,8 +647,7 @@ static void HideSimplifiedBoundaryMenu()
                 #endif
             }
         }
-        
-        Debug.Log($"已清除所有线段图片");
+
     }
 
     // 添加新方法：使用差集对边界线段进行增量更新
@@ -650,11 +656,11 @@ static void HideSimplifiedBoundaryMenu()
         if (tree == null) return;
         
         // 获取当前的边界线段
-        List<Vector4> currentSegments = GetSimplifiedBoundaryWithLength(segmentLength);
+        simplifiedBoundarySegments = GetSimplifiedBoundaryWithLength(segmentLength);    
         
         // 计算需要添加的新线段（当前线段中不在缓存中的线段）
         List<Vector4> segmentsToAdd = new List<Vector4>();
-        foreach (var segment in currentSegments)
+        foreach (var segment in simplifiedBoundarySegments)
         {
             if (!cachedSimplifiedBoundarySegments.Any(s => 
                 Mathf.Approximately(s.x, segment.x) && 
@@ -670,7 +676,7 @@ static void HideSimplifiedBoundaryMenu()
         List<Vector4> segmentsToRemove = new List<Vector4>();
         foreach (var segment in cachedSimplifiedBoundarySegments)
         {
-            if (!currentSegments.Any(s => 
+            if (!simplifiedBoundarySegments.Any(s => 
                 Mathf.Approximately(s.x, segment.x) && 
                 Mathf.Approximately(s.y, segment.y) && 
                 Mathf.Approximately(s.z, segment.z) && 
@@ -753,8 +759,9 @@ static void HideSimplifiedBoundaryMenu()
         }
         
         // 更新缓存
-        cachedSimplifiedBoundarySegments = new List<Vector4>(currentSegments);
-        
-        Debug.Log($"边界图片增量更新完成: 添加了 {segmentsToAdd.Count} 个, 移除了 {segmentsToRemove.Count} 个");
+        cachedSimplifiedBoundarySegments = new List<Vector4>(simplifiedBoundarySegments);
+
     }
+
+    
 }

@@ -1256,68 +1256,83 @@ public class QuadTree
             if (!connections.ContainsKey(end))
                 connections[end] = new List<Vector2>();
             
-            connections[start].Add(end);
-            connections[end].Add(start); // 双向连接
+            // 避免重复添加相同的连接
+            if (!connections[start].Any(p => Vector2.Distance(p, end) < 0.001f))
+                connections[start].Add(end);
+            if (!connections[end].Any(p => Vector2.Distance(p, start) < 0.001f))
+                connections[end].Add(start);
         }
         
         // 查找并构建轮廓
         List<List<Vector2>> contours = new List<List<Vector2>>();
-        HashSet<Vector2> visited = new HashSet<Vector2>(new Vector2EqualityComparer());
         
-        foreach (var startPoint in connections.Keys)
+        // 使用边的访问状态而不是点的访问状态
+        HashSet<string> visitedEdges = new HashSet<string>();
+        
+        // 首先处理度数为1的点（端点）或度数为2的点
+        var startPoints = connections.Where(kvp => kvp.Value.Count <= 2)
+                                  .Select(kvp => kvp.Key).ToList();
+        
+        // 如果没有度数<=2的点，则选择任意点开始
+        if (startPoints.Count == 0)
+            startPoints = connections.Keys.ToList();
+        
+        foreach (var startPoint in startPoints)
         {
-            if (visited.Contains(startPoint)) continue;
-            
-            List<Vector2> currentContour = new List<Vector2>();
-            Vector2 current = startPoint;
-            
-            while (true)
+            foreach (var initialNext in connections[startPoint])
             {
-                if (visited.Contains(current)) break;
+                string edgeKey = GetEdgeKey(startPoint, initialNext);
+                if (visitedEdges.Contains(edgeKey)) continue;
                 
-                visited.Add(current);
-                currentContour.Add(current);
+                List<Vector2> currentContour = new List<Vector2>();
+                currentContour.Add(startPoint);
                 
-                bool foundNext = false;
-                foreach (var next in connections[current])
+                Vector2 current = startPoint;
+                Vector2 next = initialNext;
+                
+                while (true)
                 {
-                    if (!visited.Contains(next))
+                    // 标记当前边为已访问
+                    visitedEdges.Add(GetEdgeKey(current, next));
+                    
+                    current = next;
+                    currentContour.Add(current);
+                    
+                    // 找到下一个未访问的边
+                    bool foundNextEdge = false;
+                    foreach (var neighbor in connections[current])
                     {
-                        current = next;
-                        foundNext = true;
-                        break;
+                        string nextEdgeKey = GetEdgeKey(current, neighbor);
+                        if (!visitedEdges.Contains(nextEdgeKey))
+                        {
+                            next = neighbor;
+                            foundNextEdge = true;
+                            break;
+                        }
                     }
+                    
+                    if (!foundNextEdge || next.Equals(startPoint))
+                        break;
                 }
                 
-                if (!foundNext)
+                if (currentContour.Count > 2)
                 {
-                    // 如果没有未访问的邻居，检查是否可以闭合轮廓
-                    if (connections[current].Contains(startPoint))
-                    {
-                        // 轮廓已闭合
-                        break;
-                    }
-                    else
-                    {
-                        // 无法闭合的轮廓
-                        break;
-                    }
+                    contours.Add(currentContour);
                 }
-                
-                // 检查是否回到起点
-                if (current.Equals(startPoint))
-                {
-                    break;
-                }
-            }
-            
-            if (currentContour.Count > 2)
-            {
-                contours.Add(currentContour);
             }
         }
         
         return contours;
+    }
+
+    // 创建边的唯一标识符
+    private string GetEdgeKey(Vector2 a, Vector2 b)
+    {
+        // 确保边的方向一致性（小坐标点在前）
+        if (a.x < b.x || (a.x == b.x && a.y < b.y))
+            return $"{a.x:F3},{a.y:F3}_{b.x:F3},{b.y:F3}";
+        else
+            return $"{b.x:F3},{b.y:F3}_{a.x:F3},{a.y:F3}";
     }
 
     // Vector2比较器
@@ -1335,6 +1350,6 @@ public class QuadTree
             return Mathf.RoundToInt(v.x * 100) ^ Mathf.RoundToInt(v.y * 100);
         }
     }
-
+    
 }
 

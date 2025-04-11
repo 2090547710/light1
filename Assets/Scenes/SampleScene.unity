@@ -227,7 +227,6 @@ GameObject:
   m_Component:
   - component: {fileID: 877133415}
   - component: {fileID: 877133414}
-  - component: {fileID: 877133422}
   - component: {fileID: 877133416}
   - component: {fileID: 877133421}
   - component: {fileID: 877133420}
@@ -851,23 +850,6 @@ MonoBehaviour:
   prerequisitePlants: "\u65E0"
   seedMode: 0
   seedName: 
---- !u!114 &877133422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 877133413}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03a3b7b712eac7344a82d39c780c4ea7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showAllBoundaries: 1
-  targetsToVisualize: []
-  pointSize: 0.5
-  boundaryColor: {r: 0, g: 1, b: 1, a: 1}
-  spacing: 1
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
