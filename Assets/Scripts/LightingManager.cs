@@ -46,6 +46,8 @@ public class LightingManager : MonoBehaviour
     public static float defaultImageWidth = 0.0f;
     public static float defaultRotationAngle = 0.0f;
     public static bool autoUpdateBoundaryImages = true;
+    // 添加一个GameObject作为所有displayedImages的父对象
+    public GameObject imagesParent;
 
     // 添加缓存变量，存储上一次的边界线段
     private static List<Vector4> cachedSimplifiedBoundarySegments = new List<Vector4>();
@@ -553,6 +555,12 @@ static void HideSimplifiedBoundaryMenu()
             return null;
         }
         
+        // 确保父对象存在
+        if (instance.imagesParent == null)
+        {
+            instance.imagesParent = new GameObject("DisplayedImagesParent");
+        }
+        
         // 计算线段属性
         Vector3 startPoint = new Vector3(segment.x, 0, segment.y);
         Vector3 endPoint = new Vector3(segment.z, 0, segment.w);
@@ -578,6 +586,8 @@ static void HideSimplifiedBoundaryMenu()
         
         // 创建一个新的游戏对象作为图片容器
         GameObject imageObj = new GameObject("SegmentImage");
+        // 设置父对象
+        imageObj.transform.SetParent(instance.imagesParent.transform);
         
         // 创建一个Quad作为图片显示
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -694,7 +704,12 @@ static void HideSimplifiedBoundaryMenu()
                 #endif
             }
         }
-
+        
+        // 清理父对象但不销毁它
+        if (instance.imagesParent != null)
+        {
+            instance.imagesParent.transform.DetachChildren();
+        }
     }
 
     // 添加新方法：使用差集对边界线段进行增量更新

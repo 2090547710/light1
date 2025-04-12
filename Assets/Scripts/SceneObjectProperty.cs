@@ -7,7 +7,9 @@ public enum SceneObjectType
 {
     Map,        // 地图
     Obstacle,   // 障碍物
-    Water       // 水
+    Water,      // 水
+    BeginPoint, // 开始点
+    EndPoint    // 结束点
 }
 
 // 场景物体属性类，用于挂载到场景物体上
@@ -100,6 +102,29 @@ public class SceneObjectProperty : MonoBehaviour
         LightingManager.UpdateDirtyLights();
     }
     
+    // 获取活跃光源的光照数据
+    public List<LightingData> GetLightingDataFromLightSources()
+    {
+        List<LightingData> lightingDataList = new List<LightingData>();
+        
+        foreach (Lighting light in lightSources)
+        {
+            // 创建新的LightingData
+            LightingData data = new LightingData(
+                size: light.size,
+                isObstacle: light.isObstacle,
+                isSeed: light.isSeed,
+                lightHeight: light.lightHeight,
+                heightMap: light.heightMap,
+                rotation: light.rotation
+            );
+            
+            lightingDataList.Add(data);
+        }
+        
+        return lightingDataList;
+    }
+    
     // Start方法中应用光源
     private void Start()
     {
@@ -145,7 +170,7 @@ public class SceneObjectSaveData
     public SerializableVector3 scale;
     
     // 光源数据列表
-    public List<SerializableLightingData> lightSources = new List<SerializableLightingData>();
+    public List<SerializableLightingData> lightSourcesData = new List<SerializableLightingData>();
     
     // 构造函数
     public SceneObjectSaveData() { }
@@ -160,10 +185,11 @@ public class SceneObjectSaveData
         rotation = new SerializableQuaternion(sceneObject.transform.rotation);
         scale = new SerializableVector3(sceneObject.transform.localScale);
         
-        // 保存光源数据
-        foreach (var light in sceneObject.lightSourcesData)
+        // 保存光源数据（改为从活跃光源加载）
+        List<LightingData> activeLightingData = sceneObject.GetLightingDataFromLightSources();
+        foreach (var light in activeLightingData)
         {
-            lightSources.Add(new SerializableLightingData(light));
+            lightSourcesData.Add(new SerializableLightingData(light));
         }
     }
     
@@ -181,7 +207,7 @@ public class SceneObjectSaveData
         sceneObject.ClearLightSourcesData();
         
         // 应用光源数据
-        foreach (var serializableLight in lightSources)
+        foreach (var serializableLight in lightSourcesData)
         {
             sceneObject.AddLightSourceData(serializableLight.ToLightingData());
         }

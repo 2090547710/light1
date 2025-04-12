@@ -22,10 +22,10 @@ public class Fire : Plant
         // 初始化灯塔位置
         if (GameManager.Instance != null)
         {
-            if (GameManager.Instance.lighthouse != null)
+            if (GameManager.Instance.beginPoint != null)
             {
                 // 使用lighthouse的transform.position作为灯塔位置
-                lighthousePosition = GameManager.Instance.lighthouse.transform.position;
+                lighthousePosition = GameManager.Instance.beginPoint.transform.position;
             }
             else
             {

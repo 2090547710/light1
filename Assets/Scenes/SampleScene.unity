@@ -234,9 +234,10 @@ GameObject:
   - component: {fileID: 877133414}
   - component: {fileID: 877133416}
   - component: {fileID: 877133421}
-  - component: {fileID: 877133420}
   - component: {fileID: 877133417}
   - component: {fileID: 877133419}
+  - component: {fileID: 877133420}
+  - component: {fileID: 877133422}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -262,7 +263,8 @@ MonoBehaviour:
   size: {x: 150, y: 150}
   center: {x: 0, y: 0}
   prefab: {fileID: 5540192311497395315, guid: dc7d33e851d9a1243a632ac428517299, type: 3}
-  lighthouse: {fileID: 1062131526}
+  beginPoint: {fileID: 0}
+  endPoint: {fileID: 0}
   objects:
   - {fileID: 0}
   queryBounds:
@@ -296,6 +298,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lightingComputeShader: {fileID: 7200000, guid: 17609775a1724e140a089c11b9891a5a, type: 3}
+  imagesParent: {fileID: 1277673542}
 --- !u!114 &877133417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -807,6 +810,21 @@ MonoBehaviour:
   prerequisitePlants: "\u65E0"
   seedMode: 0
   seedName: 
+--- !u!114 &877133422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877133413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c008345d1d62abc4d8430e8a22716a1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneObjects: []
+  sceneObjectPrefab: {fileID: 3843442647439544800, guid: 2ddb35961301ce2468a43d2eea752922, type: 3}
+  saveFilePath: SaveData/SceneObjects.json
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1171,6 +1189,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1277673542
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1277673543}
+  m_Layer: 0
+  m_Name: vine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1277673543
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1277673542}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -47.00181, y: 15.656757, z: -52.269848}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1580535720
 GameObject:
   m_ObjectHideFlags: 0
@@ -1326,7 +1375,6 @@ GameObject:
   - component: {fileID: 1773321648}
   - component: {fileID: 1773321647}
   - component: {fileID: 1773321649}
-  - component: {fileID: 1773321650}
   m_Layer: 0
   m_Name: "\u73A9\u5BB6"
   m_TagString: Player
@@ -1421,23 +1469,6 @@ MonoBehaviour:
   mapLayer:
     serializedVersion: 2
     m_Bits: 256
---- !u!114 &1773321650
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1773321643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f94b3b1cd821e4409dba7fcfb65489e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lightSize: 10
-  lightHeightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
-  lightHeight: 0.5
-  isObstacle: 0
-  isSeed: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1449,3 +1480,4 @@ SceneRoots:
   - {fileID: 1580535724}
   - {fileID: 1148321172}
   - {fileID: 1062131527}
+  - {fileID: 1277673543}

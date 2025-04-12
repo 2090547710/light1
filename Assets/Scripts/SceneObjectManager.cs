@@ -56,6 +56,36 @@ public class SceneObjectManager : MonoBehaviour
         SceneObjectProperty property = newObject.AddComponent<SceneObjectProperty>();
         property.objectType = type;
         
+        // 根据物体类型设置对应的layer
+        switch (type)
+        {
+            case SceneObjectType.Map:
+                newObject.layer = 8;
+                break;
+            case SceneObjectType.Obstacle:
+                newObject.layer = 6;
+                break;
+            case SceneObjectType.Water:
+                newObject.layer = 0;
+                break;
+            case SceneObjectType.BeginPoint:
+                newObject.layer = 5;
+                // 更新GameManager中的开始点引用
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.beginPoint = newObject;
+                }
+                break;
+            case SceneObjectType.EndPoint:
+                newObject.layer = 5;
+                // 更新GameManager中的结束点引用
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.endPoint = newObject;
+                }
+                break;
+        }
+        
         // 注册到管理器
         RegisterSceneObject(property);
         
@@ -120,11 +150,48 @@ public class SceneObjectManager : MonoBehaviour
             GameObject newObject = Instantiate(sceneObjectPrefab, saveData.position.ToVector3(), saveData.rotation.ToQuaternion());
             newObject.transform.localScale = saveData.scale.ToVector3();
             
+            // 检查并移除已有的SceneObjectProperty组件
+            SceneObjectProperty existingProperty = newObject.GetComponent<SceneObjectProperty>();
+            if (existingProperty != null)
+            {
+                Destroy(existingProperty);
+            }
+            
             // 添加属性组件
             SceneObjectProperty property = newObject.AddComponent<SceneObjectProperty>();
             
             // 应用保存数据
             saveData.ApplyToSceneObject(property);
+            
+            // 根据物体类型设置对应的layer
+            switch (property.objectType)
+            {
+                case SceneObjectType.Map:
+                    newObject.layer = 8;
+                    break;
+                case SceneObjectType.Obstacle:
+                    newObject.layer = 6;
+                    break;
+                case SceneObjectType.Water:
+                    newObject.layer = 9;
+                    break;
+                case SceneObjectType.BeginPoint:
+                    newObject.layer = 10;
+                    // 更新GameManager中的开始点引用
+                    if (GameManager.Instance != null)
+                    {
+                        GameManager.Instance.beginPoint = newObject;
+                    }
+                    break;
+                case SceneObjectType.EndPoint:
+                    newObject.layer = 10;
+                    // 更新GameManager中的结束点引用
+                    if (GameManager.Instance != null)
+                    {
+                        GameManager.Instance.endPoint = newObject;
+                    }
+                    break;
+            }
             
             // 注册到管理器
             RegisterSceneObject(property);

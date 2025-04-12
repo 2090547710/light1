@@ -26,7 +26,7 @@ public struct LightingData
     public bool isSeed;
     [Range(0, 1)] public float lightHeight;
     public Texture2D heightMap;
-    public float rotation; // 替换tiling和offset为rotation
+    [Range(0, 360)] public float rotation; 
 
     public LightingData(float size = 0, bool isObstacle = false, bool isSeed = false, float lightHeight = 0.5f, 
                        Texture2D heightMap = null, float rotation = 0f)
@@ -49,7 +49,7 @@ public class Lighting : MonoBehaviour
     public bool isObstacle;
     public bool isSeed;
     public Texture2D heightMap;
-    public float rotation; // 替换tiling和offset为rotation
+    [Range(0, 360)] public float rotation; // 替换tiling和offset为rotation
     [Range(0, 1)] public float lightHeight;
 
     [Header("节点影响")]
