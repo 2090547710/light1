@@ -9,15 +9,12 @@ using UnityEditor;
 public struct AreaMapData
 {
     public Texture2D heightMap;
-    public Vector2 tiling;
-    public Vector2 offset;
+    public float rotation; // 新增旋转属性，以度为单位
 
-    public AreaMapData(Texture2D map = null, Vector2 tiling = default, 
-                      Vector2 offset = default)
+    public AreaMapData(Texture2D map = null, float rotation = 0f)
     {
         heightMap = map;
-        this.tiling = tiling == default ? Vector2.one : tiling;
-        this.offset = offset;
+        this.rotation = rotation;
     }
 }
 
@@ -29,19 +26,17 @@ public struct LightingData
     public bool isSeed;
     [Range(0, 1)] public float lightHeight;
     public Texture2D heightMap;
-    public Vector2 tiling;
-    public Vector2 offset;
+    public float rotation; // 替换tiling和offset为rotation
 
     public LightingData(float size = 0, bool isObstacle = false, bool isSeed = false, float lightHeight = 0.5f, 
-                       Texture2D heightMap = null, Vector2 tiling = default, Vector2 offset = default)
+                       Texture2D heightMap = null, float rotation = 0f)
     {
         this.size = Mathf.Clamp(size, 0, 100);
         this.isObstacle = isObstacle;
         this.isSeed = isSeed;
         this.lightHeight = Mathf.Clamp01(lightHeight);
         this.heightMap = heightMap;
-        this.tiling = tiling == default ? Vector2.one : tiling;
-        this.offset = offset;
+        this.rotation = rotation;
     }
 }
 #endregion
@@ -54,8 +49,7 @@ public class Lighting : MonoBehaviour
     public bool isObstacle;
     public bool isSeed;
     public Texture2D heightMap;
-    public Vector2 tiling;
-    public Vector2 offset;
+    public float rotation; // 替换tiling和offset为rotation
     [Range(0, 1)] public float lightHeight;
 
     [Header("节点影响")]
@@ -67,8 +61,7 @@ public class Lighting : MonoBehaviour
     [SerializeField] private bool cachedIsObstacle;
     [SerializeField] private bool cachedIsSeed;
     [SerializeField] private Texture2D cachedHeightMap;
-    [SerializeField] private Vector2 cachedTiling;
-    [SerializeField] private Vector2 cachedOffset;
+    [SerializeField] private float cachedRotation; // 替换cachedTiling和cachedOffset
     [SerializeField] private float cachedLightHeight;
 
     // 添加脏标记系统
@@ -104,8 +97,27 @@ public class Lighting : MonoBehaviour
             Gizmos.color = Color.green;
         else
             Gizmos.color = Color.yellow;
-            
-        Gizmos.DrawWireCube(transform.position, new Vector3(size, 0, size));
+        
+        // 保存当前矩阵
+        Matrix4x4 originalMatrix = Gizmos.matrix;
+        
+        // 创建旋转矩阵
+        Vector3 position = transform.position;
+        Quaternion rotationQuat = Quaternion.Euler(0, rotation, 0);
+        Matrix4x4 rotationMatrix = Matrix4x4.TRS(
+            position,
+            rotationQuat,
+            Vector3.one
+        );
+        
+        // 应用旋转矩阵
+        Gizmos.matrix = rotationMatrix;
+        
+        // 绘制旋转后的线框立方体，注意中心点需要是本地坐标原点
+        Gizmos.DrawWireCube(Vector3.zero, new Vector3(size, 0, size));
+        
+        // 恢复原始矩阵
+        Gizmos.matrix = originalMatrix;
         
         // 可选：绘制重叠光源关系线
         if (overlappingLights != null && overlappingLights.Count > 0)
@@ -134,8 +146,7 @@ public class Lighting : MonoBehaviour
             cachedIsObstacle != isObstacle ||
             cachedIsSeed != isSeed ||
             cachedHeightMap != heightMap ||
-            cachedTiling != tiling ||
-            cachedOffset != offset ||
+            cachedRotation != rotation ||  // 替换tiling和offset检查
             cachedLightHeight != lightHeight)
         {
            MarkDirty(); // 设置为脏
@@ -157,8 +168,7 @@ public class Lighting : MonoBehaviour
         cachedIsObstacle = isObstacle;
         cachedIsSeed = isSeed;
         cachedHeightMap = heightMap;
-        cachedTiling = tiling;
-        cachedOffset = offset;
+        cachedRotation = rotation;  // 替换tiling和offset更新
         cachedLightHeight = lightHeight;
     }
     #endif
@@ -256,14 +266,104 @@ public class Lighting : MonoBehaviour
         overlappingLights.Clear();
     }
     
-    // 添加新方法：检测两个边界在xz平面上是否重叠
+    // 修改IsOverlappingOnXZPlane方法，支持旋转碰撞检测
     private bool IsOverlappingOnXZPlane(Bounds a, Bounds b)
     {
-        // 只检查x和z轴方向的重叠，忽略y轴
-        bool overlapX = Mathf.Abs(a.center.x - b.center.x) <= (a.size.x + b.size.x) * 0.5f;
-        bool overlapZ = Mathf.Abs(a.center.z - b.center.z) <= (a.size.z + b.size.z) * 0.5f;
+        // 获取旋转角度（弧度）
+        float rotationRadA = this.rotation * Mathf.Deg2Rad;
         
-        return overlapX && overlapZ;
+        // 假设b是另一个Lighting组件的边界
+        float rotationRadB = 0f;
+        // 尝试获取另一个光源的旋转角度
+        foreach (var light in LightingManager.activeLights)
+        {
+            if (light.GetWorldBounds() == b)
+            {
+                rotationRadB = light.rotation * Mathf.Deg2Rad;
+                break;
+            }
+        }
+        
+        // 通过分离轴定理检测旋转矩形碰撞
+        return AreRotatedRectsOverlapping(
+            new Vector2(a.center.x, a.center.z), new Vector2(a.size.x, a.size.z), rotationRadA,
+            new Vector2(b.center.x, b.center.z), new Vector2(b.size.x, b.size.z), rotationRadB
+        );
+    }
+
+    // 新增用于检测两个旋转矩形碰撞的辅助方法（使用分离轴定理）
+    private bool AreRotatedRectsOverlapping(Vector2 centerA, Vector2 sizeA, float rotationA, 
+                                            Vector2 centerB, Vector2 sizeB, float rotationB)
+    {
+        // 计算两个矩形的四个顶点
+        Vector2[] cornersA = GetRotatedRectCorners(centerA, sizeA, rotationA);
+        Vector2[] cornersB = GetRotatedRectCorners(centerB, sizeB, rotationB);
+        
+        // 分离轴定理检测
+        // 检查A的两个轴
+        Vector2 axisA1 = (cornersA[1] - cornersA[0]).normalized;
+        Vector2 axisA2 = (cornersA[3] - cornersA[0]).normalized;
+        
+        if (!OverlapOnAxis(cornersA, cornersB, axisA1)) return false;
+        if (!OverlapOnAxis(cornersA, cornersB, axisA2)) return false;
+        
+        // 检查B的两个轴
+        Vector2 axisB1 = (cornersB[1] - cornersB[0]).normalized;
+        Vector2 axisB2 = (cornersB[3] - cornersB[0]).normalized;
+        
+        if (!OverlapOnAxis(cornersA, cornersB, axisB1)) return false;
+        if (!OverlapOnAxis(cornersA, cornersB, axisB2)) return false;
+        
+        // 所有轴都有重叠，表示矩形相交
+        return true;
+    }
+
+    // 计算旋转矩形的四个顶点
+    private Vector2[] GetRotatedRectCorners(Vector2 center, Vector2 size, float rotation)
+    {
+        Vector2[] corners = new Vector2[4];
+        float halfWidth = size.x * 0.5f;
+        float halfHeight = size.y * 0.5f;
+        
+        // 计算旋转后的四个角
+        float cos = Mathf.Cos(rotation);
+        float sin = Mathf.Sin(rotation);
+        
+        corners[0] = center + new Vector2(cos * -halfWidth - sin * -halfHeight, sin * -halfWidth + cos * -halfHeight);
+        corners[1] = center + new Vector2(cos * halfWidth - sin * -halfHeight, sin * halfWidth + cos * -halfHeight);
+        corners[2] = center + new Vector2(cos * halfWidth - sin * halfHeight, sin * halfWidth + cos * halfHeight);
+        corners[3] = center + new Vector2(cos * -halfWidth - sin * halfHeight, sin * -halfWidth + cos * halfHeight);
+        
+        return corners;
+    }
+
+    // 检查两组顶点在某一轴上是否重叠
+    private bool OverlapOnAxis(Vector2[] cornersA, Vector2[] cornersB, Vector2 axis)
+    {
+        // 计算A投影的最小和最大值
+        float minA = float.MaxValue;
+        float maxA = float.MinValue;
+        
+        foreach (Vector2 corner in cornersA)
+        {
+            float projection = Vector2.Dot(corner, axis);
+            minA = Mathf.Min(minA, projection);
+            maxA = Mathf.Max(maxA, projection);
+        }
+        
+        // 计算B投影的最小和最大值
+        float minB = float.MaxValue;
+        float maxB = float.MinValue;
+        
+        foreach (Vector2 corner in cornersB)
+        {
+            float projection = Vector2.Dot(corner, axis);
+            minB = Mathf.Min(minB, projection);
+            maxB = Mathf.Max(maxB, projection);
+        }
+        
+        // 检查投影是否重叠
+        return maxA >= minB && maxB >= minA;
     }
     #endregion
 
@@ -272,8 +372,7 @@ public class Lighting : MonoBehaviour
     {
         return new AreaMapData(
             heightMap,
-            tiling == default ? Vector2.one : tiling,
-            offset
+            rotation
         );
     }
 
@@ -317,8 +416,7 @@ public class Lighting : MonoBehaviour
     {
         return new AreaMapData(
             cachedHeightMap,
-            cachedTiling == default ? Vector2.one : cachedTiling,
-            cachedOffset
+            cachedRotation
         );
     }
     
@@ -339,6 +437,12 @@ public class Lighting : MonoBehaviour
     {
         return cachedIsSeed;
     }
+    
+    // 新增获取缓存的rotation方法
+    public float GetCachedRotation()
+    {
+        return cachedRotation;
+    }
     #endregion
 
     #region 光照组件初始化方法
@@ -351,8 +455,7 @@ public class Lighting : MonoBehaviour
         isSeed = data.isSeed;
         lightHeight = data.lightHeight;
         heightMap = data.heightMap;
-        tiling = data.tiling;
-        offset = data.offset;
+        rotation = data.rotation;  // 替换tiling和offset赋值
         
         // 同时初始化缓存字段
         cachedSize = data.size;
@@ -360,13 +463,55 @@ public class Lighting : MonoBehaviour
         cachedIsSeed = data.isSeed;
         cachedLightHeight = data.lightHeight;
         cachedHeightMap = data.heightMap;
-        cachedTiling = data.tiling;
-        cachedOffset = data.offset;
+        cachedRotation = data.rotation;  // 替换cachedTiling和cachedOffset赋值
         
         // 标记为脏，确保应用更改
         MarkDirty();
         LightingManager.UpdateDirtyLights();
     }
     #endregion
+
+    // 新增检查点是否在旋转矩形内的方法
+    public bool IsPointInRotatedBounds(Vector3 point, bool useCachedData = false)
+    {
+        Vector2 center;
+        Vector2 size;
+        float rot;
+        
+        if (useCachedData)
+        {
+            center = new Vector2(transform.position.x, transform.position.z);
+            size = new Vector2(cachedSize, cachedSize);
+            rot = cachedRotation * Mathf.Deg2Rad;
+        }
+        else
+        {
+            center = new Vector2(transform.position.x, transform.position.z);
+            size = new Vector2(this.size, this.size);
+            rot = rotation * Mathf.Deg2Rad;
+        }
+        
+        Vector2 pointXZ = new Vector2(point.x, point.z);
+        Vector2 localPoint = RotatePoint(pointXZ - center, -rot) + center;
+        
+        float halfWidth = size.x * 0.5f;
+        float halfHeight = size.y * 0.5f;
+        
+        return localPoint.x >= center.x - halfWidth &&
+               localPoint.x <= center.x + halfWidth &&
+               localPoint.y >= center.y - halfHeight &&
+               localPoint.y <= center.y + halfHeight;
+    }
+
+    // 旋转一个点
+    private Vector2 RotatePoint(Vector2 point, float angle)
+    {
+        float cos = Mathf.Cos(angle);
+        float sin = Mathf.Sin(angle);
+        return new Vector2(
+            point.x * cos - point.y * sin,
+            point.x * sin + point.y * cos
+        );
+    }
 }
 

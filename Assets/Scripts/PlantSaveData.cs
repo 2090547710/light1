@@ -192,8 +192,7 @@ public class SerializableLightingData
     public float lightHeight;
     // 注意：Texture2D不能直接序列化，我们可以存储路径或者编码后的字符串
     public string heightMapPath; // 使用资源路径
-    public SerializableVector2 tiling;
-    public SerializableVector2 offset;
+    public float rotation; // 新增rotation替换tiling和offset
     
     // 构造函数
     public SerializableLightingData() { }
@@ -205,6 +204,7 @@ public class SerializableLightingData
         isObstacle = data.isObstacle;
         isSeed = data.isSeed;
         lightHeight = data.lightHeight;
+        rotation = data.rotation; // 保存rotation数据
         
         // 处理纹理 - 保存高度图路径
         if (data.heightMap != null)
@@ -212,29 +212,25 @@ public class SerializableLightingData
             // 只存储高度图的名称部分，不包含"HeightMaps/"前缀
             heightMapPath = data.heightMap.name;
         }
-        
-        tiling = new SerializableVector2(data.tiling);
-        offset = new SerializableVector2(data.offset);
     }
     
     // 转换回LightingData
     public LightingData ToLightingData()
     {
-        LightingData data = new LightingData();
-        
-        data.size = size;
-        data.isObstacle = isObstacle;
-        data.isSeed = isSeed;
-        data.lightHeight = lightHeight;
+        LightingData data = new LightingData(
+            size: size,
+            isObstacle: isObstacle,
+            isSeed: isSeed,
+            lightHeight: lightHeight,
+            heightMap: null, // 初始化为null，下面再加载
+            rotation: rotation // 设置rotation
+        );
         
         // 尝试加载纹理 - 从Resources中加载高度图
         if (!string.IsNullOrEmpty(heightMapPath))
         {
             data.heightMap = Resources.Load<Texture2D>("HeightMaps/" + heightMapPath);
         }
-        
-        data.tiling = tiling.ToVector2();
-        data.offset = offset.ToVector2();
         
         return data;
     }

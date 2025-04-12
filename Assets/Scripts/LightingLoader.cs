@@ -30,9 +30,7 @@ public class LightingLoader : MonoBehaviour
                 isObstacle: isObstacle,
                 isSeed: isSeed,
                 lightHeight: lightHeight,
-                heightMap: lightHeightMap,
-                tiling: tiling,
-                offset: offset
+                heightMap: lightHeightMap
             );
             
             // 应用光照数据
@@ -47,8 +45,7 @@ public class LightingLoader : MonoBehaviour
             existingLight.isSeed = isSeed;
             existingLight.lightHeight = lightHeight;
             existingLight.heightMap = lightHeightMap;
-            existingLight.tiling = tiling;
-            existingLight.offset = offset;
+
             
             // 标记为脏以更新光照
             existingLight.MarkDirty();

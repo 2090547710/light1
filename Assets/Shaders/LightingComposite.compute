@@ -9,6 +9,7 @@ float4 _RootBounds; // x,y: center, z,w: size
 float _IsObstacle;
 float _LightHeight;
 float _IsAdditive; // 新增加减操作参数，1为加，0为减
+float _Rotation; // 新增旋转参数，以度为单位
 
 // 新增uniform参数：合成图区域起始位置和区域尺寸
 int2 _CompositeOffset;
@@ -16,6 +17,17 @@ int2 _CompositeRegionSize;
 
 // 添加原始光源边界参数
 float4 _LightBoundsRaw; // 原始UV范围，可能超出[0,1]
+
+// 添加旋转矩阵计算函数
+float2 RotatePoint(float2 pos, float angle)
+{
+    float s = sin(angle);
+    float c = cos(angle);
+    return float2(
+        pos.x * c - pos.y * s,
+        pos.x * s + pos.y * c
+    );
+}
 
 [numthreads(16,16,1)]
 void CSObstacleLight(uint3 id : SV_DispatchThreadID)
@@ -45,10 +57,24 @@ void CSObstacleLight(uint3 id : SV_DispatchThreadID)
         lerp(_LightBounds.y, _LightBounds.w, t.y)
     );
     
-    // 将normalizedCoord映射回原始高度图uv
+    // 计算中心点和局部坐标
+    float2 center = float2(
+        (_LightBoundsRaw.x + _LightBoundsRaw.z) * 0.5,
+        (_LightBoundsRaw.y + _LightBoundsRaw.w) * 0.5
+    );
+    float2 localCoord = normalizedCoord - center;
+    
+    // 应用旋转（角度转弧度）
+    float rotationRad = _Rotation * 3.14159265359 / 180.0;
+    float2 rotatedCoord = RotatePoint(localCoord, -rotationRad); // 负旋转角度用于逆变换
+    
+    // 变换回原始坐标系
+    float2 finalCoord = rotatedCoord + center;
+    
+    // 将旋转后的坐标映射回原始高度图uv
     float2 lightSpaceT = float2(
-        (normalizedCoord.x - _LightBoundsRaw.x) / (_LightBoundsRaw.z - _LightBoundsRaw.x),
-        (normalizedCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
+        (finalCoord.x - _LightBoundsRaw.x) / (_LightBoundsRaw.z - _LightBoundsRaw.x),
+        (finalCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
     );
     
     // 使用修正后的坐标计算原始高度图的lightCoord
@@ -102,9 +128,24 @@ void CSNormalLight(uint3 id : SV_DispatchThreadID)
         lerp(_LightBounds.y, _LightBounds.w, t.y)
     );
     
+    // 计算中心点和局部坐标
+    float2 center = float2(
+        (_LightBoundsRaw.x + _LightBoundsRaw.z) * 0.5,
+        (_LightBoundsRaw.y + _LightBoundsRaw.w) * 0.5
+    );
+    float2 localCoord = normalizedCoord - center;
+    
+    // 应用旋转（角度转弧度）
+    float rotationRad = _Rotation * 3.14159265359 / 180.0;
+    float2 rotatedCoord = RotatePoint(localCoord, -rotationRad); // 负旋转角度用于逆变换
+    
+    // 变换回原始坐标系
+    float2 finalCoord = rotatedCoord + center;
+    
+    // 将旋转后的坐标映射回原始高度图uv
     float2 lightSpaceT = float2(
-        (normalizedCoord.x - _LightBoundsRaw.x) / (_LightBoundsRaw.z - _LightBoundsRaw.x),
-        (normalizedCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
+        (finalCoord.x - _LightBoundsRaw.x) / (_LightBoundsRaw.z - _LightBoundsRaw.x),
+        (finalCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
     );
     
     float2 lightCoord = lightSpaceT * float2(heightWidth - 1, heightHeight - 1);

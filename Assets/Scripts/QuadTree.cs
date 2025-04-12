@@ -404,16 +404,19 @@ public class QuadTree
     #endregion
 
     #region 光照标记方法
-    // 修改后的光照标记方法 先预分裂，
+    // 修改后的光照标记方法,支持旋转
     public float MarkIlluminatedArea(Lighting lighting, bool isAdditive = true, bool useCachedData = false)
     {
         var area = useCachedData ? lighting.GetCachedWorldBounds() : lighting.GetWorldBounds();
-        PreSplitForLighting(root, area, 0);
+        float rotation = useCachedData ? lighting.GetCachedRotation() : lighting.rotation;
+        
+        // 传递旋转参数到预分裂方法
+        PreSplitForLighting(root, area, rotation, 0);
         return FinalizeIlluminationMarking(lighting, isAdditive, useCachedData);
     }
 
-    // 修改后的预分裂方法（移除高度更新）
-    private void PreSplitForLighting(QuadTreeNode node, Bounds area, int currentDepth)
+    // 修改预分裂方法，加入旋转参数
+    private void PreSplitForLighting(QuadTreeNode node, Bounds area, float rotation, int currentDepth)
     {
         Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
         Vector2 rectSize = new Vector2(area.size.x, area.size.z);
@@ -424,7 +427,8 @@ public class QuadTree
             node.Size.x,
             node.Size.y);
 
-        bool overlap = RectangleRectOverlap(rectCenter, rectSize, nodeRect);
+        // 使用支持旋转的碰撞检测
+        bool overlap = RectangleRectOverlap(rectCenter, rectSize, nodeRect, rotation);
         
         if (!overlap) return;
 
@@ -438,13 +442,12 @@ public class QuadTree
             
             foreach (var child in node.Children)
             {
-                PreSplitForLighting(child, area, currentDepth + 1);
+                PreSplitForLighting(child, area, rotation, currentDepth + 1);
             }
         }
     }
 
-
-    // 修改后的最终标记方法（添加亮度累加或减少）
+    // FinalMarkRecursive方法的UV计算部分需要考虑旋转
     private float FinalizeIlluminationMarking(Lighting lighting, bool isAdditive = true, bool useCachedData = false)
     {
         float totalBrightness = 0f;
@@ -460,6 +463,7 @@ public class QuadTree
         
         Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
         Vector2 rectSize = new Vector2(area.size.x, area.size.z);
+        float rotation = useCachedData ? lighting.GetCachedRotation() : lighting.rotation;
 
         Rect nodeRect = new Rect(
             node.Center.x - node.Size.x/2,
@@ -467,7 +471,7 @@ public class QuadTree
             node.Size.x,
             node.Size.y);
 
-        bool overlap = RectangleRectOverlap(rectCenter, rectSize, nodeRect);
+        bool overlap = RectangleRectOverlap(rectCenter, rectSize, nodeRect, rotation);
         
         if (!overlap) return;
 
@@ -480,20 +484,30 @@ public class QuadTree
         }
         else
         { 
-            // 计算UV坐标（以区域中心为UV(0.5,0.5)）
+            // 计算UV坐标（考虑旋转）
+            Vector2 nodePos = new Vector2(node.Center.x, node.Center.y);
+            Vector2 localPos = nodePos - rectCenter;
+            
+            // 应用反向旋转变换以获取正确的UV坐标
+            float rotationRad = -rotation * Mathf.Deg2Rad; // 负号是为了反向旋转
+            Vector2 rotatedPos = new Vector2(
+                localPos.x * Mathf.Cos(rotationRad) - localPos.y * Mathf.Sin(rotationRad),
+                localPos.x * Mathf.Sin(rotationRad) + localPos.y * Mathf.Cos(rotationRad)
+            );
+            
+            // 计算UV坐标
             Vector2 uv = new Vector2(
-                // 将区域中心作为UV坐标系原点
-                (node.Center.x - area.center.x) / area.size.x + 0.5f,
-                (node.Center.y - area.center.z) / area.size.z + 0.5f
+                (rotatedPos.x / (area.size.x * 0.5f)) * 0.5f + 0.5f,
+                (rotatedPos.y / (area.size.z * 0.5f)) * 0.5f + 0.5f
             );
 
-            // 新增边界约束确保UV在0-1范围内
+            // 边界约束确保UV在0-1范围内
             uv.x = Mathf.Clamp01(uv.x);
             uv.y = Mathf.Clamp01(uv.y);
 
             // 从高度图采样原始值
             float rawHeight = mapData.heightMap != null ? 
-                mapData.heightMap.GetPixelBilinear(uv.x, uv.y).r : 0f; // 直接读取红色通道
+                mapData.heightMap.GetPixelBilinear(uv.x, uv.y).r : 0f;
 
             // 添加容差处理（处理浮点精度）
             rawHeight = Mathf.Clamp01(rawHeight);
@@ -514,24 +528,17 @@ public class QuadTree
             }
             else
             {
-                float centerHeight = GetNodeHeightAtPosition(new Vector3(area.center.x, 0, area.center.z));             
-                // 第一层：高度条件判断 限制在0-1之间
-                if (Mathf.Clamp01(area.size.y+centerHeight)>= Mathf.Clamp01(node.Height))
-                {
-                    // 根据加减法标志决定亮度操作
-                    if (isAdditive) {
-                        // 累加原始亮度值到总影响
-                        totalBrightness += rawHeight;
-                        node.Brightness += rawHeight;
-                    } else {
-                        // 减法操作，减少亮度但不低于0
-                        totalBrightness += rawHeight;
-                        node.Brightness -= rawHeight;
-                    }
+                // 设置光照属性
+                float brightness = rawHeight;
+                if (isAdditive)
+                    node.Brightness += brightness;
+                else
+                    node.Brightness -= brightness;
                     
-                    // 使用亮度阈值判断光照状态
-                    node.IsIlluminated = node.Brightness >= node.BrightnessThreshold;
-                }
+                // 更新节点照明状态
+                node.IsIlluminated = node.Brightness > 0.001f; // 亮度足够高才算被照亮
+                
+                totalBrightness += brightness;
             }
         }
     }
@@ -876,23 +883,109 @@ public class QuadTree
         return cornerDistSq <= (radius * radius);
     }
 
-    // 矩形检测
-    private bool RectangleRectOverlap(Vector2 rectCenter, Vector2 rectSize, Rect targetRect)
+    // 修改RectangleRectOverlap方法支持旋转
+    private bool RectangleRectOverlap(Vector2 rectCenter, Vector2 rectSize, Rect targetRect, float rotation = 0f)
     {
-        // 构造源矩形
-        Rect sourceRect = new Rect(
-            rectCenter.x - rectSize.x/2,
-            rectCenter.y - rectSize.y/2,
-            rectSize.x,
-            rectSize.y);
+        // 对于简单的情况，如果旋转角度接近0或180度，可以使用AABB快速检测
+        if (Mathf.Approximately(rotation % 180f, 0f))
+        {
+            return RectangleRectOverlapNoRotation(rectCenter, rectSize, targetRect);
+        }
         
-        // 修改为严格重叠检测（排除边界接触）
-        return sourceRect.xMin < targetRect.xMax && 
-               sourceRect.xMax > targetRect.xMin && 
-               sourceRect.yMin < targetRect.yMax && 
-               sourceRect.yMax > targetRect.yMin;
+        // 使用分离轴定理进行旋转矩形碰撞检测
+        Vector2 targetCenter = new Vector2(targetRect.center.x, targetRect.center.y);
+        Vector2 targetSize = new Vector2(targetRect.width, targetRect.height);
+        
+        // 获取旋转矩形的四个顶点
+        Vector2[] cornersA = GetRotatedRectCorners(rectCenter, rectSize, rotation * Mathf.Deg2Rad);
+        Vector2[] cornersB = new Vector2[4] {
+            new Vector2(targetRect.xMin, targetRect.yMin),
+            new Vector2(targetRect.xMax, targetRect.yMin),
+            new Vector2(targetRect.xMax, targetRect.yMax),
+            new Vector2(targetRect.xMin, targetRect.yMax)
+        };
+        
+        // 分离轴定理检测
+        // 检查A的两个轴
+        Vector2 axisA1 = (cornersA[1] - cornersA[0]).normalized;
+        Vector2 axisA2 = (cornersA[3] - cornersA[0]).normalized;
+        
+        if (!OverlapOnAxis(cornersA, cornersB, axisA1)) return false;
+        if (!OverlapOnAxis(cornersA, cornersB, axisA2)) return false;
+        
+        // 检查B的两个轴
+        Vector2 axisB1 = Vector2.right;
+        Vector2 axisB2 = Vector2.up;
+        
+        if (!OverlapOnAxis(cornersA, cornersB, axisB1)) return false;
+        if (!OverlapOnAxis(cornersA, cornersB, axisB2)) return false;
+        
+        // 所有轴都有重叠，表示矩形相交
+        return true;
     }
 
+    // 原始的非旋转矩形重叠检测（保留用于快速检测）
+    private bool RectangleRectOverlapNoRotation(Vector2 rectCenter, Vector2 rectSize, Rect targetRect)
+    {
+        float halfWidth = rectSize.x * 0.5f;
+        float halfHeight = rectSize.y * 0.5f;
+        
+        float left = rectCenter.x - halfWidth;
+        float right = rectCenter.x + halfWidth;
+        float bottom = rectCenter.y - halfHeight;
+        float top = rectCenter.y + halfHeight;
+        
+        return !(right < targetRect.xMin || left > targetRect.xMax || 
+                 top < targetRect.yMin || bottom > targetRect.yMax);
+    }
+
+    // 计算旋转矩形的四个顶点
+    private Vector2[] GetRotatedRectCorners(Vector2 center, Vector2 size, float rotation)
+    {
+        Vector2[] corners = new Vector2[4];
+        float halfWidth = size.x * 0.5f;
+        float halfHeight = size.y * 0.5f;
+        
+        // 计算旋转后的四个角
+        float cos = Mathf.Cos(rotation);
+        float sin = Mathf.Sin(rotation);
+        
+        corners[0] = center + new Vector2(cos * -halfWidth - sin * -halfHeight, sin * -halfWidth + cos * -halfHeight);
+        corners[1] = center + new Vector2(cos * halfWidth - sin * -halfHeight, sin * halfWidth + cos * -halfHeight);
+        corners[2] = center + new Vector2(cos * halfWidth - sin * halfHeight, sin * halfWidth + cos * halfHeight);
+        corners[3] = center + new Vector2(cos * -halfWidth - sin * halfHeight, sin * -halfWidth + cos * halfHeight);
+        
+        return corners;
+    }
+
+    // 检查两组顶点在某一轴上是否重叠
+    private bool OverlapOnAxis(Vector2[] cornersA, Vector2[] cornersB, Vector2 axis)
+    {
+        // 计算A投影的最小和最大值
+        float minA = float.MaxValue;
+        float maxA = float.MinValue;
+        
+        foreach (Vector2 corner in cornersA)
+        {
+            float projection = Vector2.Dot(corner, axis);
+            minA = Mathf.Min(minA, projection);
+            maxA = Mathf.Max(maxA, projection);
+        }
+        
+        // 计算B投影的最小和最大值
+        float minB = float.MaxValue;
+        float maxB = float.MinValue;
+        
+        foreach (Vector2 corner in cornersB)
+        {
+            float projection = Vector2.Dot(corner, axis);
+            minB = Mathf.Min(minB, projection);
+            maxB = Mathf.Max(maxB, projection);
+        }
+        
+        // 检查投影是否重叠
+        return maxA >= minB && maxB >= minA;
+    }
 
     // 重置光照状态
     public void ResetIllumination()

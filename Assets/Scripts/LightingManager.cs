@@ -209,7 +209,8 @@ public class LightingManager : MonoBehaviour
                     useCache ? light.GetCachedWorldBounds() : light.GetWorldBounds(), 
                     useCache ? light.GetCachedHeightMap() : light.heightMap, 
                     useCache ? light.GetCachedLightHeight() : light.lightHeight,
-                    isSeed // isAdditive = isSeed，种子光源移除时执行加法操作
+                    isSeed, // isAdditive = isSeed，种子光源移除时执行加法操作
+                    useCache ? light.GetCachedRotation() : light.rotation // 传入正确的旋转值
                 );
             }
         }
@@ -228,7 +229,8 @@ public class LightingManager : MonoBehaviour
                     light.GetCachedWorldBounds(), 
                     light.GetCachedHeightMap(), 
                     light.GetCachedLightHeight(),                  
-                    false // isAdditive = false，执行减法操作
+                    false, // isAdditive = false，执行减法操作
+                    light.GetCachedRotation() // 传入缓存的旋转值
                 );
             }
             
@@ -240,7 +242,8 @@ public class LightingManager : MonoBehaviour
                 light.GetWorldBounds(), 
                 light.heightMap, 
                 light.lightHeight,
-                true // isAdditive = true，执行加法操作
+                true, // isAdditive = true，执行加法操作
+                light.rotation // 传入当前的旋转值
             );
             
             // 重置脏标记
@@ -261,7 +264,8 @@ public class LightingManager : MonoBehaviour
                 light.GetWorldBounds(), 
                 light.heightMap, 
                 light.lightHeight,
-                !isSeed // isAdditive = !isSeed，种子光源更新时执行减法操作
+                !isSeed, // isAdditive = !isSeed，种子光源更新时执行减法操作
+                light.rotation // 传入当前的旋转值
             );
             
             // 4.2 更新重叠关系
@@ -382,7 +386,7 @@ static void SaveCompositeMenuItem()
     }
 
     // 新增GPU处理方法带加减法参数
-    public static void ProcessLightingGPU(Lighting light, Bounds lightBounds, Texture2D heightMap, float lightHeight, bool isAdditive = true)
+    public static void ProcessLightingGPU(Lighting light, Bounds lightBounds, Texture2D heightMap, float lightHeight, bool isAdditive = true, float rotation = 0f)
     {
         if (instance.lightingComputeShader == null || compositeRT == null || heightMap == null)
             return;
@@ -429,6 +433,8 @@ static void SaveCompositeMenuItem()
         instance.lightingComputeShader.SetFloat("_LightHeight", lightHeight + centerHeight);
         // 添加加减操作标记
         instance.lightingComputeShader.SetFloat("_IsAdditive", isAdditive ? 1 : 0);
+        // 新增：传递旋转角度参数
+        instance.lightingComputeShader.SetFloat("_Rotation", rotation);
         
         // ===== 计算合成区域（反向映射） =====
         // compositeRT为正方形，尺寸为 compositeSize

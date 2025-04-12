@@ -132,8 +132,7 @@ MonoBehaviour:
       isSeed: 0
       lightHeight: 1
       heightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
-      tiling: {x: 0, y: 0}
-      offset: {x: 0, y: 0}
+      rotation: 0
     plantID: 0
     plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
     growthRate: 0
@@ -148,8 +147,7 @@ MonoBehaviour:
       isSeed: 0
       lightHeight: 1
       heightMap: {fileID: 2800000, guid: 6cb0369d7ea57b448a7c9cf1b3ca1c70, type: 3}
-      tiling: {x: 0, y: 0}
-      offset: {x: 0, y: 0}
+      rotation: 0
     plantID: 0
     plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
     growthRate: 0
@@ -197,8 +195,7 @@ MonoBehaviour:
       isSeed: 0
       lightHeight: 0
       heightMap: {fileID: 2800000, guid: 6cb0369d7ea57b448a7c9cf1b3ca1c70, type: 3}
-      tiling: {x: 0, y: 0}
-      offset: {x: 0, y: 0}
+      rotation: 0
     plantID: 99
     plantName: "\u706B"
     growthRate: 0

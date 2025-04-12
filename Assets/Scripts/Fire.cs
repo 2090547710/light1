@@ -161,16 +161,27 @@ public class Fire : Plant
         
         foreach (var lightData in growthStages[stageIndex].associatedLights)
         {
-            // 创建新的 LightingData 对象并复制原有属性
+            // 计算旋转角度 - 可以选择以下几种方案：
+            
+            // 选项1：保留原有光源的旋转角度（如果有）
+            float rotation = lightData.rotation;
+            
+            // 选项2：计算指向安全区域中心的旋转角度
+            // Vector3 firePosition = transform.position;
+            // Vector3 directionToSafetyCenter = safetyZone.center - firePosition;
+            // float rotationToSafetyCenter = Mathf.Atan2(directionToSafetyCenter.z, directionToSafetyCenter.x) * Mathf.Rad2Deg;
+            // 可以根据需要选择使用这个计算得到的旋转角度
+            
+            // 创建新的 LightingData 对象并复制原有属性，加入rotation参数
             LightingData newLightData = new LightingData(
                 size: lightSize,
                 isObstacle: lightData.isObstacle,
                 isSeed: lightData.isSeed,
                 lightHeight: lightData.lightHeight,
                 heightMap: lightData.heightMap,
-                tiling: lightData.tiling,
-                offset: lightData.offset
+                rotation: rotation // 使用选定的旋转角度
             );
+            
             updatedLights.Add(newLightData);
         }
         
@@ -211,20 +222,11 @@ public class Fire : Plant
             return 0;
         }
         
-        // 获取GameManager中的size
-        Vector2 size = Vector2.zero;
-        if (GameManager.Instance != null)
-        {
-            size = GameManager.Instance.size;
-        }
-        else
-        {
-            Debug.LogWarning("GameManager实例不存在，使用默认大小");
-            size = new Vector2(100, 100);
-        }
-        
+        // 更新安全区域
+        UpdateSafetyZone();
         
         // 确保安全区域内的节点完全分裂到最小尺寸
+        // 注意：如果safety zone需要考虑旋转，这里也要相应修改
         LightingManager.tree.PreSplitArea(safetyZone);
 
         // 使用边界框方法获取区域内的所有叶子节点
@@ -291,5 +293,21 @@ public class Fire : Plant
         
         // 返回安全区域
         return safetyZone;
+    }
+
+    // 在Fire类中添加可以考虑旋转的方法
+    public bool IsPositionInFireLight(Vector3 position)
+    {
+        // 检查位置是否在任何火光源范围内
+        foreach (Lighting fireLight in lightSources)
+        {
+            // 使用支持旋转的点在区域内检测
+            if (fireLight.IsPointInRotatedBounds(position))
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
 } 

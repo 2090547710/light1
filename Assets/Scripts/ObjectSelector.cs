@@ -22,8 +22,7 @@ public class ObjectSelector : MonoBehaviour
         public bool isObstacle;
         public bool isSeed;
         public Texture2D heightMap;
-        public Vector2 tiling;
-        public Vector2 offset;
+        public float rotation;
         [Range(0, 1)] public float lightHeight;
     }
 
@@ -88,8 +87,6 @@ public class ObjectSelector : MonoBehaviour
         originalMaterial = renderer.material;
         renderer.material = highlightMaterial;
         
-
-
         // 扩展选择事件
         SelectionChanged?.Invoke(obj);
 
@@ -100,8 +97,7 @@ public class ObjectSelector : MonoBehaviour
             editingProperties.isObstacle = lighting.isObstacle;
             editingProperties.isSeed = lighting.isSeed;
             editingProperties.heightMap = lighting.heightMap;
-            editingProperties.tiling = lighting.tiling;
-            editingProperties.offset = lighting.offset;
+            editingProperties.rotation = lighting.rotation;
             editingProperties.lightHeight = lighting.lightHeight;
         }
         
@@ -156,8 +152,10 @@ public class ObjectSelector : MonoBehaviour
                     EditorGUILayout.HelpBox("Obstacle不能同时是Seed", MessageType.Warning);
                 }
                 selector.editingProperties.heightMap = (Texture2D)EditorGUILayout.ObjectField("Height Map", selector.editingProperties.heightMap, typeof(Texture2D), false);
-                selector.editingProperties.tiling = EditorGUILayout.Vector2Field("Tiling", selector.editingProperties.tiling);
-                selector.editingProperties.offset = EditorGUILayout.Vector2Field("Offset", selector.editingProperties.offset);
+                
+                // 使用Slider控制旋转角度，范围为0-360度
+                selector.editingProperties.rotation = EditorGUILayout.Slider("Rotation", selector.editingProperties.rotation, 0f, 360f);
+                
                 selector.editingProperties.lightHeight = EditorGUILayout.Slider("Light Height", selector.editingProperties.lightHeight, 0, 1);
 
                 // 应用修改到实际组件
@@ -165,8 +163,7 @@ public class ObjectSelector : MonoBehaviour
                 lighting.isObstacle = selector.editingProperties.isObstacle;
                 lighting.isSeed = selector.editingProperties.isSeed;
                 lighting.heightMap = selector.editingProperties.heightMap;
-                lighting.tiling = selector.editingProperties.tiling;
-                lighting.offset = selector.editingProperties.offset;
+                lighting.rotation = selector.editingProperties.rotation;
                 lighting.lightHeight = selector.editingProperties.lightHeight;
 
                 // 新增亮度影响显示
@@ -478,6 +475,11 @@ public class ObjectSelector : MonoBehaviour
                             }
                         }
 
+                        float newRotation = EditorGUILayout.Slider("旋转角度:", lightElement.rotation, 0f, 360f);
+                        if (newRotation != lightElement.rotation) {
+                            lightElement.rotation = newRotation;
+                        }
+
                         float newLightHeight = EditorGUILayout.Slider("光照高度:", lightElement.lightHeight, 0, 1);
                         if (newLightHeight != lightElement.lightHeight) {
                             lightElement.lightHeight = newLightHeight;
@@ -486,16 +488,6 @@ public class ObjectSelector : MonoBehaviour
                         Texture2D newHeightMap = (Texture2D)EditorGUILayout.ObjectField("高度图:", lightElement.heightMap, typeof(Texture2D), false);
                         if (newHeightMap != lightElement.heightMap) {
                             lightElement.heightMap = newHeightMap;
-                        }
-
-                        Vector2 newTiling = EditorGUILayout.Vector2Field("平铺:", lightElement.tiling);
-                        if (newTiling != lightElement.tiling) {
-                            lightElement.tiling = newTiling;
-                        }
-
-                        Vector2 newOffset = EditorGUILayout.Vector2Field("偏移:", lightElement.offset);
-                        if (newOffset != lightElement.offset) {
-                            lightElement.offset = newOffset;
                         }
 
                         if (GUI.changed) {
