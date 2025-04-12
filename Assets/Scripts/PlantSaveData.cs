@@ -21,6 +21,7 @@ public class PlantSaveData
     // 位置和旋转信息
     public SerializableVector3 position;
     public SerializableQuaternion rotation;
+    public SerializableVector3 scale;
     
     // 生长阶段信息
     public List<SerializablePlantStage> growthStages = new List<SerializablePlantStage>();
@@ -43,6 +44,7 @@ public class PlantSaveData
         // 保存位置和旋转
         position = new SerializableVector3(plant.transform.position);
         rotation = new SerializableQuaternion(plant.transform.rotation);
+        scale = new SerializableVector3(plant.transform.localScale);
         
         // 保存生长阶段
         foreach (var stage in plant.growthStages)

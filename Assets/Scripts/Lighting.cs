@@ -63,6 +63,7 @@ public class Lighting : MonoBehaviour
     [SerializeField] private Texture2D cachedHeightMap;
     [SerializeField] private float cachedRotation; // 替换cachedTiling和cachedOffset
     [SerializeField] private float cachedLightHeight;
+    [SerializeField] private Vector3 cachedPosition; // 新增position缓存字段
 
     // 添加脏标记系统
     [SerializeField] private bool isDirty = true; // 默认为脏，确保首次应用
@@ -141,13 +142,14 @@ public class Lighting : MonoBehaviour
             isObstacle = false;
         }
         
-        // 检查每个参数是否发生变化
+        // 检查每个参数是否发生变化，包括position
         if (cachedSize != size || 
             cachedIsObstacle != isObstacle ||
             cachedIsSeed != isSeed ||
             cachedHeightMap != heightMap ||
-            cachedRotation != rotation ||  // 替换tiling和offset检查
-            cachedLightHeight != lightHeight)
+            cachedRotation != rotation ||
+            cachedLightHeight != lightHeight ||
+            cachedPosition != transform.position) // 新增position检查
         {
            MarkDirty(); // 设置为脏
         }
@@ -163,13 +165,14 @@ public class Lighting : MonoBehaviour
             LightingManager.UpdateDirtyLights(); // 使用新方法更新脏光源
         }
 
-        // 更新缓存值
+        // 更新缓存值，包括position
         cachedSize = size;
         cachedIsObstacle = isObstacle;
         cachedIsSeed = isSeed;
         cachedHeightMap = heightMap;
-        cachedRotation = rotation;  // 替换tiling和offset更新
+        cachedRotation = rotation;
         cachedLightHeight = lightHeight;
+        cachedPosition = transform.position; // 新增position更新
     }
     #endif
     #endregion
@@ -406,7 +409,7 @@ public class Lighting : MonoBehaviour
     // 新增获取缓存的WorldBounds方法
     public Bounds GetCachedWorldBounds()
     {
-        Vector3 center = transform.position;
+        Vector3 center = cachedPosition; // 使用缓存的position
         Vector3 size = new Vector3(cachedSize, cachedLightHeight, cachedSize);
         return new Bounds(center, size);
     }
@@ -443,6 +446,12 @@ public class Lighting : MonoBehaviour
     {
         return cachedRotation;
     }
+
+    // 新增获取缓存的position方法
+    public Vector3 GetCachedPosition()
+    {
+        return cachedPosition;
+    }
     #endregion
 
     #region 光照组件初始化方法
@@ -455,7 +464,7 @@ public class Lighting : MonoBehaviour
         isSeed = data.isSeed;
         lightHeight = data.lightHeight;
         heightMap = data.heightMap;
-        rotation = data.rotation;  // 替换tiling和offset赋值
+        rotation = data.rotation;
         
         // 同时初始化缓存字段
         cachedSize = data.size;
@@ -463,7 +472,8 @@ public class Lighting : MonoBehaviour
         cachedIsSeed = data.isSeed;
         cachedLightHeight = data.lightHeight;
         cachedHeightMap = data.heightMap;
-        cachedRotation = data.rotation;  // 替换cachedTiling和cachedOffset赋值
+        cachedRotation = data.rotation;
+        cachedPosition = transform.position; // 新增position缓存初始化
         
         // 标记为脏，确保应用更改
         MarkDirty();
@@ -480,7 +490,7 @@ public class Lighting : MonoBehaviour
         
         if (useCachedData)
         {
-            center = new Vector2(transform.position.x, transform.position.z);
+            center = new Vector2(cachedPosition.x, cachedPosition.z); // 使用缓存的position
             size = new Vector2(cachedSize, cachedSize);
             rot = cachedRotation * Mathf.Deg2Rad;
         }

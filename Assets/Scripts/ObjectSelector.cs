@@ -121,6 +121,73 @@ public class ObjectSelector : MonoBehaviour
             base.OnInspectorGUI();
 
             ObjectSelector selector = (ObjectSelector)target;
+            if (selector.SelectedObject != null)
+            {
+                EditorGUILayout.Space(10);
+                EditorGUILayout.LabelField("选中对象的Transform", EditorStyles.boldLabel);
+                
+                // 记录对象以支持撤销
+                Undo.RecordObject(selector.SelectedObject.transform, "修改Transform");
+                
+                // 编辑Position
+                Vector3 newPosition = EditorGUILayout.Vector3Field("位置:", selector.SelectedObject.transform.position);
+                if (newPosition != selector.SelectedObject.transform.position)
+                {
+                    selector.SelectedObject.transform.position = newPosition;
+                    
+                    // 如果有Lighting组件，标记为脏以便更新
+                    if (selector.SelectedObject.TryGetComponent<Lighting>(out var lightingComponent))
+                    {
+                        lightingComponent.MarkDirty();
+                        if (Application.isPlaying)
+                        {
+                            lightingComponent.OnValidate();
+                        }
+                    }
+                }
+                
+                // 编辑Rotation
+                Vector3 currentRotation = selector.SelectedObject.transform.rotation.eulerAngles;
+                Vector3 newRotation = EditorGUILayout.Vector3Field("旋转:", currentRotation);
+                if (newRotation != currentRotation)
+                {
+                    selector.SelectedObject.transform.rotation = Quaternion.Euler(newRotation);
+                    
+                    // 如果有Lighting组件，标记为脏以便更新
+                    if (selector.SelectedObject.TryGetComponent<Lighting>(out var lightingComponent))
+                    {
+                        lightingComponent.MarkDirty();
+                        if (Application.isPlaying)
+                        {
+                            lightingComponent.OnValidate();
+                        }
+                    }
+                }
+                
+                // 编辑Scale
+                Vector3 newScale = EditorGUILayout.Vector3Field("缩放:", selector.SelectedObject.transform.localScale);
+                if (newScale != selector.SelectedObject.transform.localScale)
+                {
+                    selector.SelectedObject.transform.localScale = newScale;
+                    
+                    // 如果有Lighting组件，标记为脏以便更新
+                    if (selector.SelectedObject.TryGetComponent<Lighting>(out var lightingComponent))
+                    {
+                        lightingComponent.MarkDirty();
+                        if (Application.isPlaying)
+                        {
+                            lightingComponent.OnValidate();
+                        }
+                    }
+                }
+                
+                // 如果发生了变化，标记为脏对象
+                if (GUI.changed)
+                {
+                    EditorUtility.SetDirty(selector.SelectedObject.transform);
+                }
+            }
+            
             if (selector.SelectedObject != null && 
                 selector.SelectedObject.TryGetComponent<Lighting>(out var lighting))
             {
@@ -220,6 +287,95 @@ public class ObjectSelector : MonoBehaviour
             }
             
             GameObject selectedObject = targetSelector.SelectedObject;
+            
+            // 添加Transform编辑区域
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("Transform编辑", EditorStyles.boldLabel);
+            EditorGUILayout.Space(5);
+            
+            // 记录对象以支持撤销
+            Undo.RecordObject(selectedObject.transform, "修改Transform");
+            
+            // 编辑Position
+            Vector3 newPosition = EditorGUILayout.Vector3Field("位置:", selectedObject.transform.position);
+            if (newPosition != selectedObject.transform.position)
+            {
+                selectedObject.transform.position = newPosition;
+                
+                // 如果有Lighting组件，标记为脏以便更新
+                if (selectedObject.TryGetComponent<Lighting>(out var lightingComponent))
+                {
+                    lightingComponent.MarkDirty();
+                    
+                    // 如果在运行时，立即更新光照
+                    if (Application.isPlaying)
+                    {
+                        lightingComponent.OnValidate();
+                    }
+                }
+            }
+            
+            // 编辑Rotation
+            Vector3 currentRotation = selectedObject.transform.rotation.eulerAngles;
+            Vector3 newRotation = EditorGUILayout.Vector3Field("旋转:", currentRotation);
+            if (newRotation != currentRotation)
+            {
+                selectedObject.transform.rotation = Quaternion.Euler(newRotation);
+                
+                // 如果有Lighting组件，标记为脏以便更新
+                if (selectedObject.TryGetComponent<Lighting>(out var lightingComponent))
+                {
+                    lightingComponent.MarkDirty();
+                    
+                    // 如果在运行时，立即更新光照
+                    if (Application.isPlaying)
+                    {
+                        lightingComponent.OnValidate();
+                    }
+                }
+            }
+            
+            // 编辑Scale
+            Vector3 newScale = EditorGUILayout.Vector3Field("缩放:", selectedObject.transform.localScale);
+            if (newScale != selectedObject.transform.localScale)
+            {
+                selectedObject.transform.localScale = newScale;
+                
+                // 如果有Lighting组件，标记为脏以便更新
+                if (selectedObject.TryGetComponent<Lighting>(out var lightingComponent))
+                {
+                    lightingComponent.MarkDirty();
+                    
+                    // 如果在运行时，立即更新光照
+                    if (Application.isPlaying)
+                    {
+                        lightingComponent.OnValidate();
+                    }
+                }
+            }
+            
+            // 如果发生了变化，标记为脏对象
+            if (GUI.changed)
+            {
+                EditorUtility.SetDirty(selectedObject.transform);
+            }
+            
+            // 添加分隔线
+            EditorGUILayout.Space(10);
+            Rect separatorRect = EditorGUILayout.GetControlRect(false, 1);
+            EditorGUI.DrawRect(separatorRect, new Color(0.5f, 0.5f, 0.5f, 1));
+            EditorGUILayout.Space(10);
+            
+            // 每次绘制界面前，同步数据（从对象读取最新值到编辑器）
+            if (selectedObject.TryGetComponent<Lighting>(out var lighting))
+            {
+                targetSelector.editingProperties.size = lighting.size;
+                targetSelector.editingProperties.isObstacle = lighting.isObstacle;
+                targetSelector.editingProperties.isSeed = lighting.isSeed;
+                targetSelector.editingProperties.heightMap = lighting.heightMap;
+                targetSelector.editingProperties.rotation = lighting.rotation;
+                targetSelector.editingProperties.lightHeight = lighting.lightHeight;
+            }
             
             EditorGUILayout.LabelField($"选中对象: {selectedObject.name}", EditorStyles.boldLabel);
             EditorGUILayout.Space(5);
@@ -475,9 +631,9 @@ public class ObjectSelector : MonoBehaviour
                             }
                         }
 
-                        float newRotation = EditorGUILayout.Slider("旋转角度:", lightElement.rotation, 0f, 360f);
-                        if (newRotation != lightElement.rotation) {
-                            lightElement.rotation = newRotation;
+                        float lightRotation = EditorGUILayout.Slider("旋转角度:", lightElement.rotation, 0f, 360f);
+                        if (lightRotation != lightElement.rotation) {
+                            lightElement.rotation = lightRotation;
                         }
 
                         float newLightHeight = EditorGUILayout.Slider("光照高度:", lightElement.lightHeight, 0, 1);
@@ -500,8 +656,8 @@ public class ObjectSelector : MonoBehaviour
                     
                     // 为每个Plant组件之间添加分隔线
                     EditorGUILayout.Space(10);
-                    Rect rect = EditorGUILayout.GetControlRect(false, 1);
-                    EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 1));
+                    Rect componentSeparatorRect = EditorGUILayout.GetControlRect(false, 1);
+                    EditorGUI.DrawRect(componentSeparatorRect, new Color(0.5f, 0.5f, 0.5f, 1));
                     EditorGUILayout.Space(10);
                 }
             }
@@ -632,6 +788,15 @@ public class ObjectSelector : MonoBehaviour
                 $"({plant.BrightnessRatio:F2}, {plant.BloomProbability:F2})",
                 new GUIStyle(EditorStyles.label) { normal = { textColor = Color.yellow } }
             );
+        }
+
+        private void Update()
+        {
+            // 定期检查所选对象的属性是否被其他地方修改，如果修改则刷新
+            if (targetSelector != null && targetSelector.SelectedObject != null)
+            {
+                Repaint();
+            }
         }
     }
 #endif

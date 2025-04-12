@@ -985,15 +985,33 @@ public class Plant : MonoBehaviour
     
     #region 植物数据存档与读取
     // 获取植物存档数据
-    public  virtual PlantSaveData GetSaveData()
+    public virtual PlantSaveData GetSaveData()
     {
         PlantSaveData saveData = new PlantSaveData();
                
         // 创建可序列化的植物阶段列表
         saveData.growthStages = new List<SerializablePlantStage>();
-        foreach (var stage in growthStages)
+        for (int i = 0; i < growthStages.Count; i++)
         {
-            saveData.growthStages.Add(new SerializablePlantStage(stage));
+            if (i == currentStage - 1 && currentStage > 0)
+            {
+                // 对于当前阶段，使用CreateStageFromCurrentLightSources方法获取最新状态
+                PlantStage updatedStage = CreateStageFromCurrentLightSources();
+                if (updatedStage != null)
+                {
+                    saveData.growthStages.Add(new SerializablePlantStage(updatedStage));
+                }
+                else
+                {
+                    // 如果创建失败，回退到使用原始阶段
+                    saveData.growthStages.Add(new SerializablePlantStage(growthStages[i]));
+                }
+            }
+            else
+            {
+                // 其他阶段直接使用原始数据
+                saveData.growthStages.Add(new SerializablePlantStage(growthStages[i]));
+            }
         }
         
         // 其他属性保持不变
@@ -1007,6 +1025,7 @@ public class Plant : MonoBehaviour
         // 保存位置和旋转
         saveData.position = new SerializableVector3(transform.position);
         saveData.rotation = new SerializableQuaternion(transform.rotation);
+        saveData.scale = new SerializableVector3(transform.localScale);
         
         // 保存植物标识信息
         saveData.plantName = plantName;
@@ -1047,6 +1066,7 @@ public class Plant : MonoBehaviour
         // 设置位置和旋转
         plantObj.transform.position = saveData.position.ToVector3();
         plantObj.transform.rotation = saveData.rotation.ToQuaternion();
+        plantObj.transform.localScale = saveData.scale.ToVector3();
 
         // 设置基本属性
         plant.growthStages = saveData.ConvertToPlantStages();
@@ -1076,4 +1096,57 @@ public class Plant : MonoBehaviour
         return plant;
     }
 #endregion
+
+    // 新增方法：从当前活跃的光源组件获取LightingData
+    public List<LightingData> GetLightingDataFromLightSources()
+    {
+        List<LightingData> lightingDataList = new List<LightingData>();
+        
+        foreach (Lighting light in lightSources)
+        {
+            // 创建新的LightingData
+            LightingData data = new LightingData(
+                size: light.size,
+                isObstacle: light.isObstacle,
+                isSeed: light.isSeed,
+                lightHeight: light.lightHeight,
+                heightMap: light.heightMap,
+                rotation: light.rotation
+            );
+            
+            lightingDataList.Add(data);
+        }
+        
+        return lightingDataList;
+    }
+
+    // 新增方法：基于当前光源创建临时阶段
+    public PlantStage CreateStageFromCurrentLightSources()
+    {
+        // 确保当前阶段索引有效
+        if (currentStage <= 0 || currentStage > growthStages.Count)
+        {
+            Debug.LogWarning($"无效的当前阶段索引: {currentStage}");
+            return null;
+        }
+        
+        // 获取当前阶段
+        PlantStage currentStageData = growthStages[currentStage - 1];
+        
+        // 创建临时阶段，复制当前阶段的所有属性
+        PlantStage tempStage = new PlantStage();
+        tempStage.stageType = currentStageData.stageType;
+        tempStage.plantID = currentStageData.plantID;
+        tempStage.plantName = currentStageData.plantName;
+        tempStage.growthRate = currentStageData.growthRate;
+        tempStage.prerequisitePlantIDs = new List<int>(currentStageData.prerequisitePlantIDs);
+        tempStage.prerequisiteWeights = new List<float>(currentStageData.prerequisiteWeights);
+        tempStage.updatePlantIDs = new List<int>(currentStageData.updatePlantIDs);
+        tempStage.updateWeights = new List<float>(currentStageData.updateWeights);
+        
+        // 从当前活跃的光源获取最新的LightingData
+        tempStage.associatedLights = GetLightingDataFromLightSources();
+        
+        return tempStage;
+    }
 } 

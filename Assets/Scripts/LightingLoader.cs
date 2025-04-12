@@ -11,8 +11,6 @@ public class LightingLoader : MonoBehaviour
     [Range(0, 1)] public float lightHeight = 0.5f; // 光照高度
     public bool isObstacle = true; // 是否为障碍物光源
     public bool isSeed = false; // 是否为种子光源
-    public Vector2 tiling = Vector2.one; // 纹理平铺
-    public Vector2 offset = Vector2.zero; // 纹理偏移
 
     private void Start()
     {

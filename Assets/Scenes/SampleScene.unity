@@ -259,7 +259,7 @@ MonoBehaviour:
   maxDepth: 8
   capacity: 2
   preSplit: 0
-  size: {x: 138, y: 138}
+  size: {x: 150, y: 150}
   center: {x: 0, y: 0}
   prefab: {fileID: 5540192311497395315, guid: dc7d33e851d9a1243a632ac428517299, type: 3}
   lighthouse: {fileID: 1062131526}
@@ -333,15 +333,14 @@ MonoBehaviour:
   selectableLayer:
     serializedVersion: 2
     m_Bits: 128
-  selectionRadius: 0.5
+  selectionRadius: 2
   highlightMaterial: {fileID: 2100000, guid: c91f8bb88c5fbfa4887573142a1e2d6b, type: 2}
   editingProperties:
     size: 0
     isObstacle: 0
     isSeed: 0
     heightMap: {fileID: 0}
-    tiling: {x: 0, y: 0}
-    offset: {x: 0, y: 0}
+    rotation: 0
     lightHeight: 0
 --- !u!114 &877133420
 MonoBehaviour:
@@ -380,6 +379,10 @@ MonoBehaviour:
       y: 0
       z: 0
       w: 1
+    scale:
+      x: 0
+      y: 0
+      z: 0
     growthStages:
     - stageType: 1
       plantID: 0
@@ -395,12 +398,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -415,12 +413,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
   - plantType: Plant
     plantID: 0
     plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
@@ -439,6 +432,10 @@ MonoBehaviour:
       y: 0
       z: 0
       w: 1
+    scale:
+      x: 0
+      y: 0
+      z: 0
     growthStages:
     - stageType: 1
       plantID: 0
@@ -454,12 +451,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -474,12 +466,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
   - plantType: Plant
     plantID: 0
     plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -498,6 +485,10 @@ MonoBehaviour:
       y: 0
       z: 0
       w: 1
+    scale:
+      x: 0
+      y: 0
+      z: 0
     growthStages:
     - stageType: 1
       plantID: 0
@@ -513,12 +504,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -533,12 +519,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
   - plantType: Plant
     plantID: 0
     plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
@@ -557,6 +538,10 @@ MonoBehaviour:
       y: 0
       z: 0
       w: 1
+    scale:
+      x: 0
+      y: 0
+      z: 0
     growthStages:
     - stageType: 1
       plantID: 0
@@ -572,12 +557,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -592,12 +572,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
   - plantType: Plant
     plantID: 0
     plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
@@ -616,6 +591,10 @@ MonoBehaviour:
       y: 0
       z: 0
       w: 1
+    scale:
+      x: 0
+      y: 0
+      z: 0
     growthStages:
     - stageType: 1
       plantID: 0
@@ -631,12 +610,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -651,12 +625,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
   - plantType: Plant
     plantID: 0
     plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
@@ -675,6 +644,10 @@ MonoBehaviour:
       y: 0
       z: 0
       w: 1
+    scale:
+      x: 0
+      y: 0
+      z: 0
     growthStages:
     - stageType: 1
       plantID: 0
@@ -690,12 +663,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -710,12 +678,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
   - plantType: Plant
     plantID: 0
     plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
@@ -734,6 +697,10 @@ MonoBehaviour:
       y: 0
       z: 0
       w: 1
+    scale:
+      x: 0
+      y: 0
+      z: 0
     growthStages:
     - stageType: 1
       plantID: 0
@@ -749,12 +716,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -769,12 +731,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
   - plantType: Plant
     plantID: 0
     plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
@@ -793,6 +750,10 @@ MonoBehaviour:
       y: 0
       z: 0
       w: 1
+    scale:
+      x: 0
+      y: 0
+      z: 0
     growthStages:
     - stageType: 1
       plantID: 0
@@ -808,12 +769,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
@@ -828,12 +784,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
-        tiling:
-          x: 0
-          y: 0
-        offset:
-          x: 0
-          y: 0
+        rotation: 0
 --- !u!114 &877133421
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1375,6 +1326,7 @@ GameObject:
   - component: {fileID: 1773321648}
   - component: {fileID: 1773321647}
   - component: {fileID: 1773321649}
+  - component: {fileID: 1773321650}
   m_Layer: 0
   m_Name: "\u73A9\u5BB6"
   m_TagString: Player
@@ -1469,6 +1421,23 @@ MonoBehaviour:
   mapLayer:
     serializedVersion: 2
     m_Bits: 256
+--- !u!114 &1773321650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1773321643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f94b3b1cd821e4409dba7fcfb65489e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightSize: 10
+  lightHeightMap: {fileID: 2800000, guid: 22c31601a6e9b264d8565c77909d3f16, type: 3}
+  lightHeight: 0.5
+  isObstacle: 0
+  isSeed: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
