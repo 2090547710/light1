@@ -51,6 +51,9 @@ public class LightingManager : MonoBehaviour
     private static List<Vector4> cachedSimplifiedBoundarySegments = new List<Vector4>();
     
     public static float raycastDistance = 10.0f; // 射线检测距离
+
+    
+    public static bool isValidating = false;
     #endregion
 
     #region Unity生命周期方法
@@ -122,6 +125,8 @@ public class LightingManager : MonoBehaviour
             compositeRT = null;
         }
     }
+
+
     #endregion
 
     #region 光源注册与管理
@@ -281,10 +286,10 @@ public class LightingManager : MonoBehaviour
         // 更新GPU中的合成高度图参数
         UpdateHeightmapParams(tree.RootCenter, tree.RootSize);
     
-        // 自动更新边界和显示图片
-        if (autoUpdateBoundaryImages)
+        // 自动更新边界和显示图片，但在验证过程中延迟执行
+        if (autoUpdateBoundaryImages && !isValidating)
         {
-            // 使用增量更新代替完全重建
+            // 直接更新
             UpdateBoundaryImagesIncremental(
                 defaultImageResource, 
                 defaultImageHeight, 
@@ -292,6 +297,22 @@ public class LightingManager : MonoBehaviour
                 defaultRotationAngle, 
                 targetSegmentLength
             );
+        }
+        else if (autoUpdateBoundaryImages && isValidating)
+        {
+            // 在验证过程中，使用延迟调用
+            #if UNITY_EDITOR
+            UnityEditor.EditorApplication.delayCall += () => 
+            {
+                UpdateBoundaryImagesIncremental(
+                    defaultImageResource, 
+                    defaultImageHeight, 
+                    defaultImageWidth, 
+                    defaultRotationAngle, 
+                    targetSegmentLength
+                );
+            };
+            #endif
         }
     }
     #endregion
@@ -525,6 +546,7 @@ static void HideSimplifiedBoundaryMenu()
     // 修改方法：基于线段底边显示图片，并支持旋转，当Z轴方向上存在指定层物体时才创建
     public static GameObject DisplayImageOnSegment(Vector4 segment, Texture2D texture, float height = 1.0f, float width = 0.0f, bool maintainAspect = true, float rotationAngle = 0.0f)
     {
+       
         if (texture == null)
         {
             Debug.LogError("无法显示图片：纹理为空");

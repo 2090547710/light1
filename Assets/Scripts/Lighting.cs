@@ -88,6 +88,23 @@ public class Lighting : MonoBehaviour
         LightingManager.UnregisterLight(this);
     }
 
+    private void Update()
+    {
+        // 检查position是否发生变化
+        if (transform.position != cachedPosition && Application.isPlaying)
+        {
+            // 如果位置发生变化，标记为脏
+            MarkDirty();
+            if(TotalBrightnessImpact > 0.01f)
+            {
+                ValidateHeightmap();
+            }
+            LightingManager.UpdateDirtyLights();
+            // 更新位置缓存
+            cachedPosition = transform.position;
+        }
+    }
+
     #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
@@ -136,6 +153,8 @@ public class Lighting : MonoBehaviour
 
     public void OnValidate()
     {
+        LightingManager.isValidating = true;
+        
         // 确保isSeed和isObstacle不能同时为true
         if(isSeed && isObstacle)
         {
@@ -173,6 +192,8 @@ public class Lighting : MonoBehaviour
         cachedRotation = rotation;
         cachedLightHeight = lightHeight;
         cachedPosition = transform.position; // 新增position更新
+        
+        LightingManager.isValidating = false;
     }
     #endif
     #endregion
