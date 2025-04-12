@@ -64,6 +64,7 @@ public class Lighting : MonoBehaviour
     [SerializeField] private float cachedRotation; // 替换cachedTiling和cachedOffset
     [SerializeField] private float cachedLightHeight;
     [SerializeField] private Vector3 cachedPosition; // 新增position缓存字段
+    [SerializeField] private Quaternion cachedRotationQuaternion; // 缓存transform的旋转
 
     // 添加脏标记系统
     [SerializeField] private bool isDirty = true; // 默认为脏，确保首次应用
@@ -81,6 +82,7 @@ public class Lighting : MonoBehaviour
     private void OnEnable() 
     {
         LightingManager.RegisterLight(this);
+        cachedRotationQuaternion = transform.rotation; // 初始化旋转缓存
     }
     
     private void OnDisable() 
@@ -90,19 +92,43 @@ public class Lighting : MonoBehaviour
 
     private void Update()
     {
+
         // 检查position是否发生变化
         if (transform.position != cachedPosition && Application.isPlaying)
         {
-            // 如果位置发生变化，标记为脏
+            MarkDirty();
+            if(TotalBrightnessImpact > 0.01f)
+            {
+                ValidateHeightmap();
+            }
+            Debug.Log("更新脏标记");
+            LightingManager.UpdateDirtyLights();
+            // 更新位置缓存
+            cachedPosition = transform.position;
+        }
+        
+        // 检查rotation是否发生变化
+        if (transform.rotation != cachedRotationQuaternion && Application.isPlaying)
+        {
+            // 计算Y轴旋转角度差并增加到rotation属性
+            float currentYRotation = transform.eulerAngles.y;
+            float previousYRotation = cachedRotationQuaternion.eulerAngles.y;
+            float rotationDelta = Mathf.DeltaAngle(previousYRotation, currentYRotation);
+            
+            // 将角度差值累加到rotation属性
+            rotation = (rotation -rotationDelta + 360) % 360;
+            
             MarkDirty();
             if(TotalBrightnessImpact > 0.01f)
             {
                 ValidateHeightmap();
             }
             LightingManager.UpdateDirtyLights();
-            // 更新位置缓存
-            cachedPosition = transform.position;
+            // 更新旋转缓存
+            cachedRotation = rotation;
+            cachedRotationQuaternion = transform.rotation;
         }
+    
     }
 
     #if UNITY_EDITOR
@@ -121,7 +147,7 @@ public class Lighting : MonoBehaviour
         
         // 创建旋转矩阵
         Vector3 position = transform.position;
-        Quaternion rotationQuat = Quaternion.Euler(0, rotation, 0);
+        Quaternion rotationQuat = Quaternion.Euler(0, -rotation, 0);
         Matrix4x4 rotationMatrix = Matrix4x4.TRS(
             position,
             rotationQuat,
@@ -161,14 +187,15 @@ public class Lighting : MonoBehaviour
             isObstacle = false;
         }
         
-        // 检查每个参数是否发生变化，包括position
+        // 检查每个参数是否发生变化，包括position和rotation
         if (cachedSize != size || 
             cachedIsObstacle != isObstacle ||
             cachedIsSeed != isSeed ||
             cachedHeightMap != heightMap ||
             cachedRotation != rotation ||
             cachedLightHeight != lightHeight ||
-            cachedPosition != transform.position) // 新增position检查
+            cachedPosition != transform.position ||
+            cachedRotationQuaternion != transform.rotation) // 新增rotation检查
         {
            MarkDirty(); // 设置为脏
         }
@@ -184,14 +211,15 @@ public class Lighting : MonoBehaviour
             LightingManager.UpdateDirtyLights(); // 使用新方法更新脏光源
         }
 
-        // 更新缓存值，包括position
+        // 更新缓存值，包括position和rotation
         cachedSize = size;
         cachedIsObstacle = isObstacle;
         cachedIsSeed = isSeed;
         cachedHeightMap = heightMap;
         cachedRotation = rotation;
         cachedLightHeight = lightHeight;
-        cachedPosition = transform.position; // 新增position更新
+        cachedPosition = transform.position;
+        cachedRotationQuaternion = transform.rotation; // 新增rotation更新
         
         LightingManager.isValidating = false;
     }
@@ -494,7 +522,8 @@ public class Lighting : MonoBehaviour
         cachedLightHeight = data.lightHeight;
         cachedHeightMap = data.heightMap;
         cachedRotation = data.rotation;
-        cachedPosition = transform.position; // 新增position缓存初始化
+        cachedPosition = transform.position;
+        cachedRotationQuaternion = transform.rotation; // 新增rotation缓存初始化
         
         // 标记为脏，确保应用更改
         MarkDirty();

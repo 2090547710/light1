@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 public class SceneObjectManager : MonoBehaviour
@@ -210,6 +211,15 @@ public class SceneObjectManager : MonoBehaviour
         {
             if (obj != null)
             {
+                // 清除所有光源
+                foreach (var light in obj.lightSources.ToList())
+                {
+                    light.RemoveLighting();
+                    obj.lightSources.Remove(light);
+                    Destroy(light);
+                }
+                // 从四叉树中移除
+                LightingManager.tree.Remove(obj.gameObject);
                 Destroy(obj.gameObject);
             }
         }
