@@ -947,7 +947,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1062131527}
   m_Layer: 0
-  m_Name: lighthouse
+  m_Name: Lighthouse
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1059,8 +1059,8 @@ GameObject:
   - component: {fileID: 1148321170}
   - component: {fileID: 1148321169}
   - component: {fileID: 1148321168}
-  m_Layer: 0
-  m_Name: umi
+  m_Layer: 9
+  m_Name: Umi
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1199,7 +1199,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1277673543}
   m_Layer: 0
-  m_Name: vine
+  m_Name: Vine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1376,7 +1376,7 @@ GameObject:
   - component: {fileID: 1773321647}
   - component: {fileID: 1773321649}
   m_Layer: 0
-  m_Name: "\u73A9\u5BB6"
+  m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1468,7 +1468,7 @@ MonoBehaviour:
   smoothRotation: 1
   mapLayer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 512
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

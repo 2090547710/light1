@@ -33,7 +33,7 @@ public class QuadTree
         public float HCost;
         public float FCost => GCost + HCost;
         public QuadTreeNode ParentNode;
-        public bool IsWalkable => IsIlluminated;
+        public bool IsWalkable => CheckWalkableLayer();
 
         // 新增高度属性
         public float Height { get; private set; }
@@ -106,6 +106,31 @@ public class QuadTree
             {
                 Height = 0;
             }
+        }
+
+        // 新增射线检测函数，用于检查是否可行走
+        private bool CheckWalkableLayer()
+        {
+            // 此处可行走条件为：1.节点被照亮 2.射线与指定层级发生碰撞
+            if (!IsIlluminated) return false;
+            
+            // 射线起点（节点中心上方）
+            Vector3 rayStart = new Vector3(Center.x, 10f, Center.y);
+            // 射线方向（向下）
+            Vector3 rayDir = Vector3.down;
+            // 射线最大距离
+            float maxDistance = 20f;
+            
+            // 创建射线
+            RaycastHit hit;
+            // 写死要检测的层级，这里使用第8层（可根据项目需求修改）
+            int walkableLayerMask = 1 << 8; // 8代表你要检测的层级
+            
+            // 发射射线检测
+            bool hitGround = Physics.Raycast(rayStart, rayDir, out hit, maxDistance, walkableLayerMask);
+            
+            // 返回是否与指定层级碰撞
+            return hitGround;
         }
 
     }
