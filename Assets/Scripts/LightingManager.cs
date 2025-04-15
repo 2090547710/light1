@@ -54,6 +54,8 @@ public class LightingManager : MonoBehaviour
     
     public static float raycastDistance = 10.0f; // 射线检测距离
 
+    // 添加预制材质属性
+    public Material imageDisplayMaterial; // 预制材质，用于显示图片
     
     public static bool isValidating = false;
     #endregion
@@ -567,20 +569,37 @@ static void HideSimplifiedBoundaryMenu()
         Vector3 midPoint = (startPoint + endPoint) * 0.5f;
         float segmentLength = Vector3.Distance(startPoint, endPoint);
         
-        // 进行射线检测，确认下方是否有地面(射线发射高度未考虑)
-        RaycastHit hit;
+        // 替换原有射线检测逻辑
+        Vector3 rayOrigin = midPoint + Vector3.up * 5f;
+        Vector3 rayDirection = Vector3.down;
 
-        // 检测地面 (layer 8)
-        if (!Physics.Raycast(midPoint + Vector3.up * 10f, Vector3.down, out hit, raycastDistance, 1 << 8))
-        {
-            // 没有检测到地面，不创建对象
-            return null;
-        }
+        // 为每个层创建单独的LayerMask
+        int obstacleLayerMask = 1 << 7;
+        int groundLayerMask = 1 << 8;
+        int waterLayerMask = 1 << 9;
+
+        // 单独执行射线检测并记录结果
+        RaycastHit obstacleHit, groundHit, waterHit;
+        bool hitObstacle = Physics.Raycast(rayOrigin, rayDirection, out obstacleHit, raycastDistance, obstacleLayerMask);
+        bool hitGround = Physics.Raycast(rayOrigin, rayDirection, out groundHit, raycastDistance, groundLayerMask);
+        bool hitWater = Physics.Raycast(rayOrigin, rayDirection, out waterHit, raycastDistance, waterLayerMask);
+
+        // 记录布尔值和对应的y值
+        bool hasObstacle = hitObstacle;
+        bool hasGround = hitGround;
+        bool hasWater = hitWater;
         
-        // 检测layer 7，如果检测到则不创建对象
-        if (Physics.Raycast(midPoint + Vector3.up * 10f, Vector3.down, out hit, raycastDistance, 1 << 7))
+        // 比较y值，确定最上层的碰撞体
+        float obstacleY = hitObstacle ? obstacleHit.point.y : float.MinValue;
+        float groundY = hitGround ? groundHit.point.y : float.MinValue;
+        float waterY = hitWater ? waterHit.point.y : float.MinValue;
+        Debug.Log("obstacleY: " + obstacleHit.point.y + " groundY: " + groundHit.point.y + " waterY: " + waterHit.point.y);
+        // 只有当地面的y值最大时才通过
+        bool canCreateImage = hasGround && groundY > obstacleY && groundY > waterY;
+
+        // 如果不能创建图像，直接返回
+        if (!canCreateImage)
         {
-            // 检测到layer 7的碰撞体，不创建对象
             return null;
         }
         
@@ -629,10 +648,21 @@ static void HideSimplifiedBoundaryMenu()
         quad.transform.localScale = new Vector3(width, height, 1);
         quad.transform.localPosition = Vector3.zero;
         
-        // 创建一个材质并使用自定义的双面透明着色器
-        Material material = new Material(Shader.Find("Custom/DoubleSidedTransparent"));
+        // 使用预制材质或创建新材质
+        Material material;
+        if (instance.imageDisplayMaterial != null)
+        {
+            // 使用预制材质的实例
+            material = new Material(instance.imageDisplayMaterial);
+        }
+        else
+        {
+            // 如果没有设置预制材质，则创建默认材质
+            material = new Material(Shader.Find("Custom/DoubleSidedTransparent"));
+        }
+        
+        // 设置纹理
         material.mainTexture = texture;
-        // 如果需要设置颜色，可以使用：material.SetColor("_Color", Color.white);
         
         // 应用材质
         Renderer renderer = quad.GetComponent<Renderer>();

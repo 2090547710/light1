@@ -19,6 +19,9 @@ public class SceneObjectProperty : MonoBehaviour
     // 物体类型
     public SceneObjectType objectType = SceneObjectType.Map;
     
+    // 预制体路径
+    public string prefabPath;
+    
     // 光源数据列表
     public List<LightingData> lightSourcesData = new List<LightingData>();
     
@@ -78,6 +81,11 @@ public class SceneObjectProperty : MonoBehaviour
     // 应用所有光源数据
     public void ApplyLightSources()
     {
+        if (lightSourcesData.Count == 0)
+        {
+            return;
+        }
+        
         // 先清除现有光源组件
         foreach (var lighting in lightSources)
         {
@@ -164,6 +172,9 @@ public class SceneObjectSaveData
     // 物体类型
     public SceneObjectType sceneObjectType;
     
+    // 预制体路径
+    public string prefabPath;
+    
     // 位置、旋转和缩放
     public SerializableVector3 position;
     public SerializableQuaternion rotation;
@@ -179,6 +190,7 @@ public class SceneObjectSaveData
     public SceneObjectSaveData(SceneObjectProperty sceneObject)
     {
         sceneObjectType = sceneObject.objectType;
+        prefabPath = sceneObject.prefabPath;
         
         // 保存位置、旋转和缩放
         position = new SerializableVector3(sceneObject.transform.position);
@@ -197,6 +209,7 @@ public class SceneObjectSaveData
     public void ApplyToSceneObject(SceneObjectProperty sceneObject)
     {
         sceneObject.objectType = sceneObjectType;
+        sceneObject.prefabPath = prefabPath;
         
         // 应用变换
         sceneObject.transform.position = position.ToVector3();

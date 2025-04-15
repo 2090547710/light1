@@ -1,4 +1,4 @@
-Shader "Custom/HeightmapLightingUnlit"
+Shader "Custom/LightingUnlitTransparent"
 {
     Properties
     {
@@ -11,8 +11,12 @@ Shader "Custom/HeightmapLightingUnlit"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
         LOD 100
+
+        ZWrite Off
+        Blend SrcAlpha OneMinusSrcAlpha
+        Cull Off
 
         Pass
         {

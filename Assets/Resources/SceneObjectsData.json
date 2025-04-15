@@ -2,33 +2,25 @@
     "sceneObjects": [
         {
             "objectType": "SceneObject",
-            "sceneObjectType": 1,
+            "sceneObjectType": 0,
+            "prefabPath": "Prefabs/duancao",
             "position": {
-                "x": -49.52129364013672,
-                "y": 0.0,
-                "z": -55.15984344482422
+                "x": -63.09972381591797,
+                "y": 0.5,
+                "z": -57.111419677734378
             },
             "rotation": {
-                "x": 0.0,
-                "y": -0.216917484998703,
-                "z": 0.0,
-                "w": 0.9761899709701538
+                "x": 0.3074091672897339,
+                "y": -0.4400988519191742,
+                "z": 0.16345231235027314,
+                "w": 0.8277052640914917
             },
             "scale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
+                "x": 2.0,
+                "y": 2.0,
+                "z": 2.0
             },
-            "lightSourcesData": [
-                {
-                    "size": 6.199999809265137,
-                    "isObstacle": true,
-                    "isSeed": false,
-                    "lightHeight": 0.0,
-                    "heightMapPath": "testObs",
-                    "rotation": 204.69143676757813
-                }
-            ]
+            "lightSourcesData": []
         }
     ]
 }

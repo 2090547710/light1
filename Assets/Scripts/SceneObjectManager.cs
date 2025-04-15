@@ -12,7 +12,7 @@ public class SceneObjectManager : MonoBehaviour
     // 场景中所有的物体列表
     public List<SceneObjectProperty> sceneObjects = new List<SceneObjectProperty>();
     
-    // 物体预制体
+    // 默认物体预制体（作为备用）
     public GameObject sceneObjectPrefab;
     
     // 存档路径
@@ -49,13 +49,40 @@ public class SceneObjectManager : MonoBehaviour
     }
     
     // 创建新的场景物体
-    public SceneObjectProperty CreateSceneObject(SceneObjectType type, Vector3 position, Quaternion rotation, Vector3 scale)
+    public SceneObjectProperty CreateSceneObject(SceneObjectType type, Vector3 position, Quaternion rotation, Vector3 scale, string prefabPath = null)
     {
-        GameObject newObject = Instantiate(sceneObjectPrefab, position, rotation);
+        GameObject newObject;
+        
+        // 如果提供了预制体路径，则尝试加载该预制体
+        if (!string.IsNullOrEmpty(prefabPath))
+        {
+            GameObject prefab = Resources.Load<GameObject>(prefabPath);
+            if (prefab != null)
+            {
+                newObject = Instantiate(prefab, position, rotation);
+            }
+            else
+            {
+                Debug.LogWarning($"无法加载预制体: {prefabPath}，使用默认预制体代替");
+                newObject = Instantiate(sceneObjectPrefab, position, rotation);
+            }
+        }
+        else
+        {
+            // 如果没有提供预制体路径，使用默认预制体
+            newObject = Instantiate(sceneObjectPrefab, position, rotation);
+        }
+        
         newObject.transform.localScale = scale;
         
-        SceneObjectProperty property = newObject.AddComponent<SceneObjectProperty>();
+        SceneObjectProperty property = newObject.GetComponent<SceneObjectProperty>();
+        if (property == null)
+        {
+            property = newObject.AddComponent<SceneObjectProperty>();
+        }
+        
         property.objectType = type;
+        property.prefabPath = prefabPath;
         
         // 根据物体类型设置对应的layer
         switch (type)
@@ -147,8 +174,28 @@ public class SceneObjectManager : MonoBehaviour
         // 创建新的场景物体
         foreach (var saveData in wrapper.sceneObjects)
         {
-            // 创建新物体
-            GameObject newObject = Instantiate(sceneObjectPrefab, saveData.position.ToVector3(), saveData.rotation.ToQuaternion());
+            GameObject newObject;
+            
+            // 尝试从预制体路径加载
+            if (!string.IsNullOrEmpty(saveData.prefabPath))
+            {
+                GameObject prefab = Resources.Load<GameObject>(saveData.prefabPath);
+                if (prefab != null)
+                {
+                    newObject = Instantiate(prefab, saveData.position.ToVector3(), saveData.rotation.ToQuaternion());
+                }
+                else
+                {
+                    Debug.LogWarning($"无法加载预制体: {saveData.prefabPath}，使用默认预制体代替");
+                    newObject = Instantiate(sceneObjectPrefab, saveData.position.ToVector3(), saveData.rotation.ToQuaternion());
+                }
+            }
+            else
+            {
+                // 如果没有预制体路径，使用默认预制体
+                newObject = Instantiate(sceneObjectPrefab, saveData.position.ToVector3(), saveData.rotation.ToQuaternion());
+            }
+            
             newObject.transform.localScale = saveData.scale.ToVector3();
             
             // 检查并移除已有的SceneObjectProperty组件

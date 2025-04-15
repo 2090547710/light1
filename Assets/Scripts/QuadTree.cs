@@ -123,11 +123,25 @@ public class QuadTree
             
             // 创建射线
             RaycastHit hit;
-            // 写死要检测的层级，这里使用第8层（可根据项目需求修改）
+            RaycastHit waterHit;
+            // 写死要检测的层级，这里使用第8层和第9层
             int walkableLayerMask = 1 << 8; // 8代表你要检测的层级
+            int waterLayerMask = 1 << 9; // 9代表水层级
             
-            // 发射射线检测
+            // 发射射线检测地面
             bool hitGround = Physics.Raycast(rayStart, rayDir, out hit, maxDistance, walkableLayerMask);
+            // 发射射线检测水面
+            bool hitWater = Physics.Raycast(rayStart, rayDir, out waterHit, maxDistance, waterLayerMask);
+            
+            // 如果击中水面，并且地面也击中，比较两者的y值
+            if (hitGround && hitWater)
+            {
+                // 如果地面高度小于水面高度，则不可行走
+                if (hit.point.y < waterHit.point.y)
+                {
+                    return false;
+                }
+            }
             
             // 返回是否与指定层级碰撞
             return hitGround;
