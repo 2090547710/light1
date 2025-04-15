@@ -8,6 +8,13 @@ Shader "Custom/LightingUnlitTransparent"
         _OutlineColor ("Outline Color", Color) = (0,0,0,1)
         _MinBrightness ("Min Brightness", Range(0,1)) = 0.2
         _BrightnessMultiplier ("Brightness Multiplier", Range(0.1,3.0)) = 1.0
+        
+        // 摆动相关参数
+        _SwayFrequency ("摆动频率", Range(0.1, 10.0)) = 1.0
+        _SwayAmplitude ("摆动幅度", Range(0.0, 0.5)) = 0.02
+        _SwaySpeed ("摆动速度", Range(0.1, 10.0)) = 1.0
+        [Toggle] _HorizontalPlant ("横向植物", Float) = 0
+        _SwayMask ("摆动遮罩 (顶部摆动多)", 2D) = "white" {}
     }
     SubShader
     {
@@ -30,6 +37,7 @@ Shader "Custom/LightingUnlitTransparent"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float3 normal : NORMAL;
             };
 
             struct v2f
@@ -43,16 +51,44 @@ Shader "Custom/LightingUnlitTransparent"
             float4 _MainTex_ST;
             sampler2D _OutlineTex;
             float4 _OutlineTex_ST;
+            sampler2D _SwayMask;
             fixed4 _OutlineColor;
             sampler2D _CompositeMap; // GPU中的RenderTexture
             uniform float4 _HeightmapParams;
             fixed4 _Color;
             half _MinBrightness;
             half _BrightnessMultiplier;
+            
+            // 摆动参数
+            float _SwayFrequency;
+            float _SwayAmplitude;
+            float _SwaySpeed;
+            float _HorizontalPlant;
 
             v2f vert (appdata v)
             {
                 v2f o;
+                
+                // 获取遮罩值，用于控制摆动强度（通常根据高度）
+                float mask = tex2Dlod(_SwayMask, float4(v.uv, 0, 0)).r;
+                
+                // 计算时间相关的偏移
+                float timeOffset = _Time.y * _SwaySpeed;
+                
+                // 计算摆动值（基于物体世界坐标的正弦波）
+                float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                float swayFactor = sin(worldPos.x * _SwayFrequency + timeOffset) * _SwayAmplitude * mask;
+                
+                // 根据植物方向应用摆动
+                if (_HorizontalPlant > 0.5) {
+                    // 横向植物（摆动垂直方向）
+                    v.vertex.y += swayFactor;
+                } else {
+                    // 竖向植物（摆动水平方向）
+                    v.vertex.x += swayFactor;
+                }
+                
+                // 正常变换处理
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
