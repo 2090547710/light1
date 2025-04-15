@@ -21,12 +21,106 @@ Shader "Custom/LightingUnlitTransparent"
         Tags { "RenderType"="Transparent" "Queue"="Transparent" }
         LOD 100
 
-        ZWrite Off
-        Blend SrcAlpha OneMinusSrcAlpha
-        Cull Off
-
+        // 第一个Pass：只写入深度，不渲染颜色
         Pass
         {
+            ZWrite On     // 开启深度写入
+            ColorMask 0   // 不写入任何颜色通道
+            Cull Off
+
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            // 使用Unity包含文件获取基本功能
+            #include "UnityCG.cginc"
+
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+                float3 normal : NORMAL;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 vertex : SV_POSITION;
+                float3 worldPos : TEXCOORD1;
+            };
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            sampler2D _OutlineTex;
+            float4 _OutlineTex_ST;
+            sampler2D _SwayMask;
+            fixed4 _OutlineColor;
+            sampler2D _CompositeMap; // GPU中的RenderTexture
+            uniform float4 _HeightmapParams;
+            fixed4 _Color;
+            half _MinBrightness;
+            half _BrightnessMultiplier;
+            
+            // 摆动参数
+            float _SwayFrequency;
+            float _SwayAmplitude;
+            float _SwaySpeed;
+            float _HorizontalPlant;
+
+            v2f vert (appdata v)
+            {
+                v2f o;
+                
+                // 获取遮罩值，用于控制摆动强度（通常根据高度）
+                float mask = tex2Dlod(_SwayMask, float4(v.uv, 0, 0)).r;
+                
+                // 计算时间相关的偏移
+                float timeOffset = _Time.y * _SwaySpeed;
+                
+                // 计算摆动值（基于物体世界坐标的正弦波）
+                float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                float swayFactor = sin(worldPos.x * _SwayFrequency + timeOffset) * _SwayAmplitude * mask;
+                
+                // 根据植物方向应用摆动
+                if (_HorizontalPlant > 0.5) {
+                    // 横向植物（摆动垂直方向）
+                    v.vertex.y += swayFactor;
+                } else {
+                    // 竖向植物（摆动水平方向）
+                    v.vertex.x += swayFactor;
+                }
+                
+                // 正常变换处理
+                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                return o;
+            }
+
+            fixed4 frag(v2f i) : SV_Target
+            {
+                // 调整UV坐标，避免采样边缘像素
+                float2 safeUV = clamp(i.uv, 0.01, 0.98);
+                
+                // 采样主纹理获取alpha值
+                fixed4 mainTex = tex2D(_MainTex, safeUV) * _Color;
+                
+                // 丢弃透明部分
+                if(mainTex.a < 0.8)
+                    discard;
+                    
+                // 简单返回白色（但由于ColorMask 0，颜色不会被写入）
+                return fixed4(1,1,1,1);
+            }
+            ENDCG
+        }
+        
+        // 第二个Pass：正常的透明渲染通道
+        Pass
+        {
+            ZWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
+            Cull Off
+
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -97,15 +191,18 @@ Shader "Custom/LightingUnlitTransparent"
 
             fixed4 frag (v2f i) : SV_Target
             {
+                // 调整UV坐标，避免采样边缘像素
+                float2 safeUV = clamp(i.uv, 0.01, 0.98);
+                
                 // 计算高度图UV坐标
                 float2 heightmapUV = (i.worldPos.xz - _HeightmapParams.xy + _HeightmapParams.zw*0.5) / _HeightmapParams.zw;
-                heightmapUV = clamp(heightmapUV, 0, 1);
+                heightmapUV = clamp(heightmapUV, 0.01, 0.98);
                 
                 // 从主纹理获取颜色
-                fixed4 mainColor = tex2D(_MainTex, i.uv) * _Color;
+                fixed4 mainColor = tex2D(_MainTex, safeUV) * _Color;
                 
                 // 从边缘描线贴图获取颜色
-                fixed4 outlineColor = tex2D(_OutlineTex, i.uv);
+                fixed4 outlineColor = tex2D(_OutlineTex, safeUV);
                 
                 // 从CompositeMap获取光照数据
                 float4 lightData = tex2D(_CompositeMap, heightmapUV);
