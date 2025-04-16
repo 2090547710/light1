@@ -99,7 +99,7 @@ Shader "Custom/LightingUnlitTransparent"
             fixed4 frag(v2f i) : SV_Target
             {
                 // 调整UV坐标，避免采样边缘像素
-                float2 safeUV = clamp(i.uv, 0.01, 0.98);
+                float2 safeUV = clamp(i.uv, 0.02, 0.98);
                 
                 // 采样主纹理获取alpha值
                 fixed4 mainTex = tex2D(_MainTex, safeUV) * _Color;
@@ -192,11 +192,11 @@ Shader "Custom/LightingUnlitTransparent"
             fixed4 frag (v2f i) : SV_Target
             {
                 // 调整UV坐标，避免采样边缘像素
-                float2 safeUV = clamp(i.uv, 0.01, 0.98);
+                float2 safeUV = clamp(i.uv, 0.02, 0.98);
                 
                 // 计算高度图UV坐标
                 float2 heightmapUV = (i.worldPos.xz - _HeightmapParams.xy + _HeightmapParams.zw*0.5) / _HeightmapParams.zw;
-                heightmapUV = clamp(heightmapUV, 0.01, 0.98);
+                heightmapUV = clamp(heightmapUV, 0.02, 0.98);
                 
                 // 从主纹理获取颜色
                 fixed4 mainColor = tex2D(_MainTex, safeUV) * _Color;

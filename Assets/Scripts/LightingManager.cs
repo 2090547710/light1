@@ -36,7 +36,7 @@ public class LightingManager : MonoBehaviour
     // 边界线段可视化相关字段
     private static List<Vector4> simplifiedBoundarySegments = new List<Vector4>();
     private static bool showSimplifiedBoundary = true;
-    public static float targetSegmentLength = 1.0f;
+    public static float targetSegmentLength = 2.0f;
     
     // 新增用于储存显示的图片对象
     private static List<GameObject> displayedImages = new List<GameObject>();
@@ -593,7 +593,7 @@ static void HideSimplifiedBoundaryMenu()
         float obstacleY = hitObstacle ? obstacleHit.point.y : float.MinValue;
         float groundY = hitGround ? groundHit.point.y : float.MinValue;
         float waterY = hitWater ? waterHit.point.y : float.MinValue;
-        Debug.Log("obstacleY: " + obstacleHit.point.y + " groundY: " + groundHit.point.y + " waterY: " + waterHit.point.y);
+
         // 只有当地面的y值最大时才通过
         bool canCreateImage = hasGround && groundY > obstacleY && groundY > waterY;
 

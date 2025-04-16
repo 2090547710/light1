@@ -50,7 +50,7 @@ public class QuadTree
             Height = 0;
             IsIlluminated = false;
             Brightness = 0;
-            BrightnessThreshold = 0.8f;
+            BrightnessThreshold = 0.7f;
             ;
         }
 
@@ -567,17 +567,24 @@ public class QuadTree
             }
             else
             {
-                // 设置光照属性
-                float brightness = rawHeight;
-                if (isAdditive)
-                    node.Brightness += brightness;
-                else
-                    node.Brightness -= brightness;
+                 float centerHeight = GetNodeHeightAtPosition(new Vector3(area.center.x, 0, area.center.z));             
+                // 第一层：高度条件判断 限制在0-1之间
+                if (Mathf.Clamp01(area.size.y+centerHeight)>= Mathf.Clamp01(node.Height))
+                {
+                    // 根据加减法标志决定亮度操作
+                    if (isAdditive) {
+                        // 累加原始亮度值到总影响
+                        totalBrightness += rawHeight;
+                        node.Brightness += rawHeight;
+                    } else {
+                        // 减法操作，减少亮度但不低于0
+                        totalBrightness += rawHeight;
+                        node.Brightness -= rawHeight;
+                    }
                     
-                // 更新节点照明状态
-                node.IsIlluminated = node.Brightness > 0.001f; // 亮度足够高才算被照亮
-                
-                totalBrightness += brightness;
+                    // 使用亮度阈值判断光照状态
+                    node.IsIlluminated = node.Brightness >= node.BrightnessThreshold;
+                }
             }
         }
     }

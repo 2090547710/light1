@@ -27,15 +27,25 @@ public class PlayerPathfinding : MonoBehaviour
     [Header("地图设置")]
     public LayerMask mapLayer; // MAP层属性
     
+    [Header("光照设置")]
+    public float playerLightRange = 5.0f; // 玩家光照范围
+    public float playerLightIntensity = 1.0f; // 玩家光照强度
+    
     void Start()
     {
         playerObject = this.gameObject;
         InsertToQuadTree(); // 初始插入
         stoppingDistance=quadTree.MinNodeSize.x/2-0.05f;
+        
+        // 初始化着色器参数
+        UpdateShaderParameters();
     }
 
     void Update()
     {
+        // 更新着色器中的玩家位置
+        UpdateShaderParameters();
+        
         if (Input.GetMouseButtonDown(0)) // 左键点击
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -97,6 +107,17 @@ public class PlayerPathfinding : MonoBehaviour
             }
         }
     }
+    
+    // 更新着色器参数
+    void UpdateShaderParameters()
+    {
+        // 设置全局变量，将玩家世界位置传入着色器
+        Shader.SetGlobalVector("_PlayerWorldPos", transform.position);
+        
+        // 更新光照参数
+        Shader.SetGlobalFloat("_PlayerLightRange", playerLightRange);
+        Shader.SetGlobalFloat("_PlayerLightIntensity", playerLightIntensity);
+    }
 
     IEnumerator FollowPath()
     {
@@ -135,7 +156,6 @@ public class PlayerPathfinding : MonoBehaviour
 
             quadTree.Remove(playerObject);
             InsertToQuadTree();
-
             
             // 检查是否已足够接近目标点
             if (Vector3.Distance(transform.position, targetPos) <= stoppingDistance)
@@ -191,5 +211,9 @@ public class PlayerPathfinding : MonoBehaviour
                 Gizmos.DrawWireCube(center, size);
             }
         }
+        
+        // 绘制玩家光源范围
+        Gizmos.color = new Color(1, 1, 0, 0.2f);
+        Gizmos.DrawSphere(transform.position, playerLightRange);
     }
 } 

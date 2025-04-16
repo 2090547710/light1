@@ -101,7 +101,6 @@ public class Lighting : MonoBehaviour
             {
                 ValidateHeightmap();
             }
-            Debug.Log("更新脏标记");
             LightingManager.UpdateDirtyLights();
             // 更新位置缓存
             cachedPosition = transform.position;
