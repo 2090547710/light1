@@ -56,8 +56,12 @@ public class LightingManager : MonoBehaviour
 
     // 添加预制材质属性
     public Material imageDisplayMaterial; // 预制材质，用于显示图片
+    public Material edgeHeightMapMaterial; // 新增：专门用于边缘高度图的预制材质
     
     public static bool isValidating = false;
+
+    // 用于存储所有Lighting创建的quad
+    public static List<GameObject> lightingQuads = new List<GameObject>();
     #endregion
 
     #region Unity生命周期方法
@@ -128,6 +132,9 @@ public class LightingManager : MonoBehaviour
             compositeRT.Release();
             compositeRT = null;
         }
+        
+        // 清除所有quad
+        ClearAllLightingQuads();
     }
 
 
@@ -855,5 +862,60 @@ static void HideSimplifiedBoundaryMenu()
 
     }
 
+    // 清除所有Lighting创建的quad
+    public static void ClearAllLightingQuads()
+    {
+        foreach (var quad in lightingQuads.ToList())
+        {
+            if (quad != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(quad);
+                }
+                else
+                {
+                    #if UNITY_EDITOR
+                    DestroyImmediate(quad);
+                    #endif
+                }
+            }
+        }
+        lightingQuads.Clear();
+    }
     
+    void OnGUI()
+    {
+        if (GUILayout.Button("Hide All Lighting Edge", GUILayout.Width(200)))
+        {
+            HideAllLightingQuads();
+        }
+        if (GUILayout.Button("Show All Lighting Edge", GUILayout.Width(200)))
+        {
+            ShowAllLightingQuads();
+        }
+    }
+    // 隐藏所有Lighting创建的quad
+    public static void HideAllLightingQuads()
+    {
+        foreach (var quad in lightingQuads)
+        {
+            if (quad != null)
+            {
+                quad.SetActive(false);
+            }
+        }
+    }
+    
+    // 显示所有Lighting创建的quad
+    public static void ShowAllLightingQuads()
+    {
+        foreach (var quad in lightingQuads)
+        {
+            if (quad != null)
+            {
+                quad.SetActive(true);
+            }
+        }
+    }
 }

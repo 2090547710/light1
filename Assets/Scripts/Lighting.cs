@@ -26,16 +26,18 @@ public struct LightingData
     public bool isSeed;
     [Range(0, 1)] public float lightHeight;
     public Texture2D heightMap;
+    public Texture2D edgeHeightMap; // 新增边缘高度图属性
     [Range(0, 360)] public float rotation; 
 
     public LightingData(float size = 0, bool isObstacle = false, bool isSeed = false, float lightHeight = 0.5f, 
-                       Texture2D heightMap = null, float rotation = 0f)
+                       Texture2D heightMap = null, Texture2D edgeHeightMap = null, float rotation = 0f)
     {
         this.size = Mathf.Clamp(size, 0, 100);
         this.isObstacle = isObstacle;
         this.isSeed = isSeed;
         this.lightHeight = Mathf.Clamp01(lightHeight);
         this.heightMap = heightMap;
+        this.edgeHeightMap = edgeHeightMap;
         this.rotation = rotation;
     }
 }
@@ -49,7 +51,8 @@ public class Lighting : MonoBehaviour
     public bool isObstacle;
     public bool isSeed;
     public Texture2D heightMap;
-    [Range(0, 360)] public float rotation; // 替换tiling和offset为rotation
+    public Texture2D edgeHeightMap; // 新增边缘高度图属性
+    [Range(0, 360)] public float rotation;
     [Range(0, 1)] public float lightHeight;
 
     [Header("节点影响")]
@@ -61,7 +64,8 @@ public class Lighting : MonoBehaviour
     [SerializeField] private bool cachedIsObstacle;
     [SerializeField] private bool cachedIsSeed;
     [SerializeField] private Texture2D cachedHeightMap;
-    [SerializeField] private float cachedRotation; // 替换cachedTiling和cachedOffset
+    [SerializeField] private Texture2D cachedEdgeHeightMap; // 新增边缘高度图缓存
+    [SerializeField] private float cachedRotation;
     [SerializeField] private float cachedLightHeight;
     [SerializeField] private Vector3 cachedPosition; // 新增position缓存字段
     [SerializeField] private Quaternion cachedRotationQuaternion; // 缓存transform的旋转
@@ -76,6 +80,12 @@ public class Lighting : MonoBehaviour
     
     // 新增公共属性用于获取重叠光源
     public IReadOnlyDictionary<int, Lighting> OverlappingLights => overlappingLights;
+
+    [Header("边缘高度图Quad")]
+    [SerializeField] private GameObject edgeQuad; // 存储创建的quad
+
+    // 在 Lighting.cs 中添加一个私有标志
+    private bool _pendingEdgeQuadUpdate = false;
     #endregion
 
     #region Unity生命周期方法
@@ -92,7 +102,6 @@ public class Lighting : MonoBehaviour
 
     private void Update()
     {
-
         // 检查position是否发生变化
         if (transform.position != cachedPosition && Application.isPlaying)
         {
@@ -127,7 +136,36 @@ public class Lighting : MonoBehaviour
             cachedRotation = rotation;
             cachedRotationQuaternion = transform.rotation;
         }
-    
+
+        // 如果edgeHeightMap变化，更新quad
+        if (edgeHeightMap != cachedEdgeHeightMap)
+        {
+            if (edgeHeightMap != null)
+            {
+                CreateEdgeQuad();
+            }
+            else
+            {
+                DestroyEdgeQuad();
+            }
+            cachedEdgeHeightMap = edgeHeightMap;
+        }
+        
+        // 如果有quad存在，同步transform
+        if (edgeQuad != null)
+        {
+            // 更新位置
+            edgeQuad.transform.localPosition = new Vector3(0, 0.2f, 0);
+            // 更新旋转以匹配光源rotation
+            edgeQuad.transform.localRotation = Quaternion.Euler(90, -rotation, 0);
+            
+            // 检查size是否变化
+            if (cachedSize != size && edgeQuad.transform.childCount > 0)
+            {
+                edgeQuad.transform.GetChild(0).localScale = new Vector3(size, size, 1);
+                cachedSize = size;
+            }
+        }
     }
 
     #if UNITY_EDITOR
@@ -191,10 +229,11 @@ public class Lighting : MonoBehaviour
             cachedIsObstacle != isObstacle ||
             cachedIsSeed != isSeed ||
             cachedHeightMap != heightMap ||
+            cachedEdgeHeightMap != edgeHeightMap || // 新增边缘高度图检查
             cachedRotation != rotation ||
             cachedLightHeight != lightHeight ||
             cachedPosition != transform.position ||
-            cachedRotationQuaternion != transform.rotation) // 新增rotation检查
+            cachedRotationQuaternion != transform.rotation)
         {
            MarkDirty(); // 设置为脏
         }
@@ -215,6 +254,39 @@ public class Lighting : MonoBehaviour
         cachedIsObstacle = isObstacle;
         cachedIsSeed = isSeed;
         cachedHeightMap = heightMap;
+        
+        // 修改：检查edgeHeightMap是否变化，但不直接调用CreateEdgeQuad或DestroyEdgeQuad
+        if (cachedEdgeHeightMap != edgeHeightMap)
+        {
+            // 标记需要更新edgeQuad，但不立即执行
+            _pendingEdgeQuadUpdate = true;
+            
+            // 如果在编辑器中运行，使用延迟调用
+            if (Application.isPlaying)
+            {
+                #if UNITY_EDITOR
+                UnityEditor.EditorApplication.delayCall += () => 
+                {
+                    // 在isValidating = false 后执行
+                    if (_pendingEdgeQuadUpdate)
+                    {
+                        if (edgeHeightMap != null)
+                        {
+                            CreateEdgeQuad();
+                        }
+                        else
+                        {
+                            DestroyEdgeQuad();
+                        }
+                        _pendingEdgeQuadUpdate = false;
+                    }
+                };
+                #endif
+            }
+            
+            cachedEdgeHeightMap = edgeHeightMap;
+        }
+        
         cachedRotation = rotation;
         cachedLightHeight = lightHeight;
         cachedPosition = transform.position;
@@ -512,6 +584,7 @@ public class Lighting : MonoBehaviour
         isSeed = data.isSeed;
         lightHeight = data.lightHeight;
         heightMap = data.heightMap;
+        edgeHeightMap = data.edgeHeightMap; // 新增边缘高度图设置
         rotation = data.rotation;
         
         // 同时初始化缓存字段
@@ -520,9 +593,16 @@ public class Lighting : MonoBehaviour
         cachedIsSeed = data.isSeed;
         cachedLightHeight = data.lightHeight;
         cachedHeightMap = data.heightMap;
+        cachedEdgeHeightMap = data.edgeHeightMap; // 新增边缘高度图缓存
         cachedRotation = data.rotation;
         cachedPosition = transform.position;
-        cachedRotationQuaternion = transform.rotation; // 新增rotation缓存初始化
+        cachedRotationQuaternion = transform.rotation;
+        
+        // 创建quad
+        if (edgeHeightMap != null)
+        {
+            CreateEdgeQuad();
+        }
         
         // 标记为脏，确保应用更改
         MarkDirty();
@@ -572,5 +652,87 @@ public class Lighting : MonoBehaviour
             point.x * sin + point.y * cos
         );
     }
+
+    // 创建quad的方法
+    public void CreateEdgeQuad()
+    {
+        // 如果已经有quad，先删除
+        DestroyEdgeQuad();
+        
+        // 修改：优先使用专门的边缘高度图材质，如果没有则使用通用材质
+        // 如果没有edgeHeightMap或者材质都为null，则不创建
+        if (edgeHeightMap == null || 
+           (LightingManager.instance.edgeHeightMapMaterial == null && 
+            LightingManager.instance.imageDisplayMaterial == null))
+        {
+            return;
+        }
+        
+        // 创建一个新的游戏对象作为quad容器
+        edgeQuad = new GameObject($"EdgeQuad_{gameObject.name}");
+        edgeQuad.transform.SetParent(transform);
+        
+        // 创建一个Quad作为图片显示
+        GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        quad.transform.SetParent(edgeQuad.transform);
+        
+        // 修改：考虑rotation属性
+        edgeQuad.transform.localPosition = new Vector3(0, lightHeight * 0.5f, 0);
+        // 水平放置quad，但要考虑rotation属性
+        edgeQuad.transform.localRotation = Quaternion.Euler(90, rotation, 0);
+        
+        // 设置quad的缩放以匹配size
+        quad.transform.localScale = new Vector3(size, size, 1);
+        quad.transform.localPosition = Vector3.zero;
+        
+        // 使用预制材质创建新材质
+        Material material;
+        
+        // 修改：优先使用专门的边缘高度图材质
+        if (LightingManager.instance.edgeHeightMapMaterial != null)
+        {
+            material = new Material(LightingManager.instance.edgeHeightMapMaterial);
+        }
+        else
+        {
+            material = new Material(LightingManager.instance.imageDisplayMaterial);
+        }
+        
+        // 设置纹理
+        material.mainTexture = edgeHeightMap;
+        
+        // 应用材质
+        Renderer renderer = quad.GetComponent<Renderer>();
+        renderer.material = material;
+        
+        // 添加到管理器的列表中
+        LightingManager.lightingQuads.Add(edgeQuad);
+    }
+
+    // 删除quad的方法
+    public void DestroyEdgeQuad()
+    {
+        if (edgeQuad != null)
+        {
+            // 从管理器的列表中移除
+            LightingManager.lightingQuads.Remove(edgeQuad);
+            
+            // 销毁游戏对象
+            if (Application.isPlaying)
+            {
+                Destroy(edgeQuad);
+            }
+            else
+            {
+                #if UNITY_EDITOR
+                DestroyImmediate(edgeQuad);
+                #endif
+            }
+            edgeQuad = null;
+        }
+    }
+        
 }
+
+
 

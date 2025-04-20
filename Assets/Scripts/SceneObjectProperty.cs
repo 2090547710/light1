@@ -124,6 +124,7 @@ public class SceneObjectProperty : MonoBehaviour
                 isSeed: light.isSeed,
                 lightHeight: light.lightHeight,
                 heightMap: light.heightMap,
+                edgeHeightMap: light.edgeHeightMap,
                 rotation: light.rotation
             );
             

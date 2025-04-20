@@ -1111,6 +1111,7 @@ public class Plant : MonoBehaviour
                 isSeed: light.isSeed,
                 lightHeight: light.lightHeight,
                 heightMap: light.heightMap,
+                edgeHeightMap: light.edgeHeightMap, // 新增边缘高度图
                 rotation: light.rotation
             );
             

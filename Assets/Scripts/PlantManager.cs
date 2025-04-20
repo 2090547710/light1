@@ -158,12 +158,25 @@ public class PlantManager : MonoBehaviour
                     heightMap = Resources.Load<Texture2D>("HeightMaps/" + heightMapPath);
                 }
                 
+                // 边缘高度图处理
+                Texture2D edgeHeightMap = null;
+                // 确保有足够的字段
+                if (values.Length > 7)
+                {
+                    string edgeHeightMapPath = values[7];
+                    if (!string.IsNullOrEmpty(edgeHeightMapPath) && edgeHeightMapPath != "null")
+                    {
+                        // 从Resources加载边缘高度图
+                        edgeHeightMap = Resources.Load<Texture2D>("EdgeHeightMaps/" + edgeHeightMapPath);
+                    }
+                }
+                
                 // 创建光照数据并添加到列表
-                LightingData lightData = new LightingData(size, isObstacle, isSeed, lightHeight, heightMap);
+                LightingData lightData = new LightingData(size, isObstacle, isSeed, lightHeight, heightMap, edgeHeightMap);
                 mapping.lightData.Add(lightData);
                 
                 // 解析生长速度值
-                if (values.Length > 7 && float.TryParse(values[7], out float growthRateValue))
+                if (values.Length > 8 && float.TryParse(values[8], out float growthRateValue))
                 {
                     mapping.growthRateValue = growthRateValue;
                 }
@@ -174,8 +187,8 @@ public class PlantManager : MonoBehaviour
                 }
                 
                 // 解析目标植物ID、名称和权重
-                // 从索引8开始，每三个字段为一组(ID、名称和权重)
-                for (int j = 8; j < values.Length - 2; j += 3)
+                // 从索引9开始，每三个字段为一组(ID、名称和权重)
+                for (int j = 9; j < values.Length - 2; j += 3)
                 {
                     if (!string.IsNullOrEmpty(values[j]) && int.TryParse(values[j], out int plantId))
                     {
@@ -269,7 +282,7 @@ public class PlantManager : MonoBehaviour
             if (foundLightMarker && !foundGrMarker)
             {
                 // 确保有足够的字段来解析光源数据
-                if (currentIndex + 4 < values.Length)
+                if (currentIndex + 5 < values.Length)  // 修改：检查至少有6个字段（包括edgeHeightMap）
                 {
                     try {
                         // 检查是否为空值
@@ -279,7 +292,7 @@ public class PlantManager : MonoBehaviour
                             string.IsNullOrEmpty(values[currentIndex + 3]))
                         {
                             // 如果光源数据中有空值，跳过整个光源组
-                            currentIndex += 5;
+                            currentIndex += 6;  // 修改：现在有6个字段，包括edgeHeightMap
                             continue;
                         }
                         
@@ -301,18 +314,30 @@ public class PlantManager : MonoBehaviour
                             }
                         }
                         
+                        // 边缘高度图处理
+                        Texture2D edgeHeightMap = null;
+                        string edgeHeightMapPath = values[currentIndex + 5];
+                        if (!string.IsNullOrEmpty(edgeHeightMapPath) && edgeHeightMapPath != "null")
+                        {
+                            edgeHeightMap = Resources.Load<Texture2D>("EdgeHeightMaps/" + edgeHeightMapPath);
+                            if (edgeHeightMap == null)
+                            {
+                                Debug.LogWarning($"植物ID {plantId}: 无法加载边缘高度图: {edgeHeightMapPath}");
+                            }
+                        }
+                        
                         // 创建光照数据并添加到列表
-                        LightingData lightData = new LightingData(size, isObstacle, isSeed, lightHeight, heightMap);
+                        LightingData lightData = new LightingData(size, isObstacle, isSeed, lightHeight, heightMap, edgeHeightMap);
                         stage.associatedLights.Add(lightData);
                         
                         // 移动到下一组光源数据
-                        currentIndex += 5;
+                        currentIndex += 6;  // 修改：每组光源数据现在有6个字段
                     }
                     catch (Exception e)
                     {
                         Debug.LogError($"植物ID {plantId}: 解析光源数据失败，位置: {currentIndex}，错误: {e.Message}");
                         // 跳过当前光源组
-                        currentIndex += 5;
+                        currentIndex += 6;  // 修改：跳过6个字段
                     }
                 }
                 else

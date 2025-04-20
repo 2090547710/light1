@@ -194,7 +194,8 @@ public class SerializableLightingData
     public float lightHeight;
     // 注意：Texture2D不能直接序列化，我们可以存储路径或者编码后的字符串
     public string heightMapPath; // 使用资源路径
-    public float rotation; // 新增rotation替换tiling和offset
+    public string edgeHeightMapPath; // 新增边缘高度图路径
+    public float rotation;
     
     // 构造函数
     public SerializableLightingData() { }
@@ -206,33 +207,49 @@ public class SerializableLightingData
         isObstacle = data.isObstacle;
         isSeed = data.isSeed;
         lightHeight = data.lightHeight;
-        rotation = data.rotation; // 保存rotation数据
+        rotation = data.rotation;
         
-        // 处理纹理 - 保存高度图路径
+        // 处理高度图
         if (data.heightMap != null)
         {
-            // 只存储高度图的名称部分，不包含"HeightMaps/"前缀
             heightMapPath = data.heightMap.name;
+        }
+        
+        // 处理边缘高度图
+        if (data.edgeHeightMap != null)
+        {
+            edgeHeightMapPath = data.edgeHeightMap.name;
         }
     }
     
     // 转换回LightingData
     public LightingData ToLightingData()
     {
+        // 初始化为null，下面再加载
+        Texture2D heightMap = null;
+        Texture2D edgeHeightMap = null;
+        
+        // 尝试加载高度图
+        if (!string.IsNullOrEmpty(heightMapPath))
+        {
+            heightMap = Resources.Load<Texture2D>("HeightMaps/" + heightMapPath);
+        }
+        
+        // 尝试加载边缘高度图
+        if (!string.IsNullOrEmpty(edgeHeightMapPath))
+        {
+            edgeHeightMap = Resources.Load<Texture2D>("EdgeHeightMaps/" + edgeHeightMapPath);
+        }
+        
         LightingData data = new LightingData(
             size: size,
             isObstacle: isObstacle,
             isSeed: isSeed,
             lightHeight: lightHeight,
-            heightMap: null, // 初始化为null，下面再加载
-            rotation: rotation // 设置rotation
+            heightMap: heightMap,
+            edgeHeightMap: edgeHeightMap, // 设置边缘高度图
+            rotation: rotation
         );
-        
-        // 尝试加载纹理 - 从Resources中加载高度图
-        if (!string.IsNullOrEmpty(heightMapPath))
-        {
-            data.heightMap = Resources.Load<Texture2D>("HeightMaps/" + heightMapPath);
-        }
         
         return data;
     }

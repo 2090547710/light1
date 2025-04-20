@@ -1,0 +1,54 @@
+{
+    "plants": [
+        {
+            "plantType": "Fire",
+            "plantID": 99,
+            "plantName": "火",
+            "currentStage": 1,
+            "maxStages": 1,
+            "isWithered": false,
+            "hasTriedBloom": false,
+            "hasTriedFruit": false,
+            "isImmortal": false,
+            "position": {
+                "x": -62.013580322265628,
+                "y": 1.1920931797249069e-7,
+                "z": -61.34711837768555
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "growthStages": [
+                {
+                    "stageType": 1,
+                    "plantID": 99,
+                    "plantName": "火",
+                    "growthRate": 0.0,
+                    "prerequisitePlantIDs": [],
+                    "prerequisiteWeights": [],
+                    "updatePlantIDs": [],
+                    "updateWeights": [],
+                    "associatedLights": [
+                        {
+                            "size": 10.0,
+                            "isObstacle": false,
+                            "isSeed": false,
+                            "lightHeight": 0.0,
+                            "heightMapPath": "test",
+                            "edgeHeightMapPath": "fanweitest",
+                            "rotation": 0.0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

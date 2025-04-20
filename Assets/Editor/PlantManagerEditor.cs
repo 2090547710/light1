@@ -6,6 +6,13 @@ using System.IO;
 public class PlantManagerEditor : Editor
 {
     private string savePath = "Assets/Resources/PlantsData.json";
+    private const string SavePathPrefsKey = "PlantManager_SavePath";
+    
+    private void OnEnable()
+    {
+        // 从EditorPrefs加载上次保存的路径
+        savePath = EditorPrefs.GetString(SavePathPrefsKey, "Assets/Resources/PlantsData.json");
+    }
     
     public override void OnInspectorGUI()
     {
@@ -18,7 +25,13 @@ public class PlantManagerEditor : Editor
         EditorGUILayout.LabelField("植物存档工具", EditorStyles.boldLabel);
         
         // 保存路径
-        savePath = EditorGUILayout.TextField("存档路径:", savePath);
+        string newPath = EditorGUILayout.TextField("存档路径:", savePath);
+        if (newPath != savePath)
+        {
+            savePath = newPath;
+            // 当路径变更时，保存到EditorPrefs
+            EditorPrefs.SetString(SavePathPrefsKey, savePath);
+        }
         
         EditorGUILayout.BeginHorizontal();
         
@@ -62,6 +75,8 @@ public class PlantManagerEditor : Editor
                     path = "Assets" + path.Substring(Application.dataPath.Length);
                 }
                 savePath = path;
+                // 保存选择的路径到EditorPrefs
+                EditorPrefs.SetString(SavePathPrefsKey, savePath);
             }
         }
         

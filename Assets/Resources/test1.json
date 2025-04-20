@@ -24,28 +24,6 @@
         },
         {
             "objectType": "SceneObject",
-            "sceneObjectType": 4,
-            "prefabPath": "Prefabs/Door",
-            "position": {
-                "x": -33.939998626708987,
-                "y": 2.0,
-                "z": -23.200000762939454
-            },
-            "rotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            },
-            "scale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "lightSourcesData": []
-        },
-        {
-            "objectType": "SceneObject",
             "sceneObjectType": 3,
             "prefabPath": "Prefabs/Lighthouse",
             "position": {
@@ -129,6 +107,28 @@
                 "x": 30.0,
                 "y": 1.0,
                 "z": 30.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 4,
+            "prefabPath": "Prefabs/Door",
+            "position": {
+                "x": -34.084999084472659,
+                "y": 1.7089999914169312,
+                "z": -23.200000762939454
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
             },
             "lightSourcesData": []
         }

@@ -77,6 +77,10 @@ void CSObstacleLight(uint3 id : SV_DispatchThreadID)
         (finalCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
     );
     
+    // 检查旋转后的坐标是否超出原始高度图范围[0,1]，超出则直接返回不进行合成
+    if(lightSpaceT.x < 0.0 || lightSpaceT.x > 1.0 || lightSpaceT.y < 0.0 || lightSpaceT.y > 1.0)
+        return;
+    
     // 使用修正后的坐标计算原始高度图的lightCoord
     float2 lightCoord = lightSpaceT * float2(heightWidth - 1, heightHeight - 1);
     
@@ -147,6 +151,10 @@ void CSNormalLight(uint3 id : SV_DispatchThreadID)
         (finalCoord.x - _LightBoundsRaw.x) / (_LightBoundsRaw.z - _LightBoundsRaw.x),
         (finalCoord.y - _LightBoundsRaw.y) / (_LightBoundsRaw.w - _LightBoundsRaw.y)
     );
+    
+    // 检查旋转后的坐标是否超出原始高度图范围[0,1]，超出则直接返回不进行合成
+    if(lightSpaceT.x < 0.0 || lightSpaceT.x > 1.0 || lightSpaceT.y < 0.0 || lightSpaceT.y > 1.0)
+        return;
     
     float2 lightCoord = lightSpaceT * float2(heightWidth - 1, heightHeight - 1);
     
