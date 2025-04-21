@@ -103,17 +103,13 @@ public class QuadTreeTester : MonoBehaviour
         // 在放置种子前更新种子名称，确保使用最新的Inspector设置
         UpdateSeedName();
         
-        // 随机选择一个预制体
-        GameObject prefab = prefabToSpawn[0];
-        GameObject newObj = Instantiate(
-            prefab,
-            position,
-            Quaternion.identity
-        );
+        // 创建一个空物体
+        GameObject newObj = new GameObject("Seed");
+        newObj.transform.position = position;
         objects.Add(newObj);
         
-        // 获取Plant组件
-        Plant plant = newObj.GetComponent<Plant>();
+        // 添加Plant组件
+        Plant plant = newObj.AddComponent<Plant>();
         if (plant != null)
         {
             // 清空现有的生长阶段

@@ -131,6 +131,28 @@
                 "z": 1.0
             },
             "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 5,
+            "prefabPath": "Prefabs/Player",
+            "position": {
+                "x": -59.1014518737793,
+                "y": 1.5,
+                "z": -56.317466735839847
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.9929433465003967,
+                "z": 0.0,
+                "w": -0.11858955025672913
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "lightSourcesData": []
         }
     ]
 }

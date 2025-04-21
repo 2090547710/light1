@@ -14,26 +14,45 @@ public class CameraController : MonoBehaviour
     private Vector3 currentRotation;
     private Vector3 velocity = Vector3.zero;
     private float currentZoom;
+    
+    // 保存相机设置的键名
+    private const string ROTATION_X_KEY = "CameraRotationX";
+    private const string ROTATION_Y_KEY = "CameraRotationY";
+    private const string ZOOM_KEY = "CameraZoom";
 
     void Start()
     {
-        rotation = transform.eulerAngles;
+        // 尝试从PlayerPrefs加载保存的相机设置
+        if (PlayerPrefs.HasKey(ROTATION_X_KEY) && PlayerPrefs.HasKey(ROTATION_Y_KEY) && PlayerPrefs.HasKey(ZOOM_KEY))
+        {
+            rotation.x = PlayerPrefs.GetFloat(ROTATION_X_KEY);
+            rotation.y = PlayerPrefs.GetFloat(ROTATION_Y_KEY);
+            currentZoom = PlayerPrefs.GetFloat(ZOOM_KEY);
+        }
+        else
+        {
+            // 如果没有保存的设置，使用默认值
+            rotation = transform.eulerAngles;
+            currentZoom = initialZoom;
+        }
+        
         currentRotation = rotation;
         
-        // 修改初始化方式：使用预设初始值代替自动计算
-        currentZoom = initialZoom;
-        
-        // 根据初始值强制更新摄像机位置
-        Quaternion initialRot = Quaternion.Euler(rotation.x, rotation.y, 0);
-        Vector3 initialDir = new Vector3(0, 0, -initialZoom);
-        transform.position = target.position + initialRot * initialDir;
-        transform.LookAt(target.position);
-
+        if(target!=null){
+            // 根据初始值强制更新摄像机位置
+            Quaternion initialRot = Quaternion.Euler(rotation.x, rotation.y, 0);
+            Vector3 initialDir = new Vector3(0, 0, -currentZoom);
+            transform.position = target.position + initialRot * initialDir;
+            transform.LookAt(target.position);
+        }
     }
 
     void Update()
     {
         // 鼠标右键拖动旋转
+        if(target==null){
+            return;
+        }
         if (Input.GetMouseButton(1))
         {
             rotation.x += Input.GetAxis("Mouse Y") * rotationSpeed;
@@ -56,5 +75,28 @@ public class CameraController : MonoBehaviour
         
         // 始终看向目标
         transform.LookAt(target.position);
+    }
+    
+    // 在应用程序暂停或退出时保存相机设置
+    void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            SaveCameraSettings();
+        }
+    }
+    
+    void OnApplicationQuit()
+    {
+        SaveCameraSettings();
+    }
+    
+    // 保存相机设置到PlayerPrefs
+    private void SaveCameraSettings()
+    {
+        PlayerPrefs.SetFloat(ROTATION_X_KEY, rotation.x);
+        PlayerPrefs.SetFloat(ROTATION_Y_KEY, rotation.y);
+        PlayerPrefs.SetFloat(ZOOM_KEY, currentZoom);
+        PlayerPrefs.Save();
     }
 }

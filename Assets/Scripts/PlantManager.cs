@@ -48,6 +48,7 @@ public class PlantManager : MonoBehaviour
         public List<string> plantNameList = new List<string>();
         public List<float> weightList = new List<float>();
         public float growthRateValue;
+        public string prefabPath;
     }
     
     private void Awake()
@@ -140,18 +141,21 @@ public class PlantManager : MonoBehaviour
                 mapping.size = (SizeLevel)Enum.Parse(typeof(SizeLevel), values[0]);
                 mapping.growthRate = (GrowthRateLevel)Enum.Parse(typeof(GrowthRateLevel), values[1]);
                 
+                // 解析预制体路径 (新增)
+                mapping.prefabPath = values[2];
+            
                 // 解析光源数据 - 根据CSV格式直接读取固定位置的值
                 mapping.lightData = new List<LightingData>();
                 
                 // 创建单个光照数据
-                float size = float.Parse(values[2]);
-                bool isObstacle = bool.Parse(values[3]);
-                bool isSeed = bool.Parse(values[4]);
-                float lightHeight = float.Parse(values[5]);
+                float size = float.Parse(values[3]);          // 索引+1
+                bool isObstacle = bool.Parse(values[4]);      // 索引+1
+                bool isSeed = bool.Parse(values[5]);          // 索引+1
+                float lightHeight = float.Parse(values[6]);   // 索引+1
                 
                 // 高度图处理
                 Texture2D heightMap = null;
-                string heightMapPath = values[6];
+                string heightMapPath = values[7];            // 索引+1
                 if (!string.IsNullOrEmpty(heightMapPath) && heightMapPath != "null")
                 {
                     // 从Resources加载高度图
@@ -161,9 +165,9 @@ public class PlantManager : MonoBehaviour
                 // 边缘高度图处理
                 Texture2D edgeHeightMap = null;
                 // 确保有足够的字段
-                if (values.Length > 7)
+                if (values.Length > 8)                       // 索引+1
                 {
-                    string edgeHeightMapPath = values[7];
+                    string edgeHeightMapPath = values[8];    // 索引+1
                     if (!string.IsNullOrEmpty(edgeHeightMapPath) && edgeHeightMapPath != "null")
                     {
                         // 从Resources加载边缘高度图
@@ -176,7 +180,7 @@ public class PlantManager : MonoBehaviour
                 mapping.lightData.Add(lightData);
                 
                 // 解析生长速度值
-                if (values.Length > 8 && float.TryParse(values[8], out float growthRateValue))
+                if (values.Length > 9 && float.TryParse(values[9], out float growthRateValue))  // 索引+1
                 {
                     mapping.growthRateValue = growthRateValue;
                 }
@@ -187,8 +191,8 @@ public class PlantManager : MonoBehaviour
                 }
                 
                 // 解析目标植物ID、名称和权重
-                // 从索引9开始，每三个字段为一组(ID、名称和权重)
-                for (int j = 9; j < values.Length - 2; j += 3)
+                // 从索引10开始，每三个字段为一组(ID、名称和权重)  // 索引+1
+                for (int j = 10; j < values.Length - 2; j += 3)
                 {
                     if (!string.IsNullOrEmpty(values[j]) && int.TryParse(values[j], out int plantId))
                     {
@@ -243,7 +247,16 @@ public class PlantManager : MonoBehaviour
         // 初始化光源列表
         stage.associatedLights = new List<LightingData>();
         
+        // 解析预制体路径 (新增)
         int currentIndex = 3;
+        if (currentIndex < values.Length && !string.IsNullOrEmpty(values[currentIndex]) && 
+            values[currentIndex] != "li" && values[currentIndex] != "gr" && 
+            values[currentIndex] != "pre" && values[currentIndex] != "up")
+        {
+            stage.prefabPath = values[currentIndex];
+            currentIndex++;
+        }
+        
         bool foundLightMarker = false;
         bool foundGrMarker = false;
         bool foundPreMarker = false;
@@ -1139,7 +1152,7 @@ public class PlantManager : MonoBehaviour
         return plantDatabase;
     }
     
-    // 修改打印方法以显示权重信息
+    // 修改打印方法以显示预制体路径信息
     public void PrintPlantDatabaseInfo()
     {
         if (plantDatabase == null || plantDatabase.Count == 0)
@@ -1197,10 +1210,14 @@ public class PlantManager : MonoBehaviour
                 }
             }
             
+            // 添加预制体路径信息
+            string prefabPathInfo = string.IsNullOrEmpty(stage.prefabPath) ? "未设置" : stage.prefabPath;
+            
             Debug.Log($"植物ID: {plantId}\n" +
                      $"  名称: {stage.plantName}\n" +
                      $"  阶段: {stage.stageType}\n" +
                      $"  生长速率: {stage.growthRate}\n" +
+                     $"  预制体路径: {prefabPathInfo}\n" +
                      $"  前置植物: {prerequisitesStr}\n" +
                      $"  更新植物: {updatePlantsStr}\n" +
                      $"  关联光源数量: {(stage.associatedLights != null ? stage.associatedLights.Count : 0)}{lightsInfo}");

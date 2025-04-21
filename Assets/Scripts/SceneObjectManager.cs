@@ -112,6 +112,9 @@ public class SceneObjectManager : MonoBehaviour
                     GameManager.Instance.endPoint = newObject;
                 }
                 break;
+            case SceneObjectType.Player:
+                newObject.layer = 11;
+                break;
         }
         
         // 注册到管理器
@@ -238,6 +241,9 @@ public class SceneObjectManager : MonoBehaviour
                     {
                         GameManager.Instance.endPoint = newObject;
                     }
+                    break;
+                case SceneObjectType.Player:
+                    newObject.layer = 11;
                     break;
             }
             

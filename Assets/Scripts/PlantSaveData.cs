@@ -17,6 +17,7 @@ public class PlantSaveData
     public bool hasTriedBloom;
     public bool hasTriedFruit;
     public bool isImmortal;
+    public string prefabPath; // 新增预制体路径字段
     
     // 位置和旋转信息
     public SerializableVector3 position;
@@ -40,6 +41,12 @@ public class PlantSaveData
         hasTriedBloom = plant.HasTriedBloom;
         hasTriedFruit = plant.HasTriedFruit;
         isImmortal = plant.IsImmortal;
+        
+        // 如果当前阶段有效，则从当前阶段获取预制体路径
+        if (plant.currentStage > 0 && plant.currentStage <= plant.growthStages.Count)
+        {
+            prefabPath = plant.growthStages[plant.currentStage - 1].prefabPath;
+        }
         
         // 保存位置和旋转
         position = new SerializableVector3(plant.transform.position);
@@ -117,6 +124,7 @@ public class SerializablePlantStage
     public int plantID;
     public string plantName;
     public float growthRate;
+    public string prefabPath; // 新增预制体路径字段
     public List<int> prerequisitePlantIDs = new List<int>();
     public List<float> prerequisiteWeights = new List<float>();
     public List<int> updatePlantIDs = new List<int>();
@@ -133,6 +141,7 @@ public class SerializablePlantStage
         plantID = stage.plantID;
         plantName = stage.plantName;
         growthRate = stage.growthRate;
+        prefabPath = stage.prefabPath; // 保存预制体路径
         
         // 复制列表
         if (stage.prerequisitePlantIDs != null)
@@ -166,6 +175,7 @@ public class SerializablePlantStage
         stage.plantID = plantID;
         stage.plantName = plantName;
         stage.growthRate = growthRate;
+        stage.prefabPath = prefabPath; // 设置预制体路径
         
         // 复制列表
         stage.prerequisitePlantIDs = new List<int>(prerequisitePlantIDs);

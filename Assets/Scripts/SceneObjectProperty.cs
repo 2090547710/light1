@@ -9,7 +9,8 @@ public enum SceneObjectType
     Obstacle,   // 障碍物
     Water,      // 水
     BeginPoint, // 开始点
-    EndPoint    // 结束点
+    EndPoint,   // 结束点
+    Player      // 玩家
 }
 
 // 场景物体属性类，用于挂载到场景物体上
@@ -142,6 +143,16 @@ public class SceneObjectProperty : MonoBehaviour
             SceneObjectManager.Instance.RegisterSceneObject(this);
         }
         ApplyLightSources();
+        
+        // 如果当前物体是玩家，则将其设为摄像机的跟踪目标
+        if (objectType == SceneObjectType.Player)
+        {
+            CameraController cameraController = FindObjectOfType<CameraController>();
+            if (cameraController != null)
+            {
+                cameraController.target = this.transform;
+            }
+        }
     }
     
     // 当组件启用时注册到管理器

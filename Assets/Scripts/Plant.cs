@@ -50,6 +50,9 @@ public class Plant : MonoBehaviour
 
     [Header("阶段配置")]
     public List<PlantStage> growthStages = new List<PlantStage>();
+    
+    [Header("预制体")]
+    public GameObject stageModelObject; // 用于存储当前阶段的预制体游戏对象
 
     [Header("开花设置")]
     public float bloomThreshold = 0.8f; // 开花阈值
@@ -87,7 +90,7 @@ public class Plant : MonoBehaviour
         if(currentStage==0){
             plantID=0;
             plantName="种子";
-            CheckIfInFireLight();
+            // CheckIfInFireLight();
             lightSources.Clear();
             if (growthStages.Count > 0 && currentStage <= growthStages.Count)
             {
@@ -229,6 +232,31 @@ public class Plant : MonoBehaviour
         if (nameText != null)
         {
             nameText.text = isWithered ? plantName + " (已枯萎)" : plantName;
+        }
+        
+        // 如果存在当前的模型对象，先将其销毁
+        if (stageModelObject != null)
+        {
+            Destroy(stageModelObject);
+            stageModelObject = null;
+        }
+        
+        // 根据预制体路径加载并创建预制体
+        if (!string.IsNullOrEmpty(stage.prefabPath))
+        {
+            GameObject prefab = Resources.Load<GameObject>(stage.prefabPath);
+            if (prefab != null)
+            {
+                // 实例化预制体作为当前物体的子物体
+                stageModelObject = Instantiate(prefab, transform);
+                stageModelObject.transform.localPosition = Vector3.zero;
+                stageModelObject.transform.localRotation = Quaternion.identity;
+                stageModelObject.transform.localScale = Vector3.one;
+            }
+            else
+            {
+                Debug.LogWarning($"无法加载预制体: {stage.prefabPath}");
+            }
         }
         
         // 根据数据创建并初始化光源组件
@@ -922,6 +950,7 @@ public class Plant : MonoBehaviour
         public List<float> prerequisiteWeights; // 新增的权重集合
         public List<int> updatePlantIDs; // 更新植物ID列表 
         public List<float> updateWeights; // 更新权重列表
+        public string prefabPath; // 新增预制体路径字段
     }
     #endregion
 
@@ -1037,30 +1066,18 @@ public class Plant : MonoBehaviour
     // 从存档数据创建植物
     public static Plant CreateFromSaveData(PlantSaveData saveData)
     {
-        // 从 Resources 文件夹加载预制体
-        GameObject prefab = Resources.Load<GameObject>("Prefabs/测试植物");
-        if (prefab == null)
+        // 创建一个空物体作为植物对象
+        GameObject plantObj = new GameObject(saveData.plantName);
+        
+        // 添加Plant组件
+        Plant plant;
+        if (saveData.plantType == "Fire")
         {
-            Debug.LogError($"无法找到植物预制体: {saveData.plantName}");
-            return null;
+            plant = plantObj.AddComponent<Fire>();
         }
-
-        // 实例化预制体
-        GameObject plantObj = GameObject.Instantiate(prefab);
-        plantObj.name = saveData.plantName;
-
-        // 获取或添加 Plant 组件
-        Plant plant = plantObj.GetComponent<Plant>();
-        if (plant == null)
+        else
         {
-            if (saveData.plantType == "Fire")
-            {
-                plant = plantObj.AddComponent<Fire>();
-            }
-            else
-            {
-                plant = plantObj.AddComponent<Plant>();
-            }
+            plant = plantObj.AddComponent<Plant>();
         }
 
         // 设置位置和旋转
@@ -1144,6 +1161,7 @@ public class Plant : MonoBehaviour
         tempStage.prerequisiteWeights = new List<float>(currentStageData.prerequisiteWeights);
         tempStage.updatePlantIDs = new List<int>(currentStageData.updatePlantIDs);
         tempStage.updateWeights = new List<float>(currentStageData.updateWeights);
+        tempStage.prefabPath = currentStageData.prefabPath; // 添加预制体路径
         
         // 从当前活跃的光源获取最新的LightingData
         tempStage.associatedLights = GetLightingDataFromLightSources();

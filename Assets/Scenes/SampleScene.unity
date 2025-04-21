@@ -352,6 +352,7 @@ MonoBehaviour:
   lightingComputeShader: {fileID: 7200000, guid: 17609775a1724e140a089c11b9891a5a, type: 3}
   imagesParent: {fileID: 1277673542}
   imageDisplayMaterial: {fileID: 2100000, guid: 2f4fae13462f65343b849bc8db845dce, type: 2}
+  edgeHeightMapMaterial: {fileID: 2100000, guid: a90238f7ab92cd849b007c7aec5a6e51, type: 2}
 --- !u!114 &877133417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -454,6 +455,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
     - stageType: 1
       plantID: 0
@@ -469,6 +471,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
     plantID: 0
@@ -507,6 +510,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
     - stageType: 1
       plantID: 0
@@ -522,6 +526,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
     plantID: 0
@@ -560,6 +565,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
     - stageType: 1
       plantID: 0
@@ -575,6 +581,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
     plantID: 0
@@ -613,6 +620,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
     - stageType: 1
       plantID: 0
@@ -628,6 +636,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
     plantID: 0
@@ -666,6 +675,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
     - stageType: 1
       plantID: 0
@@ -681,6 +691,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
     plantID: 0
@@ -719,6 +730,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
     - stageType: 1
       plantID: 0
@@ -734,6 +746,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
     plantID: 0
@@ -772,6 +785,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
     - stageType: 1
       plantID: 0
@@ -787,6 +801,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
     plantID: 0
@@ -825,6 +840,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
     - stageType: 1
       plantID: 0
@@ -840,6 +856,7 @@ MonoBehaviour:
         isSeed: 0
         lightHeight: 1
         heightMapPath: test
+        edgeHeightMapPath: 
         rotation: 0
 --- !u!114 &877133421
 MonoBehaviour:

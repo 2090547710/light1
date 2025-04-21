@@ -80,8 +80,41 @@ public class PlantManagerEditor : Editor
             }
         }
         
+        // 清除按钮 - 新增功能
+        EditorGUILayout.Space(10);
+        if (GUILayout.Button("清除所有植物", GUILayout.Height(30)))
+        {
+            if (EditorUtility.DisplayDialog("确认操作", "确定要清除所有植物吗？此操作无法撤销。", "确定", "取消"))
+            {
+                plantManager.ClearAllPlants();
+            }
+        }
+        
         // 显示当前植物信息
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField($"当前活跃植物: {plantManager.activePlants.Count}", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField($"当前枯萎植物: {plantManager.witheredPlants.Count}", EditorStyles.boldLabel);
+        
+        // 显示植物列表
+        if (plantManager.activePlants.Count > 0)
+        {
+            EditorGUILayout.LabelField("活跃植物列表:", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            for (int i = 0; i < plantManager.activePlants.Count; i++)
+            {
+                Plant plant = plantManager.activePlants[i];
+                if (plant != null)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField($"{i+1}. {plant.plantName} (ID: {plant.plantID})");
+                    if (GUILayout.Button("选择", GUILayout.Width(60)))
+                    {
+                        Selection.activeGameObject = plant.gameObject;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+            EditorGUI.indentLevel--;
+        }
     }
 } 
