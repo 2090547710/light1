@@ -902,7 +902,11 @@ static void HideSimplifiedBoundaryMenu()
         {
             if (quad != null)
             {
-                quad.SetActive(false);
+                MeshRenderer renderer = quad.GetComponentInChildren<MeshRenderer>();
+                if (renderer != null)
+                {
+                    renderer.enabled = false;
+                }
             }
         }
     }
@@ -914,7 +918,11 @@ static void HideSimplifiedBoundaryMenu()
         {
             if (quad != null)
             {
-                quad.SetActive(true);
+                MeshRenderer renderer = quad.GetComponentInChildren<MeshRenderer>();
+                if (renderer != null)
+                {
+                    renderer.enabled = true;
+                }
             }
         }
     }

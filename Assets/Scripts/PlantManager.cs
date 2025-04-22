@@ -496,7 +496,8 @@ public class PlantManager : MonoBehaviour
             stageType = StageType.Seed,
             plantName = size.ToString() + growthRate.ToString(),
             associatedLights = mapping.lightData,
-            growthRate = mapping.growthRateValue
+            growthRate = mapping.growthRateValue,
+            prefabPath = mapping.prefabPath  // 添加预制体路径
         };
         
         return seedStage;
@@ -570,7 +571,8 @@ public class PlantManager : MonoBehaviour
             plantName = plantName,
             plantID = plantId,
             associatedLights = mapping.lightData,
-            growthRate = mapping.growthRateValue
+            growthRate = mapping.growthRateValue,
+            prefabPath = mapping.prefabPath  // 添加预制体路径
         };
         
         // 检查植物数据库中是否存在对应ID的植物
@@ -587,7 +589,7 @@ public class PlantManager : MonoBehaviour
         }
     }
 
-     public Plant.PlantStage GetPlantStageBySeedFromName(string seedName)
+    public Plant.PlantStage GetPlantStageBySeedFromName(string seedName)
     {
         // 去除前后空白字符
         seedName = seedName.Trim();
@@ -1140,7 +1142,7 @@ public class PlantManager : MonoBehaviour
         UpdateAllPlantCounts();
         RebuildUpdatablePlants();
         
-        Debug.Log($"已加载 {plants.Count} 个植物从 {saveFilePath}");
+        Debug.Log($"已加载 {plants.Count} 个植物");
     }
 
 #endregion

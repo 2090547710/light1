@@ -89,7 +89,7 @@ public class Plant : MonoBehaviour
          // 检查植物是否在火光源范围内
         if(currentStage==0){
             plantID=0;
-            plantName="种子";
+            plantName="Seed";
             // CheckIfInFireLight();
             lightSources.Clear();
             if (growthStages.Count > 0 && currentStage <= growthStages.Count)
@@ -202,7 +202,7 @@ public class Plant : MonoBehaviour
         }
         // 如果刚成长为种子阶段，立即尝试开花
         if (currentStage == 1 && PlantManager.Instance.IsValidSeedName(plantName)) {
-            TryBloom();
+            // TryBloom();
         }
         
         // 植物生长后，检查玩家是否被卡住
@@ -1168,4 +1168,6 @@ public class Plant : MonoBehaviour
         
         return tempStage;
     }
+
+
 } 

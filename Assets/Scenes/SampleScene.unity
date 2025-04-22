@@ -123,7 +123,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &624551238
+--- !u!1 &668929549
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,53 +131,108 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 624551240}
-  - component: {fileID: 624551239}
-  m_Layer: 0
-  m_Name: Player
-  m_TagString: Untagged
+  - component: {fileID: 668929554}
+  - component: {fileID: 668929553}
+  - component: {fileID: 668929552}
+  - component: {fileID: 668929550}
+  m_Layer: 12
+  m_Name: Camera
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &624551239
+--- !u!114 &668929550
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 624551238}
+  m_GameObject: {fileID: 668929549}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc8b95560eabf2f4b9727cf4f9680370, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d38f23b2269db742a8661b096b7accd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  stoppingDistance: 0.2
-  markerPrefab: {fileID: 1323435036065331973, guid: d903664912025734989e641f0cb73d56, type: 3}
-  markerScale: 0.3
-  markerDuration: 1
-  rotationSpeed: 10
-  smoothRotation: 1
-  mapLayer:
+  target: {fileID: 0}
+  rotationSpeed: 5
+  zoomSpeed: 5
+  minZoom: 2
+  maxZoom: 50
+  smoothTime: 0.3
+  initialZoom: 10
+--- !u!81 &668929552
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 668929549}
+  m_Enabled: 1
+--- !u!20 &668929553
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 668929549}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
     serializedVersion: 2
-    m_Bits: 256
-  playerLightRange: 5
-  playerLightIntensity: 1
---- !u!4 &624551240
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!4 &668929554
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 624551238}
+  m_GameObject: {fileID: 668929549}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -63.95, y: 1.53, z: -64.4604}
+  m_LocalRotation: {x: -0.15527375, y: 0.8372724, z: -0.30474216, w: -0.4266113}
+  m_LocalPosition: {x: -38.558243, y: 11.141811, z: -40.49399}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1773321644}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
@@ -373,8 +428,7 @@ MonoBehaviour:
     m_Bits: 256
   seedCooldown: 0.5
   darkCooldown: 0.5
-  selectedSize: 1
-  selectedGrowthRate: 1
+  mainCamera: {fileID: 0}
 --- !u!114 &877133419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -391,7 +445,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   selectionRadius: 2
-  highlightMaterial: {fileID: 2100000, guid: c91f8bb88c5fbfa4887573142a1e2d6b, type: 2}
   editingProperties:
     size: 0
     isObstacle: 0
@@ -427,24 +480,26 @@ MonoBehaviour:
     hasTriedBloom: 0
     hasTriedFruit: 0
     isImmortal: 1
+    prefabPath: 
     position:
-      x: -60.13445
-      y: 1.0728496e-16
-      z: -61.845577
+      x: -63.590496
+      y: 0.00000011920932
+      z: -61.421474
     rotation:
       x: 0
       y: 0
       z: 0
       w: 1
     scale:
-      x: 0
-      y: 0
-      z: 0
+      x: 1
+      y: 1
+      z: 1
     growthStages:
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
       growthRate: 0
+      prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []
       updatePlantIDs: 
@@ -456,11 +511,12 @@ MonoBehaviour:
         lightHeight: 1
         heightMapPath: test
         edgeHeightMapPath: 
-        rotation: 0
+        rotation: 4.5299377
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
       growthRate: 0
+      prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
       updatePlantIDs: 
@@ -470,7 +526,7 @@ MonoBehaviour:
         isObstacle: 1
         isSeed: 0
         lightHeight: 1
-        heightMapPath: test
+        heightMapPath: test9
         edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
@@ -482,24 +538,26 @@ MonoBehaviour:
     hasTriedBloom: 0
     hasTriedFruit: 0
     isImmortal: 1
+    prefabPath: 
     position:
-      x: -54.947155
-      y: 1.0146012e-16
-      z: -58.48778
+      x: -60.299408
+      y: 0.00000011920932
+      z: -52.780636
     rotation:
       x: 0
       y: 0
       z: 0
       w: 1
     scale:
-      x: 0
-      y: 0
-      z: 0
+      x: 1
+      y: 1
+      z: 1
     growthStages:
     - stageType: 1
       plantID: 0
       plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
       growthRate: 0
+      prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []
       updatePlantIDs: 
@@ -516,6 +574,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
       growthRate: 0
+      prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
       updatePlantIDs: 
@@ -525,337 +584,305 @@ MonoBehaviour:
         isObstacle: 1
         isSeed: 0
         lightHeight: 1
-        heightMapPath: test
+        heightMapPath: test9
         edgeHeightMapPath: 
         rotation: 0
   - plantType: Plant
     plantID: 0
-    plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    prefabPath: 
+    position:
+      x: -51.847294
+      y: 0.00000011920932
+      z: -55.12755
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    scale:
+      x: 1
+      y: 1
+      z: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        edgeHeightMapPath: 
+        rotation: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prefabPath: 
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test9
+        edgeHeightMapPath: 
+        rotation: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    prefabPath: 
+    position:
+      x: -51.768993
+      y: 0.00000011920932
+      z: -45.973743
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    scale:
+      x: 1
+      y: 1
+      z: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        edgeHeightMapPath: 
+        rotation: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prefabPath: 
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test9
+        edgeHeightMapPath: 
+        rotation: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    prefabPath: 
+    position:
+      x: -50.21514
+      y: 0.00000011920932
+      z: -32.18518
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    scale:
+      x: 1
+      y: 1
+      z: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        edgeHeightMapPath: 
+        rotation: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prefabPath: 
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test9
+        edgeHeightMapPath: 
+        rotation: 0
+  - plantType: Plant
+    plantID: 0
+    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+    currentStage: 1
+    maxStages: 2
+    isWithered: 0
+    hasTriedBloom: 0
+    hasTriedFruit: 0
+    isImmortal: 1
+    prefabPath: 
+    position:
+      x: -44.339787
+      y: 0.00000011920932
+      z: -42.511993
+    rotation:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+    scale:
+      x: 1
+      y: 1
+      z: 1
+    growthStages:
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
+      growthRate: 0
+      prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 17.1
+        isObstacle: 0
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test
+        edgeHeightMapPath: 
+        rotation: 0
+    - stageType: 1
+      plantID: 0
+      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
+      growthRate: 0
+      prefabPath: 
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 
+      updateWeights: []
+      associatedLights:
+      - size: 6.8
+        isObstacle: 1
+        isSeed: 0
+        lightHeight: 1
+        heightMapPath: test9
+        edgeHeightMapPath: 
+        rotation: 0
+  - plantType: Plant
+    plantID: 3
+    plantName: "\u5411\u65E5\u8475"
     currentStage: 2
     maxStages: 2
     isWithered: 0
-    hasTriedBloom: 0
+    hasTriedBloom: 1
     hasTriedFruit: 0
-    isImmortal: 1
+    isImmortal: 0
+    prefabPath: 
     position:
-      x: -47.930805
-      y: 9.561872e-17
-      z: -55.120434
+      x: -50.49355
+      y: 0.00000011920932
+      z: -59.951065
     rotation:
       x: 0
       y: 0
       z: 0
       w: 1
     scale:
-      x: 0
-      y: 0
-      z: 0
+      x: 1
+      y: 1
+      z: 1
     growthStages:
-    - stageType: 1
+    - stageType: 0
       plantID: 0
-      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-      growthRate: 0
+      plantName: MediumMedium
+      growthRate: 0.3
+      prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
       updatePlantIDs: 
       updateWeights: []
       associatedLights:
-      - size: 17.1
+      - size: 3
+        isObstacle: 0
+        isSeed: 1
+        lightHeight: 0.3
+        heightMapPath: seed
+        edgeHeightMapPath: 
+        rotation: 0
+    - stageType: 1
+      plantID: 3
+      plantName: "\u5411\u65E5\u8475"
+      growthRate: 0.5
+      prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+      prerequisitePlantIDs: 
+      prerequisiteWeights: []
+      updatePlantIDs: 04000000
+      updateWeights:
+      - 1
+      associatedLights:
+      - size: 15.5
         isObstacle: 0
         isSeed: 0
-        lightHeight: 1
+        lightHeight: 0.8
         heightMapPath: test
         edgeHeightMapPath: 
         rotation: 0
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 6.8
+      - size: 1
         isObstacle: 1
         isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-  - plantType: Plant
-    plantID: 0
-    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-    currentStage: 1
-    maxStages: 2
-    isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
-    isImmortal: 1
-    position:
-      x: -46.867023
-      y: 1.0783196e-16
-      z: -62.16089
-    rotation:
-      x: 0
-      y: 0
-      z: 0
-      w: 1
-    scale:
-      x: 0
-      y: 0
-      z: 0
-    growthStages:
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 17.1
-        isObstacle: 0
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 6.8
-        isObstacle: 1
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-  - plantType: Plant
-    plantID: 0
-    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-    currentStage: 1
-    maxStages: 2
-    isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
-    isImmortal: 1
-    position:
-      x: -54.92335
-      y: 9.178192e-17
-      z: -52.908672
-    rotation:
-      x: 0
-      y: 0
-      z: 0
-      w: 1
-    scale:
-      x: 0
-      y: 0
-      z: 0
-    growthStages:
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 17.1
-        isObstacle: 0
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 6.8
-        isObstacle: 1
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-  - plantType: Plant
-    plantID: 0
-    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-    currentStage: 1
-    maxStages: 2
-    isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
-    isImmortal: 1
-    position:
-      x: -40.830242
-      y: 9.7979636e-17
-      z: -56.481422
-    rotation:
-      x: 0
-      y: 0
-      z: 0
-      w: 1
-    scale:
-      x: 0
-      y: 0
-      z: 0
-    growthStages:
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 17.1
-        isObstacle: 0
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 6.8
-        isObstacle: 1
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-  - plantType: Plant
-    plantID: 0
-    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-    currentStage: 1
-    maxStages: 2
-    isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
-    isImmortal: 1
-    position:
-      x: -42.863693
-      y: 8.6638586e-17
-      z: -49.943745
-    rotation:
-      x: 0
-      y: 0
-      z: 0
-      w: 1
-    scale:
-      x: 0
-      y: 0
-      z: 0
-    growthStages:
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 17.1
-        isObstacle: 0
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 6.8
-        isObstacle: 1
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-  - plantType: Plant
-    plantID: 0
-    plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-    currentStage: 1
-    maxStages: 2
-    isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
-    isImmortal: 1
-    position:
-      x: -48.12386
-      y: 8.526174e-17
-      z: -49.15005
-    rotation:
-      x: 0
-      y: 0
-      z: 0
-      w: 1
-    scale:
-      x: 0
-      y: 0
-      z: 0
-    growthStages:
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 17.1
-        isObstacle: 0
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
-        edgeHeightMapPath: 
-        rotation: 0
-    - stageType: 1
-      plantID: 0
-      plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
-      growthRate: 0
-      prerequisitePlantIDs: 
-      prerequisiteWeights: []
-      updatePlantIDs: 
-      updateWeights: []
-      associatedLights:
-      - size: 6.8
-        isObstacle: 1
-        isSeed: 0
-        lightHeight: 1
-        heightMapPath: test
+        lightHeight: 0.5
+        heightMapPath: obstacle1
         edgeHeightMapPath: 
         rotation: 0
 --- !u!114 &877133421
@@ -892,121 +919,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c008345d1d62abc4d8430e8a22716a1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneObjects: []
+  sceneObjects:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   sceneObjectPrefab: {fileID: 3843442647439544800, guid: 2ddb35961301ce2468a43d2eea752922, type: 3}
   saveFilePath: Assets/Resources/test1.json
---- !u!1 &963194225
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 963194228}
-  - component: {fileID: 963194227}
-  - component: {fileID: 963194226}
-  - component: {fileID: 963194229}
-  m_Layer: 0
-  m_Name: Main Camera
-  m_TagString: MainCamera
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!81 &963194226
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
---- !u!20 &963194227
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_Iso: 200
-  m_ShutterSpeed: 0.005
-  m_Aperture: 16
-  m_FocusDistance: 10
-  m_FocalLength: 50
-  m_BladeCount: 5
-  m_Curvature: {x: 2, y: 11}
-  m_BarrelClipping: 0.25
-  m_Anamorphism: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: -1
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
---- !u!4 &963194228
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &963194229
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d38f23b2269db742a8661b096b7accd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 1773321644}
-  rotationSpeed: 5
-  zoomSpeed: 10
-  minZoom: 2
-  maxZoom: 50
-  smoothTime: 0.1
-  initialZoom: 20
 --- !u!1 &1277673542
 GameObject:
   m_ObjectHideFlags: 0
@@ -1038,95 +978,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1773321643
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1773321644}
-  - component: {fileID: 1773321648}
-  - component: {fileID: 1773321647}
-  m_Layer: 0
-  m_Name: Player
-  m_TagString: Player
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1773321644
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1773321643}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.78, z: 0}
-  m_LocalScale: {x: 1.5392, y: 1.5392, z: 1.5392}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 624551240}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &1773321647
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1773321643}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 8ca9d2600c8af37438d159d7756ea696, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &1773321648
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1773321643}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 705507995}
   - {fileID: 877133415}
-  - {fileID: 963194228}
   - {fileID: 1277673543}
-  - {fileID: 624551240}
+  - {fileID: 668929554}

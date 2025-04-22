@@ -15,6 +15,9 @@ Shader "Custom/LightingUnlitTransparent"
         _SwaySpeed ("摆动速度", Range(0.1, 10.0)) = 1.0
         [Toggle] _HorizontalPlant ("横向植物", Float) = 0
         _SwayMask ("摆动遮罩 (顶部摆动多)", 2D) = "white" {}
+        
+        // 添加边缘采样控制
+        [Toggle] _AvoidEdgeSampling ("避免边缘采样", Float) = 1
     }
     SubShader
     {
@@ -65,6 +68,9 @@ Shader "Custom/LightingUnlitTransparent"
             float _SwayAmplitude;
             float _SwaySpeed;
             float _HorizontalPlant;
+            
+            // 添加边缘采样控制变量
+            float _AvoidEdgeSampling;
 
             v2f vert (appdata v)
             {
@@ -98,8 +104,8 @@ Shader "Custom/LightingUnlitTransparent"
 
             fixed4 frag(v2f i) : SV_Target
             {
-                // 调整UV坐标，避免采样边缘像素
-                float2 safeUV = clamp(i.uv, 0.02, 0.98);
+                // 根据开关决定是否避免采样边缘像素
+                float2 safeUV = _AvoidEdgeSampling > 0.5 ? clamp(i.uv, 0.02, 0.98) : i.uv;
                 
                 // 采样主纹理获取alpha值
                 fixed4 mainTex = tex2D(_MainTex, safeUV) * _Color;
@@ -158,6 +164,9 @@ Shader "Custom/LightingUnlitTransparent"
             float _SwayAmplitude;
             float _SwaySpeed;
             float _HorizontalPlant;
+            
+            // 添加边缘采样控制变量
+            float _AvoidEdgeSampling;
 
             v2f vert (appdata v)
             {
@@ -191,12 +200,12 @@ Shader "Custom/LightingUnlitTransparent"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // 调整UV坐标，避免采样边缘像素
-                float2 safeUV = clamp(i.uv, 0.02, 0.98);
+                // 根据开关决定是否避免采样边缘像素
+                float2 safeUV = _AvoidEdgeSampling > 0.5 ? clamp(i.uv, 0.02, 0.98) : i.uv;
                 
-                // 计算高度图UV坐标
+                // 计算高度图UV坐标 (同样根据开关控制)
                 float2 heightmapUV = (i.worldPos.xz - _HeightmapParams.xy + _HeightmapParams.zw*0.5) / _HeightmapParams.zw;
-                heightmapUV = clamp(heightmapUV, 0.02, 0.98);
+                heightmapUV = _AvoidEdgeSampling > 0.5 ? clamp(heightmapUV, 0.02, 0.98) : heightmapUV;
                 
                 // 从主纹理获取颜色
                 fixed4 mainColor = tex2D(_MainTex, safeUV) * _Color;

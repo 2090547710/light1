@@ -160,9 +160,10 @@ public class Lighting : MonoBehaviour
             edgeQuad.transform.localRotation = Quaternion.Euler(90, -rotation, 0);
             
             // 检查size是否变化
-            if (cachedSize != size && edgeQuad.transform.childCount > 0)
+            if (edgeQuad.transform.childCount > 0)
             {
                 edgeQuad.transform.GetChild(0).localScale = new Vector3(size, size, 1);
+                
                 cachedSize = size;
             }
         }
@@ -319,6 +320,8 @@ public class Lighting : MonoBehaviour
     {
         // 通过设置光源大小为0，来移除光源
         size = 0;
+        // 销毁范围高度图
+        DestroyEdgeQuad();
         MarkDirty();
         LightingManager.UpdateDirtyLights();
         //从activeLights中移除
@@ -674,6 +677,7 @@ public class Lighting : MonoBehaviour
         
         // 创建一个Quad作为图片显示
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        quad.layer = 13;
         quad.transform.SetParent(edgeQuad.transform);
         
         // 修改：考虑rotation属性

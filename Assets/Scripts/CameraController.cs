@@ -14,37 +14,17 @@ public class CameraController : MonoBehaviour
     private Vector3 currentRotation;
     private Vector3 velocity = Vector3.zero;
     private float currentZoom;
-    
+
     // 保存相机设置的键名
     private const string ROTATION_X_KEY = "CameraRotationX";
     private const string ROTATION_Y_KEY = "CameraRotationY";
+    private const string ROTATION_Z_KEY = "CameraRotationZ";
     private const string ZOOM_KEY = "CameraZoom";
 
     void Start()
     {
-        // 尝试从PlayerPrefs加载保存的相机设置
-        if (PlayerPrefs.HasKey(ROTATION_X_KEY) && PlayerPrefs.HasKey(ROTATION_Y_KEY) && PlayerPrefs.HasKey(ZOOM_KEY))
-        {
-            rotation.x = PlayerPrefs.GetFloat(ROTATION_X_KEY);
-            rotation.y = PlayerPrefs.GetFloat(ROTATION_Y_KEY);
-            currentZoom = PlayerPrefs.GetFloat(ZOOM_KEY);
-        }
-        else
-        {
-            // 如果没有保存的设置，使用默认值
-            rotation = transform.eulerAngles;
-            currentZoom = initialZoom;
-        }
-        
-        currentRotation = rotation;
-        
-        if(target!=null){
-            // 根据初始值强制更新摄像机位置
-            Quaternion initialRot = Quaternion.Euler(rotation.x, rotation.y, 0);
-            Vector3 initialDir = new Vector3(0, 0, -currentZoom);
-            transform.position = target.position + initialRot * initialDir;
-            transform.LookAt(target.position);
-        }
+        // 加载保存的相机设置
+        LoadCameraSettings();
     }
 
     void Update()
@@ -66,7 +46,8 @@ public class CameraController : MonoBehaviour
 
         // 平滑插值
         currentRotation = Vector3.SmoothDamp(currentRotation, rotation, ref velocity, smoothTime);
-        currentZoom = Mathf.SmoothDamp(currentZoom, currentZoom, ref velocity.z, smoothTime);
+        float targetZoom = currentZoom; // 目标缩放值是通过上面鼠标滚轮输入计算出的
+        currentZoom = Mathf.SmoothDamp(currentZoom, targetZoom, ref velocity.z, smoothTime);
 
         // 计算新的位置和旋转
         Quaternion rot = Quaternion.Euler(currentRotation.x, currentRotation.y, 0);
@@ -75,28 +56,40 @@ public class CameraController : MonoBehaviour
         
         // 始终看向目标
         transform.LookAt(target.position);
-    }
-    
-    // 在应用程序暂停或退出时保存相机设置
-    void OnApplicationPause(bool pauseStatus)
-    {
-        if (pauseStatus)
+
+        // 当鼠标停止操作一段时间后保存相机设置
+        if (Input.GetMouseButtonUp(1) || Mathf.Abs(scroll) > 0)
         {
             SaveCameraSettings();
         }
     }
     
-    void OnApplicationQuit()
-    {
-        SaveCameraSettings();
-    }
-    
-    // 保存相机设置到PlayerPrefs
+    // 保存相机设置
     private void SaveCameraSettings()
     {
         PlayerPrefs.SetFloat(ROTATION_X_KEY, rotation.x);
         PlayerPrefs.SetFloat(ROTATION_Y_KEY, rotation.y);
+        PlayerPrefs.SetFloat(ROTATION_Z_KEY, rotation.z);
         PlayerPrefs.SetFloat(ZOOM_KEY, currentZoom);
         PlayerPrefs.Save();
+    }
+
+    // 加载相机设置
+    private void LoadCameraSettings()
+    {
+        // 检查是否有保存的设置，如果有则加载，否则使用默认值
+        if (PlayerPrefs.HasKey(ZOOM_KEY))
+        {
+            rotation.x = PlayerPrefs.GetFloat(ROTATION_X_KEY, 0);
+            rotation.y = PlayerPrefs.GetFloat(ROTATION_Y_KEY, 0);
+            rotation.z = PlayerPrefs.GetFloat(ROTATION_Z_KEY, 0);
+            currentRotation = rotation;
+            currentZoom = PlayerPrefs.GetFloat(ZOOM_KEY, initialZoom);
+        }
+        else
+        {
+            // 使用初始缩放值
+            currentZoom = initialZoom;
+        }
     }
 }
