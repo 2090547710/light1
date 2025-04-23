@@ -6,11 +6,6 @@ using System.IO;
 [CustomEditor(typeof(SceneObjectManager))]
 public class SceneObjectManagerEditor : Editor
 {
-    private string newPrefabPath = "";
-    private SceneObjectType selectedObjectType = SceneObjectType.Map;
-    private Vector3 newPosition = Vector3.zero;
-    private Vector3 newScale = Vector3.one;
-    
     // 在OnEnable中初始化savePath
     private void OnEnable()
     {
@@ -75,49 +70,6 @@ public class SceneObjectManagerEditor : Editor
                 sceneManager.saveFilePath = path;
                 EditorUtility.SetDirty(sceneManager); // 标记为已修改，确保保存
             }
-        }
-        
-        // 创建新物体区域
-        EditorGUILayout.Space(10);
-        EditorGUILayout.LabelField("创建新场景物体", EditorStyles.boldLabel);
-        
-        // 物体类型选择
-        selectedObjectType = (SceneObjectType)EditorGUILayout.EnumPopup("物体类型:", selectedObjectType);
-        
-        // 预制体路径
-        EditorGUILayout.BeginHorizontal();
-        newPrefabPath = EditorGUILayout.TextField("预制体路径:", newPrefabPath);
-        if (GUILayout.Button("选择预制体", GUILayout.Width(100)))
-        {
-            string path = EditorUtility.OpenFilePanel("选择预制体", "Assets/Resources", "prefab");
-            if (!string.IsNullOrEmpty(path))
-            {
-                // 转换为相对于Resources文件夹的路径
-                if (path.Contains("/Resources/"))
-                {
-                    int index = path.IndexOf("/Resources/") + "/Resources/".Length;
-                    newPrefabPath = path.Substring(index);
-                    
-                    // 移除.prefab扩展名
-                    if (newPrefabPath.EndsWith(".prefab"))
-                    {
-                        newPrefabPath = newPrefabPath.Substring(0, newPrefabPath.Length - 7);
-                    }
-                }
-            }
-        }
-        EditorGUILayout.EndHorizontal();
-        
-        // 位置
-        newPosition = EditorGUILayout.Vector3Field("位置:", newPosition);
-        
-        // 缩放
-        newScale = EditorGUILayout.Vector3Field("缩放:", newScale);
-        
-        // 创建按钮
-        if (GUILayout.Button("创建物体", GUILayout.Height(30)))
-        {
-            sceneManager.CreateSceneObject(selectedObjectType, newPosition, Quaternion.identity, newScale, newPrefabPath);
         }
         
         // 清除按钮

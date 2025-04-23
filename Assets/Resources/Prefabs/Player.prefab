@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8848043713084031215}
   - component: {fileID: 7932607150062067710}
   - component: {fileID: 3107846771348267159}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 1356731054344121278}
   - component: {fileID: 7038498242931942176}
   - component: {fileID: 4471405134082509040}
-  m_Layer: 11
+  m_Layer: 12
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -140,7 +140,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   playerLightRange: 5
-  playerLightIntensity: 1
+  playerLightIntensity: 0.3
 --- !u!114 &4471405134082509040
 MonoBehaviour:
   m_ObjectHideFlags: 0

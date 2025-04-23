@@ -80,6 +80,32 @@ public class PlantManagerEditor : Editor
             }
         }
         
+        // 数据库加载工具
+        EditorGUILayout.Space(10);
+        EditorGUILayout.LabelField("数据库加载工具", EditorStyles.boldLabel);
+        
+        EditorGUILayout.BeginHorizontal();
+        
+        // 加载种子映射按钮
+        if (GUILayout.Button("重新加载种子映射", GUILayout.Height(30)))
+        {
+            plantManager.LoadSeedMappings();
+            plantManager.UpdateAllPlantCounts();
+            plantManager.RebuildUpdatablePlants();
+            EditorUtility.DisplayDialog("成功", "种子映射数据已重新加载", "确定");
+        }
+        
+        // 加载植物数据库按钮
+        if (GUILayout.Button("重新加载植物数据库", GUILayout.Height(30)))
+        {
+            plantManager.LoadPlantDatabase();
+            plantManager.UpdateAllPlantCounts();
+            plantManager.RebuildUpdatablePlants();
+            EditorUtility.DisplayDialog("成功", "植物数据库已重新加载", "确定");
+        }
+        
+        EditorGUILayout.EndHorizontal();
+        
         // 清除按钮 - 新增功能
         EditorGUILayout.Space(10);
         if (GUILayout.Button("清除所有植物", GUILayout.Height(30)))
@@ -93,7 +119,6 @@ public class PlantManagerEditor : Editor
         // 显示当前植物信息
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField($"当前活跃植物: {plantManager.activePlants.Count}", EditorStyles.boldLabel);
-        EditorGUILayout.LabelField($"当前枯萎植物: {plantManager.witheredPlants.Count}", EditorStyles.boldLabel);
         
         // 显示植物列表
         if (plantManager.activePlants.Count > 0)

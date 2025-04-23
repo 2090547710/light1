@@ -14,8 +14,6 @@ public class PlantSaveData
     public int currentStage;
     public int maxStages;
     public bool isWithered;
-    public bool hasTriedBloom;
-    public bool hasTriedFruit;
     public bool isImmortal;
     public string prefabPath; // 新增预制体路径字段
     
@@ -38,8 +36,6 @@ public class PlantSaveData
         currentStage = plant.currentStage;
         maxStages = plant.maxStages;
         isWithered = plant.IsWithered;
-        hasTriedBloom = plant.HasTriedBloom;
-        hasTriedFruit = plant.HasTriedFruit;
         isImmortal = plant.IsImmortal;
         
         // 如果当前阶段有效，则从当前阶段获取预制体路径
@@ -124,6 +120,7 @@ public class SerializablePlantStage
     public int plantID;
     public string plantName;
     public float growthRate;
+    public float witherRate; // 新增枯萎速度参数
     public string prefabPath; // 新增预制体路径字段
     public List<int> prerequisitePlantIDs = new List<int>();
     public List<float> prerequisiteWeights = new List<float>();
@@ -141,6 +138,7 @@ public class SerializablePlantStage
         plantID = stage.plantID;
         plantName = stage.plantName;
         growthRate = stage.growthRate;
+        witherRate = stage.witherRate; // 保存枯萎速度
         prefabPath = stage.prefabPath; // 保存预制体路径
         
         // 复制列表
@@ -175,6 +173,7 @@ public class SerializablePlantStage
         stage.plantID = plantID;
         stage.plantName = plantName;
         stage.growthRate = growthRate;
+        stage.witherRate = witherRate; // 设置枯萎速度
         stage.prefabPath = prefabPath; // 设置预制体路径
         
         // 复制列表

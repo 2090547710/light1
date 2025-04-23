@@ -29,9 +29,6 @@ public class PlantManager : MonoBehaviour
     // 添加活跃植物列表
     public List<Plant> activePlants = new List<Plant>();
     
-    // 添加枯萎植物列表
-    public List<Plant> witheredPlants = new List<Plant>();
-    
     // 添加可更新植物列表
     public List<int> updatablePlants = new List<int>();
     
@@ -48,6 +45,7 @@ public class PlantManager : MonoBehaviour
         public List<string> plantNameList = new List<string>();
         public List<float> weightList = new List<float>();
         public float growthRateValue;
+        public float witherRate;
         public string prefabPath;
     }
     
@@ -67,7 +65,7 @@ public class PlantManager : MonoBehaviour
 
 #region 数据库加载与解析
     // 加载植物数据库
-    private void LoadPlantDatabase()
+    public void LoadPlantDatabase()
     {
         TextAsset csvFile = Resources.Load<TextAsset>(plantDatabasePath);
         if (csvFile == null)
@@ -114,7 +112,7 @@ public class PlantManager : MonoBehaviour
     }
     
     // 加载种子映射数据
-    private void LoadSeedMappings()
+    public void LoadSeedMappings()
     {
         TextAsset csvFile = Resources.Load<TextAsset>(seedMappingPath);
         if (csvFile == null)
@@ -190,9 +188,20 @@ public class PlantManager : MonoBehaviour
                     mapping.growthRateValue = GetDefaultGrowthRate(mapping.growthRate);
                 }
                 
+                // 解析枯萎速率
+                if (values.Length > 10 && float.TryParse(values[10], out float witherRate))  // 新增：解析WitherRate
+                {
+                    mapping.witherRate = witherRate;
+                }
+                else
+                {
+                    // 默认枯萎速率为1.0
+                    mapping.witherRate = 1.0f;
+                }
+                
                 // 解析目标植物ID、名称和权重
-                // 从索引10开始，每三个字段为一组(ID、名称和权重)  // 索引+1
-                for (int j = 10; j < values.Length - 2; j += 3)
+                // 从索引11开始，每三个字段为一组(ID、名称和权重)  // 索引修改为11
+                for (int j = 11; j < values.Length - 2; j += 3)
                 {
                     if (!string.IsNullOrEmpty(values[j]) && int.TryParse(values[j], out int plantId))
                     {
@@ -362,16 +371,35 @@ public class PlantManager : MonoBehaviour
             // 处理生长速率
             else if (foundGrMarker && !foundPreMarker)
             {
+                // 尝试解析生长速率
                 if (!string.IsNullOrEmpty(values[currentIndex]) && 
                     float.TryParse(values[currentIndex], out float growthRate))
                 {
                     stage.growthRate = growthRate;
                     currentIndex++;
+                    
+                    // 尝试解析枯萎速率（如果存在）
+                    if (currentIndex < values.Length && 
+                        !string.IsNullOrEmpty(values[currentIndex]) && 
+                        values[currentIndex] != "pre" && 
+                        values[currentIndex] != "up" && 
+                        float.TryParse(values[currentIndex], out float witherRate))
+                    {
+                        stage.witherRate = witherRate;
+                        currentIndex++;
+                    }
+                    else
+                    {
+                        // 如果没有找到枯萎速率或无法解析，设置默认值
+                        stage.witherRate = 1.0f;
+                    }
                 }
                 else
                 {
                     // 如果没有找到生长速率或为空，设置默认值
                     stage.growthRate = 1.0f;
+                    stage.witherRate = 1.0f;
+                    
                     // 如果当前字段为空，跳过
                     if (currentIndex < values.Length && string.IsNullOrEmpty(values[currentIndex]))
                     {
@@ -497,7 +525,8 @@ public class PlantManager : MonoBehaviour
             plantName = size.ToString() + growthRate.ToString(),
             associatedLights = mapping.lightData,
             growthRate = mapping.growthRateValue,
-            prefabPath = mapping.prefabPath  // 添加预制体路径
+            prefabPath = mapping.prefabPath,  // 添加预制体路径
+            witherRate = mapping.witherRate   // 添加枯萎速率
         };
         
         return seedStage;
@@ -572,7 +601,8 @@ public class PlantManager : MonoBehaviour
             plantID = plantId,
             associatedLights = mapping.lightData,
             growthRate = mapping.growthRateValue,
-            prefabPath = mapping.prefabPath  // 添加预制体路径
+            prefabPath = mapping.prefabPath,
+            witherRate = mapping.witherRate
         };
         
         // 检查植物数据库中是否存在对应ID的植物
@@ -750,13 +780,11 @@ public class PlantManager : MonoBehaviour
                 }
             }
         }
-        
-        // 更新完可更新植物列表后，尝试让活跃植物结果
-        TryFruitForEligiblePlants();
+
     }
 
     // 完全重建可更新植物列表（用于初始化和批量更新）
-    private void RebuildUpdatablePlants()
+    public void RebuildUpdatablePlants()
     {
         // 清空当前可更新植物列表
         updatablePlants.Clear();
@@ -792,26 +820,9 @@ public class PlantManager : MonoBehaviour
                 updatablePlants.Add(plantId);
             }
         }
-        
-        // 更新完可更新植物列表后，尝试让活跃植物结果
-        TryFruitForEligiblePlants();
+
     }
-    
-    // 尝试让符合条件的植物结果
-    private void TryFruitForEligiblePlants()
-    {
-        // 遍历所有活跃植物
-        foreach (Plant plant in activePlants)
-        {
-            // 检查植物是否可以尝试结果
-            if (plant.CanTryFruit())
-            {
-                // 调用植物的TryFruit方法
-                plant.TryFruit(); 
-            }
-        }
-    }
-    
+       
     // 获取可更新植物列表（只读）
     public IReadOnlyList<int> GetUpdatablePlants()
     {
@@ -1066,13 +1077,6 @@ public class PlantManager : MonoBehaviour
             plants.Add(saveData);
         }
         
-        // 从枯萎植物中获取存档数据
-        foreach(Plant plant in witheredPlants)
-        {
-            PlantSaveData saveData = plant.GetSaveData();
-            plants.Add(saveData);
-        }
-        
         // 将数据序列化为JSON
         string jsonData = JsonUtility.ToJson(new PlantSaveDataWrapper { plants = plants }, true);
         
@@ -1085,7 +1089,7 @@ public class PlantManager : MonoBehaviour
     // 清除所有植物的方法
     public void ClearAllPlants()
     {
-        // 清除现有植物
+        // 清除所有植物（包括枯萎和非枯萎植物）
         foreach(Plant plant in activePlants.ToList())
         {
             foreach (var light in plant.lightSources.ToList())
@@ -1099,19 +1103,6 @@ public class PlantManager : MonoBehaviour
             Destroy(plant.gameObject);
         }
         activePlants.Clear();
-        
-        // 清除枯萎植物
-        foreach(Plant plant in witheredPlants.ToList())
-        {
-            foreach (var light in plant.lightSources.ToList())
-            {
-                light.RemoveLighting();
-                plant.lightSources.Remove(light);
-                Destroy(light);
-            }
-            Destroy(plant.gameObject);
-        }
-        witheredPlants.Clear();
     }
 
     // 加载所有植物数据
@@ -1219,6 +1210,7 @@ public class PlantManager : MonoBehaviour
                      $"  名称: {stage.plantName}\n" +
                      $"  阶段: {stage.stageType}\n" +
                      $"  生长速率: {stage.growthRate}\n" +
+                     $"  枯萎速率: {stage.witherRate}\n" +
                      $"  预制体路径: {prefabPathInfo}\n" +
                      $"  前置植物: {prerequisitesStr}\n" +
                      $"  更新植物: {updatePlantsStr}\n" +
@@ -1340,7 +1332,7 @@ public class PlantManager : MonoBehaviour
         foreach (Plant plant in activePlants.ToList())
         {
             // 跳过火植物本身和已经枯萎的植物
-            if (plant is Fire || plant.IsWithered)
+            if (plant is Fire)
             {
                 continue;
             }
@@ -1367,41 +1359,6 @@ public class PlantManager : MonoBehaviour
                 plant.Wither();
             }
         }
-    }
-
-    // 将植物添加到枯萎植物列表
-    public void AddToWitheredPlants(Plant plant)
-    {
-        if (plant == null) return;
-        
-        // 将植物从活跃植物列表中移除
-        if (activePlants.Contains(plant))
-        {
-            activePlants.Remove(plant);
-        }
-        
-        // 将植物添加到枯萎植物列表（如果尚未添加）
-        if (!witheredPlants.Contains(plant))
-        {
-            witheredPlants.Add(plant);
-        }
-    }
-    
-    // 从枯萎植物列表中移除植物
-    public void RemoveFromWitheredPlants(Plant plant)
-    {
-        if (plant == null) return;
-        
-        if (witheredPlants.Contains(plant))
-        {
-            witheredPlants.Remove(plant);
-        }
-    }
-    
-    // 获取枯萎植物列表（只读）
-    public IReadOnlyList<Plant> GetWitheredPlants()
-    {
-        return witheredPlants;
     }
 
 #endregion    

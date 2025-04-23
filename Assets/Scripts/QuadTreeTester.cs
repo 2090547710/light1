@@ -82,7 +82,7 @@ public class QuadTreeTester : MonoBehaviour
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             // 使用 layer=7 进行射线检测
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f, 1 << 7))
+            if (Physics.Raycast(ray, out RaycastHit hit, 100f, 1 << 6))
             {
                 FindAndRemoveSeed(hit.transform.gameObject);
             }

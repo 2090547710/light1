@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5474757953537004639}
   - component: {fileID: 6912660326825449324}
   - component: {fileID: 3158612728245651672}
-  m_Layer: 7
+  m_Layer: 6
   m_Name: seed(Clone)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -115,7 +115,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 386343584707087820}
-  m_Layer: 7
+  m_Layer: 6
   m_Name: Seed
   m_TagString: Untagged
   m_Icon: {fileID: 0}

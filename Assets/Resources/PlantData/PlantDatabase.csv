@@ -1,7 +1,7 @@
-植物ID,阶段类型,植物名称,prefab,开始标记,size,isObstacle,isSeed,lightHeight,heightMap,edgeHeightMap,size,isObstacle,isSeed,lightHeight,heightMap,edgeHeightMap,开始标记,GrowthRate,开始标记,要求植物ID,权重（数量）,要求植物ID,权重（数量）,开始标记,更新植物,权重,更新植物,权重
-1,Flower,玫瑰,,li,5,FALSE,FALSE,0.5,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,0.5,pre,,,,,up,2,3,6,7
-2,Fruit,玫瑰果,,li,5,FALSE,FALSE,0.7,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,0.5,pre,5,1,,,up,,,,
-3,Flower,向日葵,Prefabs/测试植物,li,5,FALSE,FALSE,0.8,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,0.5,pre,,,,,up,4,1,,
-4,Fruit,向日葵籽,,li,5,FALSE,FALSE,0.9,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,0.5,pre,,,3,2,up,,,,
-5,Flower,郁金香,,li,5,FALSE,FALSE,0.6,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,0.5,pre,,,,,up,6,1,2,10
-6,Fruit,郁金香种子,,li,5,FALSE,FALSE,0.7,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,0.5,pre,5,1,,,up,,,,
+植物ID,阶段类型,植物名称,prefab,开始标记,size,isObstacle,isSeed,lightHeight,heightMap,edgeHeightMap,size,isObstacle,isSeed,lightHeight,heightMap,edgeHeightMap,开始标记,GrowthRate,WitherRate,开始标记,要求植物ID,权重（数量）,要求植物ID,权重（数量）,开始标记,更新植物,权重,更新植物,权重
+1,Flower,玫瑰,,li,5,FALSE,FALSE,0.5,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,,,,,up,2,10,6,1
+2,Fruit,玫瑰果,,li,5,FALSE,FALSE,0.7,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,1,2,,,up,,,,
+3,Flower,向日葵,Prefabs/测试植物,li,5,FALSE,FALSE,0.8,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,,,,,up,4,1,,
+4,Fruit,向日葵籽,,li,5,FALSE,FALSE,0.9,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,,,3,2,up,,,,
+5,Flower,郁金香,,li,5,FALSE,FALSE,0.6,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,,,,,up,6,1,2,10
+6,Fruit,郁金香种子,,li,5,FALSE,FALSE,0.7,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,1,1,,,up,,,,

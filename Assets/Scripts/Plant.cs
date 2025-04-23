@@ -38,13 +38,9 @@ public class Plant : MonoBehaviour
     public int currentStage;
     public int maxStages = 3;
     public bool isWithered;
-    private bool hasTriedBloom = false; // 是否已尝试开花
-    private bool hasTriedFruit = false; // 是否已尝试结果
     [SerializeField] private bool isImmortal = false; // 添加不会枯萎标记，默认为false
     
-    // 添加公共属性用于访问私有字段
-    public bool HasTriedBloom => hasTriedBloom;
-    public bool HasTriedFruit => hasTriedFruit;
+
     public bool IsWithered => isWithered;
     public bool IsImmortal => isImmortal; // 添加公共属性用于访问不会枯萎标记
 
@@ -54,19 +50,10 @@ public class Plant : MonoBehaviour
     [Header("预制体")]
     public GameObject stageModelObject; // 用于存储当前阶段的预制体游戏对象
 
-    [Header("开花设置")]
-    public float bloomThreshold = 0.8f; // 开花阈值
-    public float bloomSteepness = 10f; // Sigmoid激活函数的陡峭度
-    [SerializeField] private float bloomProbability; // 开花概率
-    [SerializeField] private float brightnessRatio; // 添加亮度比例字段
 
     [Header("生长速度设置")]
-    public float growthRate = 1.0f; // 恒定生长速度值
-    public float growthRateInfluence = 0.3f; // 生长速度对开花概率的影响系数
-
-    // 添加公共属性用于外部访问开花概率和亮度比例
-    public float BloomProbability => bloomProbability;
-    public float BrightnessRatio => brightnessRatio; // 新增亮度比例属性
+    public float growthRate = 1.0f; // 生长速度
+    public float witherRate = 1.0f; // 枯萎速度
 
     [Header("植物信息")]
     public int plantID; // 植物ID
@@ -81,12 +68,16 @@ public class Plant : MonoBehaviour
     public float textHeight = 1.5f; // 文本悬浮高度
     public Color textColor = Color.white; // 文本颜色
     public float textSize = 1.0f; // 文本大小
+
+    private float growthTimer = 0f; // 生长计时器
+    private float witherTimer = 0f; // 枯萎计时器
     #endregion
    
     #region Unity生命周期方法
     void Start()
     {
          // 检查植物是否在火光源范围内
+         //阶段0会直接生长为种子
         if(currentStage==0){
             plantID=0;
             plantName="Seed";
@@ -115,6 +106,36 @@ public class Plant : MonoBehaviour
                 nameText.text = displayName;
             }
         }
+        
+        // 生长计时器
+        if (currentStage > 0 && growthRate > 0)
+        {
+            growthTimer += Time.deltaTime;
+            float growthInterval = 60f / growthRate; // 每分钟调用Grow的次数转换为时间间隔
+            
+            if (growthTimer >= growthInterval)
+            {
+                if(currentStage==1){
+                    TryBloom();
+                }else if(currentStage==2){
+                    TryFruit();
+                }
+                growthTimer = 0f;
+            }
+        }
+        
+        // 枯萎计时器
+        if (currentStage > 0 && witherRate > 0)
+        {
+            witherTimer += Time.deltaTime;
+            float witherInterval = 60f / witherRate; // 每分钟调用TryWither的次数转换为时间间隔
+            
+            if (witherTimer >= witherInterval)
+            {
+                TryWither();
+                witherTimer = 0f;
+            }
+        }
     }
     
     private void OnEnable()
@@ -131,16 +152,8 @@ public class Plant : MonoBehaviour
         // 确保 PlantManager 实例存在
         if (PlantManager.Instance != null)
         {
-            // 如果是枯萎植物，从枯萎植物列表中移除
-            if (isWithered)
-            {
-                PlantManager.Instance.RemoveFromWitheredPlants(this);
-            }
-            else
-            {
-                // 非枯萎植物，从活跃植物列表中移除
-                PlantManager.Instance.UnregisterPlant(this);
-            }
+            // 从活跃植物列表中移除
+            PlantManager.Instance.UnregisterPlant(this);
         }
     }
     #endregion
@@ -171,7 +184,7 @@ public class Plant : MonoBehaviour
     #region 生长和枯萎方法
     public virtual void Grow()
     {
-        if (isWithered || currentStage >= maxStages) return;
+        if (currentStage >= maxStages) return;
 
         // 添加碰撞检测逻辑
         if (currentStage < growthStages.Count && HasCollisionWithOtherPlants())
@@ -186,7 +199,10 @@ public class Plant : MonoBehaviour
             }
             return;
         }
-
+        //更新UpdatePlantCounts
+        if (currentStage >= 2 && PlantManager.Instance.IsPlantInDatabase(plantID)) {
+            PlantManager.Instance.UpdatePlantCounts(this, false);
+        }
         // 禁用并移除所有现有光源组件
         lightSources.ForEach(l => {
             l.RemoveLighting();
@@ -197,12 +213,9 @@ public class Plant : MonoBehaviour
         
         ApplyStageConfig(currentStage);
         currentStage++;
+        //更新UpdatePlantCounts
         if (currentStage >= 2 && PlantManager.Instance.IsPlantInDatabase(plantID)) {
             PlantManager.Instance.UpdatePlantCounts(this, true);
-        }
-        // 如果刚成长为种子阶段，立即尝试开花
-        if (currentStage == 1 && PlantManager.Instance.IsValidSeedName(plantName)) {
-            // TryBloom();
         }
         
         // 植物生长后，检查玩家是否被卡住
@@ -223,6 +236,7 @@ public class Plant : MonoBehaviour
         plantID = stage.plantID;
         plantName = stage.plantName;
         growthRate = stage.growthRate;
+        witherRate = stage.witherRate; // 读取阶段的枯萎速度
         prerequisitePlantIDs = stage.prerequisitePlantIDs;
         prerequisiteWeights = stage.prerequisiteWeights;
         updatePlantIDs = stage.updatePlantIDs;
@@ -269,26 +283,42 @@ public class Plant : MonoBehaviour
         LightingManager.UpdateDirtyLights(); // 更新所有脏标记的光源
     }
 
-    public void Wither()
+    public void TryWither()
     {
-        // 如果植物被标记为不会枯萎，则直接返回
-        if (isImmortal)
+        // 如果植物已枯萎或被标记为不会枯萎，则直接返回
+        if (isWithered || isImmortal)
         {
             return;
         }
+        
+        // 计算区域内亮度情况及存活概率
+        float brightnessRatio = CalculateBrightnessRatio();
+        
+        // 根据概率决定是否枯萎
+        if (UnityEngine.Random.value < 1 - brightnessRatio)
+        {
+            Debug.Log($"植物 {plantName} 尝试枯萎成功。亮度比例: {brightnessRatio:F2}, 枯萎概率: {1-brightnessRatio:F2}");
+            Wither();
+        }
+        else
+        {
+            Debug.Log($"植物 {plantName} 尝试枯萎失败。亮度比例: {brightnessRatio:F2}, 枯萎概率: {1-brightnessRatio:F2}");
+        }
+    }
 
+    public void Wither()
+    {
         isWithered = true;
-  
+
         // 更新名称显示
         if (nameText != null)
         {
             nameText.text = plantName + " (已枯萎)";
         }
         
-        // 根据当前阶段执行不同的删除逻辑
-        if (currentStage == 0)
+        // 除了currentStage == 1以外的所有情况，移除所有非障碍物光照组件
+        if (currentStage != 1)
         {
-            // 情况1：种子阶段前
             // 禁用并移除除了isObstacle的所有现有光源组件
             foreach (var light in lightSources.ToList())
             {
@@ -299,40 +329,6 @@ public class Plant : MonoBehaviour
                     Destroy(light);
                 }
             }
-            
-            // 从四叉树中移除
-            LightingManager.tree.Remove(gameObject);
-            
-            // 添加到枯萎植物列表
-            PlantManager.Instance.AddToWitheredPlants(this);
-        }
-        else if (currentStage == 1 || currentStage == 2)
-        {
-            // 情况2：种子或花阶段
-            // 禁用并移除除了isObstacle的所有现有光源组件
-            foreach (var light in lightSources.ToList())
-            {
-                if (!light.isObstacle)
-                {
-                    light.RemoveLighting();
-                    lightSources.Remove(light);
-                    Destroy(light);
-                }
-            }
-            
-            // 从四叉树中移除
-            LightingManager.tree.Remove(gameObject);
-            
-            // 更新植物计数
-            PlantManager.Instance.UpdatePlantCounts(this, false);
-            
-            // 添加到枯萎植物列表
-            PlantManager.Instance.AddToWitheredPlants(this);
-        }
-        else if (currentStage == 3)
-        {
-            // 情况3：果实阶段
-            // 认为不会枯萎
         }
     }
 
@@ -345,20 +341,14 @@ public class Plant : MonoBehaviour
 
     #region 开花和结果方法
     public void TryBloom()
-    {
-        // 如果不是种子阶段、已经凋谢或者已经尝试过开花，则直接返回
-        if (currentStage != 1 || isWithered || hasTriedBloom) return;
-        
-        // 标记为已尝试开花
-        hasTriedBloom = true;
-        
+    {          
         // 计算区域内亮度情况及开花概率
         float brightnessRatio = CalculateBrightnessRatio();
 
         // 根据概率决定是否开花
-        if (UnityEngine.Random.value < bloomProbability)
+        if (UnityEngine.Random.value < brightnessRatio)
         {
-            Debug.Log($"种子成功开花！亮度比例: {brightnessRatio:F2}, 开花概率: {bloomProbability:F2}");
+            Debug.Log($"种子成功开花！亮度比例: {brightnessRatio:F2}, 开花概率: {brightnessRatio:F2}");
 
             // 尝试通过植物名称获取更新后的植物阶段
             PlantStage updatedStage = PlantManager.Instance.GetPlantStageBySeedFromName(plantName);
@@ -372,14 +362,12 @@ public class Plant : MonoBehaviour
         }
         else
         {
-            Debug.Log($"种子尝试开花失败。亮度比例: {brightnessRatio:F2}, 开花概率: {bloomProbability:F2}");
+            Debug.Log($"种子尝试开花失败。亮度比例: {brightnessRatio:F2}, 开花概率: {brightnessRatio:F2}");
         }
     }
 
     public void TryFruit()
     {
-        // 如果已经尝试结果或不是花阶段或已经凋谢，则直接返回
-        if (currentStage != 2 || isWithered || hasTriedFruit) return;
 
         // 先尝试获取更新后的植物阶段
         PlantStage updatedStage = PlantManager.Instance.GetUpdatedPlantStage(growthStages[currentStage-1]);
@@ -387,17 +375,14 @@ public class Plant : MonoBehaviour
             // 如果没有可用的更新植物阶段，直接返回
             return;
         }
-        
-        // 标记为已尝试结果
-        hasTriedFruit = true;
-        
+                
         // 计算区域内亮度情况及结果概率
         float brightnessRatio = CalculateBrightnessRatio();
 
         // 根据概率决定是否结果
-        if (UnityEngine.Random.value < bloomProbability)
+        if (UnityEngine.Random.value < brightnessRatio)
         {
-            Debug.Log($"花朵成功结果！亮度比例: {brightnessRatio:F2}, 结果概率: {bloomProbability:F2}");
+            Debug.Log($"花朵成功结果！亮度比例: {brightnessRatio:F2}, 结果概率: {brightnessRatio:F2}");
             
             // 添加更新后的植物阶段
             growthStages.Add(updatedStage);
@@ -408,7 +393,7 @@ public class Plant : MonoBehaviour
         }
         else
         {
-            Debug.Log($"花朵尝试结果失败。亮度比例: {brightnessRatio:F2}, 结果概率: {bloomProbability:F2}");
+            Debug.Log($"花朵尝试结果失败。亮度比例: {brightnessRatio:F2}, 结果概率: {brightnessRatio:F2}");
         }
     }
 
@@ -417,63 +402,22 @@ public class Plant : MonoBehaviour
         if (LightingManager.tree == null)
         {
             Debug.LogWarning("四叉树未初始化，无法计算亮度比例");
-            bloomProbability = 0;
-            brightnessRatio = 0; // 更新亮度比例字段
             return 0;
         }
         
-        // 使用所有光源中最大的size作为检测区域大小
-        float maxLightSize = 0f;
-        if (lightSources.Count > 0)
+        // 获取植物上所有非障碍物光源
+        List<Lighting> nonObstacleLights = lightSources.Where(l => !l.isObstacle).ToList();
+        
+        if (nonObstacleLights.Count == 0)
         {
-            maxLightSize = lightSources.Max(l => l.size);
-        }
-        else
-        {
-            Debug.LogWarning("没有光源，无法计算开花概率");
-            bloomProbability = 0;
-            brightnessRatio = 0;
+            Debug.LogWarning("没有非障碍物光源，无法计算光照比例");
             return 0;
         }
         
-        Vector3 position = transform.position;
-        
-        // 创建检测区域的边界框
-        Bounds bloomArea = new Bounds(position, new Vector3(maxLightSize, 0, maxLightSize));
-        
-        // 使用边界框方法获取区域内的所有叶子节点
-        List<QuadTree.QuadTreeNode> leafNodes = LightingManager.tree.GetNeighborLeafNodes(bloomArea);
-        
-        if (leafNodes.Count == 0)
-        {
-            bloomProbability = 0;
-            brightnessRatio = 0; // 更新亮度比例字段
-            return 0;
-        }
-        
-        // 计算实际亮度总和，超过1的亮度按1计算
-        float totalBrightness = leafNodes.Sum(node => Mathf.Min(node.Brightness, 1f));
-        
-        // 计算理论最大亮度总和（每个节点亮度为1）
-        float maxPossibleBrightness = leafNodes.Count;
-        
-        // 计算亮度比例
-        brightnessRatio = totalBrightness / maxPossibleBrightness; // 更新亮度比例字段
-        
-        // 计算开花概率并存储为属性
-        // 将生长速度作为阈值的调整因子
-        float adjustedThreshold = bloomThreshold - (growthRate * growthRateInfluence);
-        bloomProbability = 1f / (1f + Mathf.Exp(-bloomSteepness * (brightnessRatio - adjustedThreshold)));
-        
-        return brightnessRatio;
+        // 使用四叉树计算光照比例并返回
+        return LightingManager.tree.CalculateLightingRatio(nonObstacleLights);
     }
     
-    // 添加公共方法以检查植物是否可以尝试结果
-    public bool CanTryFruit()
-    {
-        // 如果是花阶段(第2阶段)且未凋谢且尚未尝试结果，则返回true
-        return currentStage == 2 && !isWithered && !hasTriedFruit;
-    }
     #endregion
 
     #region 碰撞检测方法
@@ -946,6 +890,7 @@ public class Plant : MonoBehaviour
         public int plantID; // 植物ID
         public string plantName; // 植物名称
         public float growthRate; // 生长速度
+        public float witherRate; // 新增枯萎速度参数
         public List<int> prerequisitePlantIDs; // 前置植物ID列表
         public List<float> prerequisiteWeights; // 新增的权重集合
         public List<int> updatePlantIDs; // 更新植物ID列表 
@@ -1047,8 +992,6 @@ public class Plant : MonoBehaviour
         saveData.currentStage = currentStage;
         saveData.maxStages = maxStages;
         saveData.isWithered = isWithered;
-        saveData.hasTriedBloom = hasTriedBloom;
-        saveData.hasTriedFruit = hasTriedFruit;
         saveData.isImmortal = isImmortal;
         
         // 保存位置和旋转
@@ -1088,8 +1031,6 @@ public class Plant : MonoBehaviour
         // 设置基本属性
         plant.growthStages = saveData.ConvertToPlantStages();
         plant.maxStages = saveData.maxStages;
-        plant.hasTriedBloom = saveData.hasTriedBloom;
-        plant.hasTriedFruit = saveData.hasTriedFruit;
         plant.plantName = saveData.plantName;
         plant.plantID = saveData.plantID;
 
@@ -1157,11 +1098,12 @@ public class Plant : MonoBehaviour
         tempStage.plantID = currentStageData.plantID;
         tempStage.plantName = currentStageData.plantName;
         tempStage.growthRate = currentStageData.growthRate;
+        tempStage.witherRate = currentStageData.witherRate; // 复制枯萎速度
         tempStage.prerequisitePlantIDs = new List<int>(currentStageData.prerequisitePlantIDs);
         tempStage.prerequisiteWeights = new List<float>(currentStageData.prerequisiteWeights);
         tempStage.updatePlantIDs = new List<int>(currentStageData.updatePlantIDs);
         tempStage.updateWeights = new List<float>(currentStageData.updateWeights);
-        tempStage.prefabPath = currentStageData.prefabPath; // 添加预制体路径
+        tempStage.prefabPath = currentStageData.prefabPath;
         
         // 从当前活跃的光源获取最新的LightingData
         tempStage.associatedLights = GetLightingDataFromLightSources();

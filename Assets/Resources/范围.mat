@@ -69,6 +69,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AvoidEdgeSampling: 0
     - _BrightnessMultiplier: 1
     - _BumpScale: 1
     - _Cutoff: 0.5
@@ -92,6 +93,7 @@ Material:
     - _SwayFrequency: 1
     - _SwaySpeed: 1
     - _UVSec: 0
+    - _UseLightingData: 0
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

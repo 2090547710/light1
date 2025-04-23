@@ -48,82 +48,6 @@ public class SceneObjectManager : MonoBehaviour
         }
     }
     
-    // 创建新的场景物体
-    public SceneObjectProperty CreateSceneObject(SceneObjectType type, Vector3 position, Quaternion rotation, Vector3 scale, string prefabPath = null)
-    {
-        GameObject newObject;
-        
-        // 如果提供了预制体路径，则尝试加载该预制体
-        if (!string.IsNullOrEmpty(prefabPath))
-        {
-            GameObject prefab = Resources.Load<GameObject>(prefabPath);
-            if (prefab != null)
-            {
-                newObject = Instantiate(prefab, position, rotation);
-            }
-            else
-            {
-                Debug.LogWarning($"无法加载预制体: {prefabPath}，使用默认预制体代替");
-                newObject = Instantiate(sceneObjectPrefab, position, rotation);
-            }
-        }
-        else
-        {
-            // 如果没有提供预制体路径，使用默认预制体
-            newObject = Instantiate(sceneObjectPrefab, position, rotation);
-        }
-        
-        newObject.transform.localScale = scale;
-        
-        SceneObjectProperty property = newObject.GetComponent<SceneObjectProperty>();
-        if (property == null)
-        {
-            property = newObject.AddComponent<SceneObjectProperty>();
-        }
-        
-        property.objectType = type;
-        property.prefabPath = prefabPath;
-        
-        // 根据物体类型设置对应的layer
-        switch (type)
-        {
-            case SceneObjectType.Map:
-                newObject.layer = 8;
-                break;
-            case SceneObjectType.Obstacle:
-                newObject.layer = 6;
-                break;
-            case SceneObjectType.Water:
-                newObject.layer = 0;
-                break;
-            case SceneObjectType.BeginPoint:
-                newObject.layer = 5;
-                // 更新GameManager中的开始点引用
-                if (GameManager.Instance != null)
-                {
-                    GameManager.Instance.beginPoint = newObject;
-                }
-                break;
-            case SceneObjectType.EndPoint:
-                newObject.layer = 5;
-                // 更新GameManager中的结束点引用
-                if (GameManager.Instance != null)
-                {
-                    GameManager.Instance.endPoint = newObject;
-                }
-                break;
-            case SceneObjectType.Player:
-                newObject.layer = 11;
-                break;
-        }
-        
-        // 注册到管理器
-        RegisterSceneObject(property);
-        
-        return property;
-    }
-    
-    
     // 保存所有场景物体
     public void SaveAllSceneObjects()
     {
@@ -221,13 +145,13 @@ public class SceneObjectManager : MonoBehaviour
                     newObject.layer = 8;
                     break;
                 case SceneObjectType.Obstacle:
-                    newObject.layer = 6;
+                    newObject.layer = 7;
                     break;
                 case SceneObjectType.Water:
                     newObject.layer = 9;
                     break;
                 case SceneObjectType.BeginPoint:
-                    newObject.layer = 10;
+                    newObject.layer = 12;
                     // 更新GameManager中的开始点引用
                     if (GameManager.Instance != null)
                     {
@@ -235,7 +159,7 @@ public class SceneObjectManager : MonoBehaviour
                     }
                     break;
                 case SceneObjectType.EndPoint:
-                    newObject.layer = 10;
+                    newObject.layer = 11;
                     // 更新GameManager中的结束点引用
                     if (GameManager.Instance != null)
                     {

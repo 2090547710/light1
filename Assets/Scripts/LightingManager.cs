@@ -886,11 +886,11 @@ static void HideSimplifiedBoundaryMenu()
     
     void OnGUI()
     {
-        if (GUILayout.Button("Hide All Lighting Edge", GUILayout.Width(200)))
+        if (GUILayout.Button("Hide All Lighting Edge", GUILayout.Width(200),GUILayout.Height(50)))
         {
             HideAllLightingQuads();
         }
-        if (GUILayout.Button("Show All Lighting Edge", GUILayout.Width(200)))
+        if (GUILayout.Button("Show All Lighting Edge", GUILayout.Width(200),GUILayout.Height(50)))
         {
             ShowAllLightingQuads();
         }

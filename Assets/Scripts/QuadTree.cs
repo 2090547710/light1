@@ -1224,6 +1224,42 @@ public class QuadTree
             }
         }
     }
+
+    // 新增方法：获取指定旋转区域内的叶子节点
+    public List<QuadTreeNode> GetNeighborLeafNodesWithRotation(Bounds area, float rotation)
+    {
+        Vector2 rectCenter = new Vector2(area.center.x, area.center.z);
+        Vector2 rectSize = new Vector2(area.size.x, area.size.z);
+        List<QuadTreeNode> result = new List<QuadTreeNode>();
+        FindNeighborLeafNodesWithRotation(root, rectCenter, rectSize, rotation, result);
+        return result;
+    }
+
+    private void FindNeighborLeafNodesWithRotation(QuadTreeNode node, Vector2 rectCenter, Vector2 rectSize, float rotation, List<QuadTreeNode> result)
+    {
+        if (node == null) return;
+
+        Rect nodeRect = new Rect(
+            node.Center.x - node.Size.x/2,
+            node.Center.y - node.Size.y/2,
+            node.Size.x,
+            node.Size.y);
+
+        // 使用考虑旋转的碰撞检测
+        if (!RectangleRectOverlap(rectCenter, rectSize, nodeRect, rotation)) return;
+
+        if (node.Children == null)
+        {
+            result.Add(node);
+        }
+        else
+        {
+            foreach (var child in node.Children)
+            {
+                FindNeighborLeafNodesWithRotation(child, rectCenter, rectSize, rotation, result);
+            }
+        }
+    }
     #endregion
 
     public List<Vector4> GetIlluminatedAreaBoundarySegments()
@@ -1490,5 +1526,129 @@ public class QuadTree
         }
     }
     
+    // 计算给定光源列表的光照比例
+    public float CalculateLightingRatio(List<Lighting> lightSources)
+    {
+        // 跳过障碍物光源
+        List<Lighting> nonObstacleLights = lightSources.Where(l => !l.isObstacle).ToList();
+        
+        if (nonObstacleLights.Count == 0)
+        {
+            return 0f;
+        }
+        
+        // 创建哈希集合存储叶子节点，防止重复
+        HashSet<QuadTreeNode> leafNodesSet = new HashSet<QuadTreeNode>();
+        
+        // 对每个光源获取其范围内的叶子节点并添加到集合中
+        foreach (var light in nonObstacleLights)
+        {
+            Bounds lightBounds = light.GetWorldBounds();
+            float rotation = light.rotation;
+            // 使用考虑旋转的方法获取叶子节点
+            var nodesInRange = GetNeighborLeafNodesWithRotation(lightBounds, rotation);
+            foreach (var node in nodesInRange)
+            {
+                leafNodesSet.Add(node);
+            }
+        }
+        
+        // 将集合转换为列表
+        List<QuadTreeNode> allNodes = leafNodesSet.ToList();
+        if (allNodes.Count == 0)
+        {
+            return 0f;
+        }
+        
+        // 创建实际接收光照的叶子节点集合
+        HashSet<QuadTreeNode> illuminatedNodes = new HashSet<QuadTreeNode>();
+        float totalBrightness = 0f;
+        
+        // 处理每个叶子节点
+        foreach (var node in allNodes)
+        {
+            // 检查节点中心点是否被任何光源照亮
+            Vector3 nodeCenter = new Vector3(node.Center.x, 0, node.Center.y);
+            bool isInLightEffectiveRange = false;
+            
+            foreach (var light in nonObstacleLights)
+            {
+                if (light.heightMap == null) continue;
+                
+                // 检查节点是否在光源范围内
+                if (IsNodeInLightRange(node, light))
+                {
+                    // 计算节点在光源中的UV坐标
+                    Vector2 uv = CalculateUVForNodeInLight(node, light);
+                    
+                    // 从高度图采样原始值
+                    float rawBrightness = light.heightMap.GetPixelBilinear(uv.x, uv.y).r;
+                    
+                    // 添加容差处理
+                    rawBrightness = Mathf.Clamp01(rawBrightness);
+                    if (rawBrightness > 0.01f)
+                    {
+                        isInLightEffectiveRange = true;
+
+                    }
+                }
+            }
+            
+            // 如果节点在有效光照范围内，添加到集合并累加亮度
+            if (isInLightEffectiveRange)
+            {
+                illuminatedNodes.Add(node);
+                totalBrightness += Mathf.Min(node.Brightness, 1f); // 限制每个节点的亮度最大为1
+            }
+        }
+        
+        // 计算光照比例：亮度值/实际接收光照的叶子节点数
+        if (allNodes.Count > 0)
+        {
+            return Mathf.Clamp01(totalBrightness / illuminatedNodes.Count);
+        }
+        
+        return 0f;
+    }
+
+    // 检查节点是否在光源范围内（考虑旋转）
+    private bool IsNodeInLightRange(QuadTreeNode node, Lighting light)
+    {
+        Vector2 nodeCenter = node.Center;
+        Bounds lightBounds = light.GetWorldBounds();
+        Vector2 lightCenter = new Vector2(lightBounds.center.x, lightBounds.center.z);
+        Vector2 lightSize = new Vector2(lightBounds.size.x, lightBounds.size.z);
+        
+        // 检查节点中心点是否在旋转后的光源范围内
+        return light.IsPointInRotatedBounds(new Vector3(nodeCenter.x, 0, nodeCenter.y));
+    }
+
+    // 计算节点在光源中的UV坐标
+    private Vector2 CalculateUVForNodeInLight(QuadTreeNode node, Lighting light)
+    {
+        Vector2 nodePos = node.Center;
+        Bounds lightBounds = light.GetWorldBounds();
+        Vector2 lightCenter = new Vector2(lightBounds.center.x, lightBounds.center.z);
+        float rotation = light.rotation;
+        
+        // 计算相对于光源中心的位置
+        Vector2 localPos = nodePos - lightCenter;
+        
+        // 应用反向旋转变换
+        float rotationRad = -rotation * Mathf.Deg2Rad;
+        Vector2 rotatedPos = new Vector2(
+            localPos.x * Mathf.Cos(rotationRad) - localPos.y * Mathf.Sin(rotationRad),
+            localPos.x * Mathf.Sin(rotationRad) + localPos.y * Mathf.Cos(rotationRad)
+        );
+        
+        // 计算UV坐标
+        Vector2 uv = new Vector2(
+            (rotatedPos.x / (lightBounds.size.x * 0.5f)) * 0.5f + 0.5f,
+            (rotatedPos.y / (lightBounds.size.z * 0.5f)) * 0.5f + 0.5f
+        );
+        
+        // 边界约束确保UV在0-1范围内
+        return new Vector2(Mathf.Clamp01(uv.x), Mathf.Clamp01(uv.y));
+    }
 }
 
