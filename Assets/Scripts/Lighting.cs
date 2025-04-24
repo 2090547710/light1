@@ -154,8 +154,6 @@ public class Lighting : MonoBehaviour
         // 如果有quad存在，同步transform
         if (edgeQuad != null)
         {
-            // 更新位置
-            edgeQuad.transform.localPosition = new Vector3(0, 0.2f, 0);
             // 更新旋转以匹配光源rotation
             edgeQuad.transform.localRotation = Quaternion.Euler(90, -rotation, 0);
             
@@ -681,7 +679,8 @@ public class Lighting : MonoBehaviour
         quad.transform.SetParent(edgeQuad.transform);
         
         // 修改：考虑rotation属性
-        edgeQuad.transform.localPosition = new Vector3(0, lightHeight * 0.5f, 0);
+        float yOffset = 0.01f * (GetInstanceID() % 1000) / 1000f; // 基于实例ID创建微小偏移
+        edgeQuad.transform.localPosition = new Vector3(0, 0.05f+yOffset, 0);
         // 水平放置quad，但要考虑rotation属性
         edgeQuad.transform.localRotation = Quaternion.Euler(90, rotation, 0);
         
