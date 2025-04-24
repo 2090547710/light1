@@ -364,7 +364,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec8a6dfcf46693e498cf74142c7c4337, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxDepth: 6
+  maxDepth: 7
   capacity: 2
   preSplit: 0
   size: {x: 64, y: 64}
@@ -468,7 +468,6 @@ MonoBehaviour:
   plantDatabasePath: PlantData/PlantDatabase
   seedMappingPath: PlantData/SeedMapping
   activePlants: []
-  witheredPlants: []
   updatablePlants: 
   plants:
   - plantType: Plant
@@ -477,8 +476,6 @@ MonoBehaviour:
     currentStage: 1
     maxStages: 2
     isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
     isImmortal: 1
     prefabPath: 
     position:
@@ -499,6 +496,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -516,6 +514,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -535,8 +534,6 @@ MonoBehaviour:
     currentStage: 1
     maxStages: 2
     isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
     isImmortal: 1
     prefabPath: 
     position:
@@ -557,6 +554,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -574,6 +572,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -593,8 +592,6 @@ MonoBehaviour:
     currentStage: 1
     maxStages: 2
     isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
     isImmortal: 1
     prefabPath: 
     position:
@@ -615,6 +612,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -632,6 +630,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -651,8 +650,6 @@ MonoBehaviour:
     currentStage: 1
     maxStages: 2
     isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
     isImmortal: 1
     prefabPath: 
     position:
@@ -673,6 +670,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -690,6 +688,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -709,8 +708,6 @@ MonoBehaviour:
     currentStage: 1
     maxStages: 2
     isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
     isImmortal: 1
     prefabPath: 
     position:
@@ -731,6 +728,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -748,6 +746,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -767,8 +766,6 @@ MonoBehaviour:
     currentStage: 1
     maxStages: 2
     isWithered: 0
-    hasTriedBloom: 0
-    hasTriedFruit: 0
     isImmortal: 1
     prefabPath: 
     position:
@@ -789,6 +786,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u7167\u660E\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -806,6 +804,7 @@ MonoBehaviour:
       plantID: 0
       plantName: "\u82B1\uFF08\u969C\u788D\u7269\uFF09"
       growthRate: 0
+      witherRate: 0
       prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -825,8 +824,6 @@ MonoBehaviour:
     currentStage: 2
     maxStages: 2
     isWithered: 0
-    hasTriedBloom: 1
-    hasTriedFruit: 0
     isImmortal: 0
     prefabPath: 
     position:
@@ -847,6 +844,7 @@ MonoBehaviour:
       plantID: 0
       plantName: MediumMedium
       growthRate: 0.3
+      witherRate: 0
       prefabPath: 
       prerequisitePlantIDs: 
       prerequisiteWeights: []
@@ -864,6 +862,7 @@ MonoBehaviour:
       plantID: 3
       plantName: "\u5411\u65E5\u8475"
       growthRate: 0.5
+      witherRate: 0
       prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
       prerequisitePlantIDs: 
       prerequisiteWeights: []

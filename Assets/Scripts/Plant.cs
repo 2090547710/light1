@@ -83,6 +83,15 @@ public class Plant : MonoBehaviour
             plantName="Seed";
             // CheckIfInFireLight();
             lightSources.Clear();
+            // 添加碰撞检测逻辑
+            if (currentStage < growthStages.Count && HasCollisionWithOtherPlants())
+            {
+                LightingManager.tree.Remove(gameObject);
+                PlantManager.Instance.UnregisterPlant(this);
+                Destroy(gameObject);
+                Debug.Log("无法播种，检测到与其他植物的碰撞");
+                return;
+            }
             if (growthStages.Count > 0 && currentStage <= growthStages.Count)
             {
                 Grow();
@@ -182,27 +191,66 @@ public class Plant : MonoBehaviour
     #endregion
    
     #region 生长和枯萎方法
-    public virtual void Grow()
+    public virtual void Grow(bool useAnimation = true)
     {
         if (currentStage >= maxStages) return;
 
-        // 添加碰撞检测逻辑
-        if (currentStage < growthStages.Count && HasCollisionWithOtherPlants())
-        {
-            if(currentStage!=0){
-                Debug.Log($"植物 {plantName} 无法生长，检测到与其他植物的碰撞");
-            }else{
-                LightingManager.tree.Remove(gameObject);
-                PlantManager.Instance.UnregisterPlant(this);
-                Destroy(gameObject);
-                Debug.Log("无法播种，检测到与其他植物的碰撞");
-            }
-            return;
-        }
         //更新UpdatePlantCounts
         if (currentStage >= 2 && PlantManager.Instance.IsPlantInDatabase(plantID)) {
             PlantManager.Instance.UpdatePlantCounts(this, false);
         }
+        
+        // 获取下一阶段的配置
+        PlantStage nextStage = growthStages[currentStage];
+        
+        if (currentStage>= 2 && useAnimation)
+        {
+            // 查找下一阶段中非障碍物光源的最大size值
+            float maxNewSize = 0f;
+            foreach (var lightData in nextStage.associatedLights)
+            {
+                if (!lightData.isObstacle && lightData.size > maxNewSize)
+                {
+                    maxNewSize = lightData.size;
+                }
+            }
+
+            // 使用当前非障碍物光源的平均size作为起始值
+            float avgCurrentSize = 0f;
+            List<Lighting> nonObstacleLights = lightSources.Where(l => !l.isObstacle).ToList();
+            if (nonObstacleLights.Count > 0)
+            {
+                avgCurrentSize = nonObstacleLights.Average(l => l.size);
+            }
+                
+             // 如果有size变化且有非障碍物光源，执行动画
+            if (nonObstacleLights.Count > 0 && Mathf.Abs(maxNewSize - avgCurrentSize) > 0.01f)
+            {
+                // 使用协程执行大小变化动画，完成后应用新阶段
+                StartCoroutine(GrowWithAnimation(maxNewSize));
+                return; // 结束方法，后续逻辑由协程完成
+            }
+            
+        }
+        
+        // 如果不使用动画或没有合适的光源变化，直接执行常规生长
+        PerformGrow();
+    }
+
+    // 新增：带动画效果的生长协程
+    private IEnumerator GrowWithAnimation(float targetSize)
+    {
+        // 执行大小变化动画
+        yield return StartCoroutine(AnimateLightSizeChange(targetSize, 1.0f, null, 0.05f));
+        
+        // 动画结束后，执行实际的生长
+        PerformGrow();
+    }
+
+
+    // 新增：实际执行生长的逻辑（从原Grow方法移植）
+    private void PerformGrow()
+    {
         // 禁用并移除所有现有光源组件
         lightSources.ForEach(l => {
             l.RemoveLighting();
@@ -213,6 +261,7 @@ public class Plant : MonoBehaviour
         
         ApplyStageConfig(currentStage);
         currentStage++;
+        
         //更新UpdatePlantCounts
         if (currentStage >= 2 && PlantManager.Instance.IsPlantInDatabase(plantID)) {
             PlantManager.Instance.UpdatePlantCounts(this, true);
@@ -348,6 +397,12 @@ public class Plant : MonoBehaviour
         // 根据概率决定是否开花
         if (UnityEngine.Random.value < brightnessRatio)
         {
+             if (currentStage < growthStages.Count && HasCollisionWithOtherPlants())
+            {
+                Debug.Log($"植物 {plantName} 无法生长，检测到与其他植物的碰撞");
+                return;
+            }
+            
             Debug.Log($"种子成功开花！亮度比例: {brightnessRatio:F2}, 开花概率: {brightnessRatio:F2}");
 
             // 尝试通过植物名称获取更新后的植物阶段
@@ -382,6 +437,11 @@ public class Plant : MonoBehaviour
         // 根据概率决定是否结果
         if (UnityEngine.Random.value < brightnessRatio)
         {
+            if (currentStage < growthStages.Count && HasCollisionWithOtherPlants())
+            {
+                Debug.Log($"植物 {plantName} 无法生长，检测到与其他植物的碰撞");
+                return;
+            }
             Debug.Log($"花朵成功结果！亮度比例: {brightnessRatio:F2}, 结果概率: {brightnessRatio:F2}");
             
             // 添加更新后的植物阶段
@@ -1111,5 +1171,85 @@ public class Plant : MonoBehaviour
         return tempStage;
     }
 
+    #region 动画方法
+    // 光源大小渐变的协程
+    public IEnumerator AnimateLightSizeChange(float targetSize, float duration, System.Action onComplete, float updateInterval = 0.05f)
+    {
+        // 获取当前所有非障碍物光源
+        List<Lighting> nonObstacleLights = lightSources.Where(l => !l.isObstacle).ToList();
+        
+        if (nonObstacleLights.Count == 0)
+        {
+            // 如果没有非障碍物光源，直接完成
+            onComplete?.Invoke();  
+            yield break;
+        }
+        
+        // 记录每个光源的初始大小
+        Dictionary<Lighting, float> initialSizes = new Dictionary<Lighting, float>();
+        foreach (var light in nonObstacleLights)
+        {
+            initialSizes[light] = light.size;
+        }
+        
+        float startTime = Time.time;
+        float elapsedTime = 0f;
+        float lastUpdateTime = 0f;
+        
+        // 在指定时间内逐渐改变光源大小
+        while (elapsedTime < duration)
+        {
+            elapsedTime = Time.time - startTime;
+            
+            // 检查是否需要更新（根据指定的更新间隔）
+            if (elapsedTime - lastUpdateTime >= updateInterval)
+            {
+                lastUpdateTime = elapsedTime;
+                
+                float t = Mathf.Clamp01(elapsedTime / duration); // 归一化时间
+                float easedT = EaseInOutCubic(t); // 应用缓动效果
+                
+                // 更新每个光源的大小
+                foreach (var light in nonObstacleLights)
+                {
+                    if (light != null)
+                    {
+                        // 计算当前大小
+                        light.size = Mathf.Lerp(initialSizes[light], targetSize, easedT);
+                        
+                        // 标记光源为脏
+                        light.MarkDirty();
+                    }
+                }
+                
+                // 更新所有脏标记的光源
+                LightingManager.UpdateDirtyLights();
+            }
+            
+            yield return null;
+        }
+        
+        // 确保最终大小精确匹配目标大小
+        foreach (var light in nonObstacleLights)
+        {
+            if (light != null)
+            {
+                light.size = targetSize;
+                light.MarkDirty();
+            }
+        }
+        
+        // 最终更新所有脏标记的光源
+        LightingManager.UpdateDirtyLights();
+        
+        // 动画完成后执行回调
+        onComplete?.Invoke();
+    }
 
+    // 缓动函数 - 三次方缓入缓出
+    private float EaseInOutCubic(float t)
+    {
+        return t < 0.5 ? 4 * t * t * t : 1 - Mathf.Pow(-2 * t + 2, 3) / 2;
+    }
+    #endregion
 } 

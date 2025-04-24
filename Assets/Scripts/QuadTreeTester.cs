@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
+using System.Collections;
 
 public class QuadTreeTester : MonoBehaviour
 {
@@ -140,29 +141,40 @@ public class QuadTreeTester : MonoBehaviour
                                 newName = "SmallSlow";
                             }
                             
-                            // 对所有光源调用 RemoveLighting()
-                            foreach (var light in plant.lightSources.ToList())
-                            {
-                                light.RemoveLighting();
-                                plant.lightSources.Remove(light);
-                                Destroy(light);
-                            }
-
-                            // 参考TestSeed方法，清空现有的生长阶段并添加新种子阶段
-                            plant.growthStages.Clear();
-                            
                             // 获取种子阶段
                             Plant.PlantStage seedStage = PlantManager.Instance.GetSeedPlantStageFromName(newName);
                             if (seedStage != null)
                             {
-                                // 添加种子阶段
-                                plant.growthStages.Add(seedStage);
-                                plant.maxStages = plant.growthStages.Count;
+                                // 查找新阶段中非障碍物光源的最大size值
+                                float maxNewSize = 0f;
+                                foreach (var lightData in seedStage.associatedLights)
+                                {
+                                    if (!lightData.isObstacle && lightData.size > maxNewSize)
+                                    {
+                                        maxNewSize = lightData.size;
+                                    }
+                                }
                                 
-                                // 应用变化
-                                plant.currentStage = 0;
-                                plant.Grow();
-                                Debug.Log($"植物被更新为：{newName}");
+                                // 启动大小变化动画，指定更新间隔为0.1秒
+                                StartCoroutine(plant.AnimateLightSizeChange(maxNewSize, 3.0f, () => {
+                                    // 动画完成后，移除旧光源
+                                    foreach (var light in plant.lightSources.ToList())
+                                    {
+                                        light.RemoveLighting();
+                                        plant.lightSources.Remove(light);
+                                        Destroy(light);
+                                    }
+
+                                    // 清空现有的生长阶段并添加新种子阶段
+                                    plant.growthStages.Clear();
+                                    plant.growthStages.Add(seedStage);
+                                    plant.maxStages = plant.growthStages.Count;
+                                    
+                                    // 应用变化
+                                    plant.currentStage = 0;
+                                    plant.Grow(false);
+                                    Debug.Log($"植物被更新为：{newName}");
+                                }, 0.05f));
                             }
                             else
                             {

@@ -55,7 +55,7 @@ public class Fire : Plant
     }
     
     // 重载Grow方法
-    public override void Grow()
+    public override void Grow(bool useAnimation = true)
     {
         // 首先检查基本条件
         if (isWithered || currentStage >= maxStages) return;

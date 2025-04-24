@@ -73,7 +73,8 @@ public class PlantManager : MonoBehaviour
             Debug.LogError("找不到植物数据库文件: " + plantDatabasePath);
             return;
         }
-        
+        // 清空数据库
+        plantDatabase.Clear();
         // 使用System.Text.Encoding.GetEncoding(936)来处理ANSI中文编码
         byte[] bytes = csvFile.bytes;
         string content = System.Text.Encoding.GetEncoding(936).GetString(bytes);
@@ -114,13 +115,15 @@ public class PlantManager : MonoBehaviour
     // 加载种子映射数据
     public void LoadSeedMappings()
     {
+        
         TextAsset csvFile = Resources.Load<TextAsset>(seedMappingPath);
         if (csvFile == null)
         {
             Debug.LogError("找不到种子映射文件: " + seedMappingPath);
             return;
         }
-        
+        // 清空种子映射
+        seedMappings.Clear();
         // 使用System.Text.Encoding.GetEncoding(936)来处理ANSI中文编码
         byte[] bytes = csvFile.bytes;
         string content = System.Text.Encoding.GetEncoding(936).GetString(bytes);
