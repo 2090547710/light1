@@ -478,48 +478,7 @@ public class ObjectSelector : MonoBehaviour
                     string componentTypeName = plantComponent.GetType().Name;
                     
                     EditorGUILayout.LabelField($"{componentTypeName}光源组件列表编辑 ({plantComponent.plantName})", EditorStyles.boldLabel);
-                    
-                    // 如果是Fire类型，显示安全区域信息
-                    if (isFire) {
-                        Fire fireComponent = (Fire)plantComponent;
-                        EditorGUILayout.Space(5);
-                        EditorGUILayout.LabelField("安全区域信息", EditorStyles.boldLabel);
-                        
-                        // 计算并显示安全区域亮度
-                        if (Application.isPlaying) {
-                            float areaBrightness = fireComponent.CalculateFireAreaBrightness();
-                            EditorGUILayout.LabelField($"安全区域亮度: {areaBrightness:P2}");
-                            
-                            // 显示安全区域尺寸
-                            Vector3 safetyZoneSize = fireComponent.GetSafetyZoneSize();
-                            EditorGUILayout.Vector3Field("安全区域尺寸:", safetyZoneSize);
-                        }
-                        
-                        // 显示光源大小设置
-                        EditorGUILayout.Space(5);
-                        EditorGUILayout.LabelField("光源大小设置", EditorStyles.boldLabel);
-                        
-                        // 记录修改前的值
-                        float oldMinSize = fireComponent.minLightSize;
-                        float oldMaxSize = fireComponent.maxLightSize;
-                        
-                        // 编辑光源大小范围
-                        fireComponent.minLightSize = EditorGUILayout.Slider("最小光源大小:", fireComponent.minLightSize, 1f, 10f);
-                        fireComponent.maxLightSize = EditorGUILayout.Slider("最大光源大小:", fireComponent.maxLightSize, 10f, 50f);
-                        
-                        // 确保最小值不大于最大值
-                        if (fireComponent.minLightSize > fireComponent.maxLightSize) {
-                            fireComponent.minLightSize = fireComponent.maxLightSize;
-                        }
-                        
-                        // 立即应用修改
-                        if (oldMinSize != fireComponent.minLightSize || oldMaxSize != fireComponent.maxLightSize) {
-                            EditorUtility.SetDirty(fireComponent);
-                        }
-                        
-                        EditorGUILayout.Space(5);
-                    }
-                    
+
                     // 显示该Plant组件的所有光源
                     for (int i = 0; i < plantComponent.lightSources.Count; i++) {
                         var lightElement = plantComponent.lightSources[i];

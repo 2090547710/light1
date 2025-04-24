@@ -81,7 +81,6 @@ public class Plant : MonoBehaviour
         if(currentStage==0){
             plantID=0;
             plantName="Seed";
-            // CheckIfInFireLight();
             lightSources.Clear();
             // 添加碰撞检测逻辑
             if (currentStage < growthStages.Count && HasCollisionWithOtherPlants())
@@ -95,6 +94,7 @@ public class Plant : MonoBehaviour
             if (growthStages.Count > 0 && currentStage <= growthStages.Count)
             {
                 Grow();
+                CheckIfInFireLight();
             }
          }
         // 创建并设置名称显示
@@ -389,7 +389,7 @@ public class Plant : MonoBehaviour
     #endregion
 
     #region 开花和结果方法
-    public void TryBloom()
+    public virtual void TryBloom()
     {          
         // 计算区域内亮度情况及开花概率
         float brightnessRatio = CalculateBrightnessRatio();
@@ -841,7 +841,7 @@ public class Plant : MonoBehaviour
         
         foreach (var light in lightSources)
         {
-            if (light.isObstacle)
+            if (light.isObstacle || light.isSeed)
             {
                 // 获取光源的世界边界
                 Bounds lightBounds = light.GetWorldBounds();
@@ -961,7 +961,7 @@ public class Plant : MonoBehaviour
 
     #region 火光源检测方法
     // 检查植物是否在火光源范围内
-    private void CheckIfInFireLight()
+    public void CheckIfInFireLight()
     {
         // 如果是火植物本身，不需要检查
         if (this is Fire)
@@ -975,44 +975,40 @@ public class Plant : MonoBehaviour
         // 从 PlantManager 获取所有 Fire 类型的植物
         foreach (Plant plant in PlantManager.Instance.activePlants)
         {
-            if (plant is Fire)
+            if (plant is Fire && !plant.isWithered)
             {
                 // 将火植物的所有光源添加到列表中
                 fireLights.AddRange(plant.lightSources);
             }
         }
         
-        // 如果没有火光源，将植物标记为枯萎
+        // 如果没有火光源，直接返回
         if (fireLights.Count == 0)
         {
-            Wither();
             return;
         }
         
         // 获取植物当前位置
         Vector3 plantPosition = transform.position;
         
-        // 检查植物是否在任何火光源范围内
-        bool isInFireLight = false;
+        // 使用QuadTree计算火光源的高度值
+        float fireHeight = LightingManager.tree.GetFireLightHeightAtPosition(plantPosition, fireLights);
         
-        foreach (Lighting fireLight in fireLights)
+        // 如果高度值大于0，表示在火光源范围内，调整生长速度
+        if (fireHeight > 0)
         {
-            // 获取火光源的边界
-            Bounds fireBounds = fireLight.GetWorldBounds();
-            
-            // 检查植物是否在火光源范围内
-            if (IsPointInXZBounds(plantPosition, fireBounds))
-            {
-                isInFireLight = true;
-                break;
-            }
+            // 根据高度值调整生长速度：基础倍数2 + 高度值
+            growthRate *= (2f + fireHeight);
+            // 限制在最大值60
+            growthRate = Mathf.Min(growthRate, 60f);
         }
-        
-        // 如果不在任何火光源范围内，将植物标记为枯萎
-        if (!isInFireLight)
+        else
         {
-            Debug.Log($"植物 {plantName} 不在任何火光源范围内，标记为枯萎");
-            Wither();
+            // 将growthRate设置为currentStage的growthRate
+            if (currentStage > 0 && currentStage <= growthStages.Count)
+            {
+                growthRate = growthStages[currentStage - 1].growthRate;
+            }
         }
     }
     #endregion

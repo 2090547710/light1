@@ -11,6 +11,7 @@ public class QuadTreeTester : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private float seedCooldown = 0.5f; // 新增种子冷却时间
     [SerializeField] private float darkCooldown = 0.5f; // 新增障碍物冷却时间
+    [SerializeField] private float fireCooldown = 0.5f; // 新增火冷却时间
 
     public static QuadTree quadTree;
     public Camera mainCamera;
@@ -18,6 +19,7 @@ public class QuadTreeTester : MonoBehaviour
     private List<GameObject> objects = new List<GameObject>();
     private float seedCooldownTimer; // 种子冷却计时器
     private float darkCooldownTimer; // 障碍物冷却计时器
+    private float fireCooldownTimer; // 火冷却计时器
 
     private string seedName = "SmallSlow"; // 默认种子名称
     private bool isAnimationPlaying = false; // 添加标志位，用于判断是否正在播放动画
@@ -32,6 +34,7 @@ public class QuadTreeTester : MonoBehaviour
         // 更新冷却计时器
         seedCooldownTimer -= Time.deltaTime;
         darkCooldownTimer -= Time.deltaTime;
+        fireCooldownTimer -= Time.deltaTime;
 
         // 按Z键枯萎所有植物
         if (Input.GetKeyDown(KeyCode.Z))
@@ -79,11 +82,23 @@ public class QuadTreeTester : MonoBehaviour
             }
         }
 
+        // 按键4插入火（添加冷却时间判断）
+        if (Input.GetKey(KeyCode.Alpha4) && fireCooldownTimer <= 0)
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, 100f, groundLayer))
+            {
+                TestFire(hit.point);
+                fireCooldownTimer = fireCooldown; // 重置冷却时间
+                LightingManager.UpdateDirtyLights();
+            }
+        }
+
         // 在 Update 方法内部添加按 C 键的逻辑
         if (Input.GetKeyDown(KeyCode.C))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            // 使用 layer=7 进行射线检测
+            // 使用 layer=6 进行射线检测
             if (Physics.Raycast(ray, out RaycastHit hit, 100f, 1 << 6))
             {
                 FindAndRemoveSeed(hit.transform.gameObject);
@@ -160,7 +175,7 @@ public class QuadTreeTester : MonoBehaviour
                                 isAnimationPlaying = true;
                                 
                                 // 启动大小变化动画，指定更新间隔为0.1秒
-                                StartCoroutine(plant.AnimateLightSizeChange(maxNewSize, 3.0f, () => {
+                                StartCoroutine(plant.AnimateLightSizeChange(maxNewSize, 1.0f, () => {
                                     // 动画完成后，移除旧光源
                                     foreach (var light in plant.lightSources.ToList())
                                     {
@@ -339,6 +354,18 @@ public class QuadTreeTester : MonoBehaviour
         // Debug.Log($"插入{(success ? "成功" : "失败")} | " +
         //          $"位置：{position} | " );
     } 
+
+    public void TestFire(Vector3 position){
+        GameObject prefab = prefabToSpawn[2];
+        GameObject newObj = Instantiate(
+            prefab,
+            position,
+            Quaternion.identity
+        );
+        objects.Add(newObj);
+        // 插入四叉树
+        bool success = quadTree.Insert(newObj);
+    }
 
     // 添加新方法用于寻找 Plant 脚本并铲除种子
     private void FindAndRemoveSeed(GameObject obj)

@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2754681977118390482
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4082965046041493524}
+  - component: {fileID: 8869910760153777300}
+  m_Layer: 6
+  m_Name: Fire
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4082965046041493524
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2754681977118390482}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -45.852394, y: -1.849282, z: -49.516006}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8869910760153777300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2754681977118390482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 396cc76aa21b1584faf60f908cf2610a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightSources: []
+  currentStage: 0
+  maxStages: 2
+  isWithered: 0
+  isImmortal: 0
+  growthStages:
+  - stageType: 0
+    associatedLights: []
+    plantID: 0
+    plantName: "\u706B\uFF08\u79CD\u5B50\uFF09"
+    growthRate: 12
+    witherRate: 0
+    prerequisitePlantIDs: 
+    prerequisiteWeights: []
+    updatePlantIDs: 
+    updateWeights: []
+    prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+  - stageType: 1
+    associatedLights:
+    - size: 7.5
+      isObstacle: 0
+      isSeed: 0
+      lightHeight: 0
+      heightMap: {fileID: 2800000, guid: 4938429a6d1ab9945b4d2cf4369c83d8, type: 3}
+      edgeHeightMap: {fileID: 0}
+      rotation: 0
+    plantID: 0
+    plantName: "\u706B"
+    growthRate: 0
+    witherRate: 0
+    prerequisitePlantIDs: 
+    prerequisiteWeights: []
+    updatePlantIDs: 
+    updateWeights: []
+    prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+  stageModelObject: {fileID: 0}
+  growthRate: 1
+  witherRate: 1
+  plantID: 0
+  plantName: 
+  prerequisitePlantIDs: 
+  prerequisiteWeights: []
+  updatePlantIDs: 
+  updateWeights: []
+  textHeight: 1.5
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  textSize: 1

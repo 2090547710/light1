@@ -298,11 +298,18 @@ public class QuadTree
     // 重新分配对象到子节点
     private void RedistributeObjects(QuadTreeNode node)
     {
+        // 过滤掉已销毁的对象
+        node.Objects.RemoveAll(obj => obj == null);
+        
         List<GameObject> objectsToRedistribute = new List<GameObject>(node.Objects);
         node.Objects.Clear();
 
         foreach (var obj in objectsToRedistribute)
         {
+            // 再次检查确保对象未被销毁
+            if (obj == null)
+                continue;
+            
             Vector3 objPos = obj.transform.position;
             Vector2 position = new Vector2(objPos.x, objPos.z);
             
@@ -1614,11 +1621,7 @@ public class QuadTree
     // 检查节点是否在光源范围内（考虑旋转）
     private bool IsNodeInLightRange(QuadTreeNode node, Lighting light)
     {
-        Vector2 nodeCenter = node.Center;
-        Bounds lightBounds = light.GetWorldBounds();
-        Vector2 lightCenter = new Vector2(lightBounds.center.x, lightBounds.center.z);
-        Vector2 lightSize = new Vector2(lightBounds.size.x, lightBounds.size.z);
-        
+        Vector2 nodeCenter = node.Center;     
         // 检查节点中心点是否在旋转后的光源范围内
         return light.IsPointInRotatedBounds(new Vector3(nodeCenter.x, 0, nodeCenter.y));
     }
@@ -1649,6 +1652,52 @@ public class QuadTree
         
         // 边界约束确保UV在0-1范围内
         return new Vector2(Mathf.Clamp01(uv.x), Mathf.Clamp01(uv.y));
+    }
+
+    // 获取火光在指定位置的高度值
+    public float GetFireLightHeightAtPosition(Vector3 position, List<Lighting> fireLights)
+    {
+        // 如果没有火光源，返回0
+        if (fireLights == null || fireLights.Count == 0)
+        {
+            return 0f;
+        }
+        
+        // 找到对应的叶子节点
+        QuadTreeNode node = FindLeafNode(position);
+        if (node == null)
+        {
+            return 0f;
+        }
+        
+        // 查找最大高度值
+        float maxHeight = 0f;
+        
+        foreach (var light in fireLights)
+        {
+            if (light.heightMap == null) continue;
+            
+            // 检查节点是否在光源范围内
+            if (IsNodeInLightRange(node, light))
+            {
+                // 计算节点在光源中的UV坐标
+                Vector2 uv = CalculateUVForNodeInLight(node, light);
+                
+                // 从高度图采样原始值
+                float rawBrightness = light.heightMap.GetPixelBilinear(uv.x, uv.y).r;
+                
+                // 规范化亮度值
+                rawBrightness = Mathf.Clamp01(rawBrightness);
+                
+                // 保留最大高度值
+                if (rawBrightness > maxHeight)
+                {
+                    maxHeight = rawBrightness;
+                }
+            }
+        }
+        
+        return maxHeight;
     }
 }
 

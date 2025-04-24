@@ -961,7 +961,7 @@ public class PlantManager : MonoBehaviour
         foreach (Plant plant in activePlants)
         {
             // 检查是否是Fire类型且不是新的火植物
-            if (plant is Fire && plant != newFire)
+            if (plant is Fire && plant != newFire && !plant.isWithered)
             {
                 otherFires.Add(plant as Fire);
             }
@@ -981,7 +981,7 @@ public class PlantManager : MonoBehaviour
         foreach (Plant plant in activePlants)
         {
             // 检查是否是Fire类型且不是指定的火植物
-            if (plant is Fire && plant != exceptFire)
+            if (plant is Fire && plant != exceptFire && !plant.isWithered)
             {
                 otherFires.Add(plant as Fire);
             }
@@ -1343,23 +1343,26 @@ public class PlantManager : MonoBehaviour
             // 获取植物位置
             Vector3 plantPosition = plant.transform.position;
             
-            // 检查植物是否在任何火光源范围内
-            bool isInFireLight = false;
+            // 使用QuadTree计算火光源的高度值
+            float fireHeight = LightingManager.tree.GetFireLightHeightAtPosition(plantPosition, fire.lightSources);
             
-            foreach (Lighting fireLight in fire.lightSources)
+            // 如果高度值大于0，表示在火光源范围内，调整生长速度
+            if (fireHeight > 0)
             {
-                // 使用支持旋转的边界检测
-                if (fireLight.IsPointInRotatedBounds(plantPosition))
+               
+                if (plant.growthRate > 0) // 确保原始生长速度大于0
                 {
-                    isInFireLight = true;
-                    break;
+                    // 根据高度值调整生长速度：基础倍数2 + 高度值
+                    plant.growthRate = Mathf.Min(plant.growthRate * (2f + fireHeight), 60f); // 限制最大值为60
                 }
-            }
-            
-            // 如果不在任何火光源范围内，将植物标记为枯萎
-            if (!isInFireLight)
+            }else
             {
-                plant.Wither();
+ 
+                // 将growthRate设置为currentStage的growthRate
+                if (plant.currentStage > 0 && plant.currentStage <= plant.growthStages.Count)
+                {
+                    plant.growthRate = plant.growthStages[plant.currentStage - 1].growthRate;
+                }
             }
         }
     }
