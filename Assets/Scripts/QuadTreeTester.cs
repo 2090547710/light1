@@ -20,6 +20,7 @@ public class QuadTreeTester : MonoBehaviour
     private float darkCooldownTimer; // 障碍物冷却计时器
 
     private string seedName = "SmallSlow"; // 默认种子名称
+    private bool isAnimationPlaying = false; // 添加标志位，用于判断是否正在播放动画
 
     void Start()
     {
@@ -87,8 +88,8 @@ public class QuadTreeTester : MonoBehaviour
             {
                 FindAndRemoveSeed(hit.transform.gameObject);
             }
-            // 如果没有检测到layer=7，则尝试检测layer=13
-            else if (Physics.Raycast(ray, out hit, 100f, 1 << 13))
+            // 如果没有检测到layer=7，则尝试检测layer=13，并且确保当前没有动画在播放
+            else if (!isAnimationPlaying && Physics.Raycast(ray, out hit, 100f, 1 << 13))
             {
                 // 找出射线碰撞点的GameObject，并获取其所有Plant组件
                 GameObject hitObject = hit.transform.gameObject;
@@ -155,6 +156,9 @@ public class QuadTreeTester : MonoBehaviour
                                     }
                                 }
                                 
+                                // 设置动画标志位为true，表示开始播放动画
+                                isAnimationPlaying = true;
+                                
                                 // 启动大小变化动画，指定更新间隔为0.1秒
                                 StartCoroutine(plant.AnimateLightSizeChange(maxNewSize, 3.0f, () => {
                                     // 动画完成后，移除旧光源
@@ -174,6 +178,9 @@ public class QuadTreeTester : MonoBehaviour
                                     plant.currentStage = 0;
                                     plant.Grow(false);
                                     Debug.Log($"植物被更新为：{newName}");
+                                    
+                                    // 动画结束后，将标志位设置回false
+                                    isAnimationPlaying = false;
                                 }, 0.05f));
                             }
                             else
