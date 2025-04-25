@@ -47,33 +47,11 @@
         {
             "objectType": "SceneObject",
             "sceneObjectType": 2,
-            "prefabPath": "Prefabs/Water",
+            "prefabPath": "Prefabs/Water（wave）",
             "position": {
-                "x": -56.599998474121097,
+                "x": -40.79999923706055,
                 "y": 0.009999999776482582,
-                "z": -22.139999389648439
-            },
-            "rotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            },
-            "scale": {
-                "x": 4.090000152587891,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "lightSourcesData": []
-        },
-        {
-            "objectType": "SceneObject",
-            "sceneObjectType": 2,
-            "prefabPath": "Prefabs/Water",
-            "position": {
-                "x": -40.66999816894531,
-                "y": 0.009999999776482582,
-                "z": -66.72000122070313
+                "z": -66.80000305175781
             },
             "rotation": {
                 "x": 0.0,
@@ -137,20 +115,108 @@
             "sceneObjectType": 5,
             "prefabPath": "Prefabs/Player",
             "position": {
-                "x": -46.826534271240237,
+                "x": -48.431640625,
                 "y": 1.5,
-                "z": -53.93422317504883
+                "z": -55.24752426147461
             },
             "rotation": {
                 "x": 0.0,
-                "y": -0.19553686678409577,
+                "y": 0.7994428277015686,
                 "z": 0.0,
-                "w": -0.9806963801383972
+                "w": 0.6007422208786011
             },
             "scale": {
                 "x": 1.0,
                 "y": 1.0,
                 "z": 1.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 2,
+            "prefabPath": "Prefabs/Water（wave）",
+            "position": {
+                "x": -57.0,
+                "y": 0.009999999776482582,
+                "z": -21.5
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 4.090000152587891,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 2,
+            "prefabPath": "Prefabs/Water（wave）",
+            "position": {
+                "x": -71.69999694824219,
+                "y": 0.009999999776482582,
+                "z": -39.20000076293945
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.7071068286895752,
+                "z": 0.0,
+                "w": 0.7071068286895752
+            },
+            "scale": {
+                "x": 4.090000152587891,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 2,
+            "prefabPath": "Prefabs/Water（wave）",
+            "position": {
+                "x": -26.100000381469728,
+                "y": 0.009999999776482582,
+                "z": -39.900001525878909
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.7071068286895752,
+                "z": 0.0,
+                "w": 0.7071068286895752
+            },
+            "scale": {
+                "x": 4.090000152587891,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 2,
+            "prefabPath": "Prefabs/test1(water)",
+            "position": {
+                "x": -48.91077423095703,
+                "y": -0.009999999776482582,
+                "z": -44.174808502197269
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 4.170000076293945,
+                "y": 4.539999961853027,
+                "z": 4.269999980926514
             },
             "lightSourcesData": []
         }

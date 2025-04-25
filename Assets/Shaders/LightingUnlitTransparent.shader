@@ -18,6 +18,10 @@ Shader "Custom/LightingUnlitTransparent"
         
         // 添加边缘采样控制
         [Toggle] _AvoidEdgeSampling ("避免边缘采样", Float) = 1
+        
+        // 玩家光照参数
+        _PlayerLightRange ("玩家光照范围", Range(1.0, 20.0)) = 5.0
+        _PlayerLightIntensity ("玩家光照强度", Range(0.1, 2.0)) = 1.0
     }
     SubShader
     {
@@ -167,6 +171,11 @@ Shader "Custom/LightingUnlitTransparent"
             
             // 添加边缘采样控制变量
             float _AvoidEdgeSampling;
+            
+            // 玩家光照参数
+            uniform float3 _PlayerWorldPos; // 玩家世界坐标
+            float _PlayerLightRange; // 玩家光照范围
+            float _PlayerLightIntensity; // 玩家光照强度
 
             v2f vert (appdata v)
             {
@@ -218,8 +227,16 @@ Shader "Custom/LightingUnlitTransparent"
                 float lightIntensity = lightData.r; // 使用红色通道存储的光照数据
                 lightIntensity = saturate(lightIntensity); // 限制在0-1范围
                 
+                // 计算玩家光源对当前片元的影响
+                float distToPlayer = distance(i.worldPos, _PlayerWorldPos);
+                float playerLight = max(0, 1.0 - (distToPlayer / _PlayerLightRange)); 
+                playerLight = pow(playerLight, 2.0) * _PlayerLightIntensity; // 平方衰减，更真实的点光源效果
+                
+                // 结合原有光照和玩家光源
+                float combinedLight = saturate(lightIntensity + playerLight);
+                
                 // 应用亮度调整
-                float adjustedIntensity = lerp(_MinBrightness, 1.0, lightIntensity) * _BrightnessMultiplier;
+                float adjustedIntensity = lerp(_MinBrightness, 1.0, combinedLight) * _BrightnessMultiplier;
                 
                 // 处理主贴图的光照
                 fixed4 finalColor = mainColor;
