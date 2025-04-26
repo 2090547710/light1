@@ -64,10 +64,6 @@ public class WaveSpawner : MonoBehaviour
                 // 确保材质正确初始化，避免第一次显示问题
                 MeshRenderer rendererComponent = wave.GetComponent<MeshRenderer>();
                 Material material = rendererComponent.material;
-                if (animator.pngs.Count > 0)
-                {
-                    material.mainTexture = animator.pngs[0];
-                }
                 // 订阅动画循环完成事件
                 animator.OnAnimationLooped += () => RepositionWave(wave);
             }

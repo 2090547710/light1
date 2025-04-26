@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: water1
-  m_Shader: {fileID: 4800000, guid: f7640997a929f054c941b8371409a4a7, type: 3}
+  m_Name: "\u70DF"
+  m_Shader: {fileID: 4800000, guid: 6dc627caed811ca418b669f6635fa42b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -91,11 +91,12 @@ Material:
     - _SrcBlend: 1
     - _SwayAmplitude: 0
     - _SwayFrequency: 1
-    - _SwaySpeed: 3
+    - _SwaySpeed: 1
     - _UVSec: 0
+    - _UseLightingData: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.9411765, g: 0.9411765, b: 0.9411765, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

@@ -50,6 +50,10 @@ public class Plant : MonoBehaviour
     [Header("预制体")]
     public GameObject stageModelObject; // 用于存储当前阶段的预制体游戏对象
 
+    [Header("生长特效")]
+    public string growthEffectPrefabPath = "烟/烟"; // 生长特效预制体路径
+    private GameObject growthEffectObject; // 存储生长特效对象的引用
+    private PngSequencePlayer effectPlayer; // PNG序列播放器组件
 
     [Header("生长速度设置")]
     public float growthRate = 1.0f; // 生长速度
@@ -71,6 +75,9 @@ public class Plant : MonoBehaviour
 
     private float growthTimer = 0f; // 生长计时器
     private float witherTimer = 0f; // 枯萎计时器
+
+    // 添加字段存储回调
+    private Action onEffectComplete;
     #endregion
    
     #region Unity生命周期方法
@@ -194,7 +201,7 @@ public class Plant : MonoBehaviour
     public virtual void Grow(bool useAnimation = true)
     {
         if (currentStage >= maxStages) return;
-
+        
         //更新UpdatePlantCounts
         if (currentStage >= 2 && PlantManager.Instance.IsPlantInDatabase(plantID)) {
             PlantManager.Instance.UpdatePlantCounts(this, false);
@@ -232,7 +239,6 @@ public class Plant : MonoBehaviour
             }
             
         }
-        
         // 如果不使用动画或没有合适的光源变化，直接执行常规生长
         PerformGrow();
     }
@@ -240,6 +246,7 @@ public class Plant : MonoBehaviour
     // 新增：带动画效果的生长协程
     private IEnumerator GrowWithAnimation(float targetSize)
     {
+
         // 执行大小变化动画
         yield return StartCoroutine(AnimateLightSizeChange(targetSize, 1.0f, null, 0.05f));
         
@@ -247,6 +254,70 @@ public class Plant : MonoBehaviour
         PerformGrow();
     }
 
+    // 创建生长特效的方法
+    private void CreateGrowthEffect(Action onEffectComplete = null)
+    {
+        // 如果路径为空，不创建特效，直接执行回调
+        if (string.IsNullOrEmpty(growthEffectPrefabPath))
+        {
+            onEffectComplete?.Invoke();
+            return;
+        }
+        
+        // 加载预制体
+        GameObject effectPrefab = Resources.Load<GameObject>(growthEffectPrefabPath);
+        if (effectPrefab == null)
+        {
+            Debug.LogWarning($"无法加载生长特效预制体: {growthEffectPrefabPath}");
+            onEffectComplete?.Invoke();
+            return;
+        }
+        
+        // 在当前植物位置创建特效
+        growthEffectObject = Instantiate(effectPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
+        
+        // 获取PngSequencePlayer组件
+        effectPlayer = growthEffectObject.GetComponent<PngSequencePlayer>();
+        if (effectPlayer == null)
+        {
+            Debug.LogWarning("生长特效预制体缺少PngSequencePlayer组件");
+            Destroy(growthEffectObject);
+            growthEffectObject = null;
+            onEffectComplete?.Invoke();
+            return;
+        }
+        
+        // 存储回调
+        this.onEffectComplete = onEffectComplete;
+        
+        // 订阅动画完成事件
+        effectPlayer.OnAnimationLooped += OnGrowthEffectComplete;
+    }
+
+    // 修改特效播放完成回调
+    private void OnGrowthEffectComplete()
+    {
+        // 取消订阅事件
+        if (effectPlayer != null)
+        {
+            effectPlayer.OnAnimationLooped -= OnGrowthEffectComplete;
+        }
+        
+        // 销毁特效对象
+        if (growthEffectObject != null)
+        {
+            Destroy(growthEffectObject);
+            growthEffectObject = null;
+        }
+        
+        // 执行回调
+        if (onEffectComplete != null)
+        {
+            var callback = onEffectComplete;
+            onEffectComplete = null;
+            callback();
+        }
+    }
 
     // 新增：实际执行生长的逻辑（从原Grow方法移植）
     private void PerformGrow()
@@ -285,7 +356,7 @@ public class Plant : MonoBehaviour
         plantID = stage.plantID;
         plantName = stage.plantName;
         growthRate = stage.growthRate;
-        witherRate = stage.witherRate; // 读取阶段的枯萎速度
+        witherRate = stage.witherRate;
         prerequisitePlantIDs = stage.prerequisitePlantIDs;
         prerequisiteWeights = stage.prerequisiteWeights;
         updatePlantIDs = stage.updatePlantIDs;
@@ -304,6 +375,29 @@ public class Plant : MonoBehaviour
             stageModelObject = null;
         }
         
+        // 禁用并移除所有现有光源组件（此处保留，因为这是在CreateGrowthEffect之前执行的）
+        lightSources.ForEach(l => {
+            l.RemoveLighting();
+            LightingManager.tree.Remove(l.gameObject);
+            Destroy(l);
+        });
+        lightSources.Clear();
+        
+        // 只有在stageIndex不等于0时才创建生长特效
+        if (stageIndex != 0)
+        {
+            CreateGrowthEffect(() => LoadPrefabAndCreateLights(stage));
+        }
+        else
+        {
+            // 如果是stageIndex等于0，直接加载预制体和创建光源
+            LoadPrefabAndCreateLights(stage);
+        }
+    }
+
+    // 新增加载预制体和创建光源的方法，避免代码重复
+    private void LoadPrefabAndCreateLights(PlantStage stage)
+    {
         // 根据预制体路径加载并创建预制体
         if (!string.IsNullOrEmpty(stage.prefabPath))
         {

@@ -40,7 +40,7 @@ public class PngSequencePlayer : MonoBehaviour
         {
             pngs.Add((Texture2D)tex);
         }
-        
+        pngMaterial.mainTexture = pngs[0];
         previousFrame = 0;
     }
 
