@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Linq; // 添加LINQ命名空间
+using System;
 
 public class PlayerPathfinding : MonoBehaviour
 {
@@ -31,6 +32,12 @@ public class PlayerPathfinding : MonoBehaviour
     public float playerLightRange = 5.0f; // 玩家光照范围
     public float playerLightIntensity = 1.0f; // 玩家光照强度
     
+    [Header("交互设置")]
+    public int interactiveLayer = 6; // 交互对象层级，默认为6
+    
+    // 定义事件
+    public static event Action OnInteractiveObjectClicked;
+    
     void Start()
     {
         playerObject = this.gameObject;
@@ -46,13 +53,29 @@ public class PlayerPathfinding : MonoBehaviour
         // 更新着色器中的玩家位置
         UpdateShaderParameters();
         
-        if (Input.GetMouseButtonDown(0)) // 左键点击
+        if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) // 左键点击，且不在UI上
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             
             // 使用RaycastAll检测所有碰撞体
             RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
             
+            // 检查是否有交互层的对象被点击
+            bool interactiveHit = false;
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider.gameObject.layer == interactiveLayer)
+                {
+                    interactiveHit = true;
+                    // 触发事件
+                    OnInteractiveObjectClicked?.Invoke();
+                    break;
+                }
+            }
+            if(interactiveHit)
+            {
+                return;
+            }
             // 检查是否有MAP层的物体被击中
             bool validHit = false;
             RaycastHit mapHit = new RaycastHit();

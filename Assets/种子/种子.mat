@@ -85,12 +85,14 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _PlayerLightIntensity: 1
+    - _PlayerLightRange: 5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SwayAmplitude: 0
     - _SwayFrequency: 1
-    - _SwaySpeed: 1
+    - _SwaySpeed: 3.62
     - _UVSec: 0
     - _UseLightingData: 0
     - _ZWrite: 1

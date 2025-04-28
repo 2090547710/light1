@@ -81,7 +81,10 @@ Material:
     - _MinBrightness: 0.2
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _OutlineWidth: 0.1
     - _Parallax: 0.02
+    - _PlayerLightIntensity: 1
+    - _PlayerLightRange: 5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

@@ -183,7 +183,7 @@ Shader "Custom/LightingUnlitTransparent"
                 
                 // 获取遮罩值，用于控制摆动强度（通常根据高度）
                 float mask = tex2Dlod(_SwayMask, float4(v.uv, 0, 0)).r;
-                
+
                 // 计算时间相关的偏移
                 float timeOffset = _Time.y * _SwaySpeed;
                 
@@ -191,6 +191,8 @@ Shader "Custom/LightingUnlitTransparent"
                 float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 float swayFactor = sin(worldPos.x * _SwayFrequency + timeOffset) * _SwayAmplitude * mask;
                 
+
+
                 // 根据植物方向应用摆动
                 if (_HorizontalPlant > 0.5) {
                     // 横向植物（摆动垂直方向）

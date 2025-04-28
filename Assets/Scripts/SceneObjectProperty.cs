@@ -152,6 +152,13 @@ public class SceneObjectProperty : MonoBehaviour
             {
                 cameraController.target = this.transform;
             }
+            
+            // 从子对象获取Animator并启用
+            Animator animator = GetComponentInChildren<Animator>();
+            if (animator != null)
+            {
+                animator.enabled = true;
+            }
         }
     }
     
