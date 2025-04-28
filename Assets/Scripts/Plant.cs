@@ -73,11 +73,11 @@ public class Plant : MonoBehaviour
     public Color textColor = Color.white; // 文本颜色
     public float textSize = 1.0f; // 文本大小
 
-    private float growthTimer = 0f; // 生长计时器
-    private float witherTimer = 0f; // 枯萎计时器
-
     // 添加字段存储回调
     private Action onEffectComplete;
+
+    public float growthTimer = 0f; // 生长计时器
+    public float witherTimer = 0f; // 枯萎计时器
     #endregion
    
     #region Unity生命周期方法
@@ -124,7 +124,7 @@ public class Plant : MonoBehaviour
         }
         
         // 生长计时器
-        if (currentStage > 0 && growthRate > 0)
+        if (currentStage > 0 && growthRate > 0 && currentStage<3)
         {
             growthTimer += Time.deltaTime;
             float growthInterval = 60f / growthRate; // 每分钟调用Grow的次数转换为时间间隔
@@ -141,7 +141,7 @@ public class Plant : MonoBehaviour
         }
         
         // 枯萎计时器
-        if (currentStage > 0 && witherRate > 0)
+        if (currentStage > 0 && witherRate > 0 && !isWithered)
         {
             witherTimer += Time.deltaTime;
             float witherInterval = 60f / witherRate; // 每分钟调用TryWither的次数转换为时间间隔

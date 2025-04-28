@@ -24,6 +24,9 @@ public class QuadTreeTester : MonoBehaviour
     private string seedName = "SmallSlow"; // 默认种子名称
     private bool isAnimationPlaying = false; // 添加标志位，用于判断是否正在播放动画
 
+    // 在类的顶部添加事件定义
+    public static event System.Action<Plant> OnPlantRemoved;
+
     void Start()
     {
         mainCamera = Camera.main;
@@ -392,6 +395,9 @@ public class QuadTreeTester : MonoBehaviour
     private void RemovePlant(Plant plant)
     {
         if (plant == null) return;
+        
+        // 触发植物被铲除事件
+        OnPlantRemoved?.Invoke(plant);
         
         // 对所有光源调用 RemoveLighting()
         foreach (var light in plant.lightSources.ToList())

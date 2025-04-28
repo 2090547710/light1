@@ -37,6 +37,7 @@ public class PlayerPathfinding : MonoBehaviour
     
     // 定义事件
     public static event Action OnInteractiveObjectClicked;
+    public static event Action<Plant> OnPlantClicked;
     
     void Start()
     {
@@ -59,7 +60,6 @@ public class PlayerPathfinding : MonoBehaviour
             
             // 使用RaycastAll检测所有碰撞体
             RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
-            
             // 检查是否有交互层的对象被点击
             bool interactiveHit = false;
             foreach (RaycastHit hit in hits)
@@ -72,10 +72,39 @@ public class PlayerPathfinding : MonoBehaviour
                     break;
                 }
             }
+            // 先检查是否点击到了植物
+            Plant clickedPlant = null;
+            foreach (RaycastHit hit in hits)
+            {
+                // 尝试获取植物组件（包括父对象）
+                Plant plant = hit.collider.GetComponent<Plant>();
+                
+                // 如果直接组件没有找到，尝试在所有父对象中查找
+                if (plant == null)
+                {
+                    plant = hit.collider.GetComponentInParent<Plant>();
+                }
+                
+                if (plant != null)
+                {
+                    clickedPlant = plant;
+                    break;
+                }
+            }
+            
+            // 如果点击到了植物，触发植物点击事件
+            if (clickedPlant != null)
+            {
+                OnPlantClicked?.Invoke(clickedPlant);
+                return; // 点击到植物后不再处理其他点击逻辑
+            }
+            
+            
             if(interactiveHit)
             {
                 return;
             }
+            
             // 检查是否有MAP层的物体被击中
             bool validHit = false;
             RaycastHit mapHit = new RaycastHit();
