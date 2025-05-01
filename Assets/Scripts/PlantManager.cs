@@ -32,8 +32,15 @@ public class PlantManager : MonoBehaviour
     // 添加可更新植物列表
     public List<int> updatablePlants = new List<int>();
     
+    // 添加植物依赖信息列表
+    public List<string> plantDependencyInfoList = new List<string>();
+
     // 添加植物存档数据列表
     public List<PlantSaveData> plants = new List<PlantSaveData>();
+    
+    public delegate void PlantDatabaseLoadedHandler();
+    public event PlantDatabaseLoadedHandler OnPlantDatabaseLoaded;
+    public event PlantDatabaseLoadedHandler OnSeedMappingsLoaded;
     
     [Serializable]
     public class SeedMapping
@@ -110,6 +117,8 @@ public class PlantManager : MonoBehaviour
         }
         
         BuildPrerequisiteGraph();
+        plantDependencyInfoList = GeneratePlantDependencyInfo();
+        OnPlantDatabaseLoaded?.Invoke();
     }
     
     // 加载种子映射数据
@@ -241,8 +250,10 @@ public class PlantManager : MonoBehaviour
                 Debug.LogError($"解析种子映射行失败: {line}\n{e.Message}");
             }
         }
-        
+
+        plantDependencyInfoList = GeneratePlantDependencyInfo();
         // Debug.Log($"成功加载 {seedMappings.Count} 个种子映射");
+        OnSeedMappingsLoaded?.Invoke();
     }
     
     // 解析植物阶段
@@ -1206,6 +1217,30 @@ public class PlantManager : MonoBehaviour
                 }
             }
             
+            // 获取高度图路径 (收集所有非障碍光源的高度图路径)
+            string heightMapPath = "无";
+            if (stage.associatedLights != null && stage.associatedLights.Count > 0)
+            {
+                // 获取所有非障碍物光源的高度图路径
+                var nonObstacleLights = stage.associatedLights.Where(light => !light.isObstacle).ToList();
+                if (nonObstacleLights.Any())
+                {
+                    List<string> heightMapPaths = new List<string>();
+                    foreach (var lightData in nonObstacleLights)
+                    {
+                        if (lightData.heightMap != null)
+                        {
+                            heightMapPaths.Add(lightData.heightMap.name);
+                        }
+                    }
+                    
+                    if (heightMapPaths.Count > 0)
+                    {
+                        heightMapPath = string.Join(",", heightMapPaths);
+                    }
+                }
+            }
+            
             // 添加预制体路径信息
             string prefabPathInfo = string.IsNullOrEmpty(stage.prefabPath) ? "未设置" : stage.prefabPath;
             
@@ -1217,7 +1252,8 @@ public class PlantManager : MonoBehaviour
                      $"  预制体路径: {prefabPathInfo}\n" +
                      $"  前置植物: {prerequisitesStr}\n" +
                      $"  更新植物: {updatePlantsStr}\n" +
-                     $"  关联光源数量: {(stage.associatedLights != null ? stage.associatedLights.Count : 0)}{lightsInfo}");
+                     $"  关联光源数量: {(stage.associatedLights != null ? stage.associatedLights.Count : 0)}{lightsInfo}\n" +
+                     $"  高度图路径: {heightMapPath}");
         }
     }
 
@@ -1365,6 +1401,92 @@ public class PlantManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    // 获取植物的依赖关系信息
+    public List<string> GeneratePlantDependencyInfo()
+    {
+        List<string> plantInfoList = new List<string>();
+        
+        // 遍历 plantDatabase 中的所有植物
+        foreach (var entry in plantDatabase)
+        {
+            int plantId = entry.Key;
+            Plant.PlantStage stage = entry.Value;
+            
+            // 获取植物名称
+            string plantName = stage.plantName;
+
+            // 构建前置植物信息
+            string prerequisitesInfo = "";
+            
+            // 如果是花类型，则查找其对应的种子名称
+            if (stage.stageType == StageType.Flower)
+            {
+                List<string> seedNames = new List<string>();
+                // 查找所有对应种子映射
+                foreach (var mapping in seedMappings)
+                {
+                    if (mapping.targetPlantIdList.Contains(plantId))
+                    {
+                        // 使用种子名称 = size + growthRate
+                        string seedName = mapping.size.ToString() + mapping.growthRate.ToString();
+                        seedNames.Add(seedName);
+                    }
+                }
+                
+                // 如果找到了对应的种子名称
+                if (seedNames.Count > 0)
+                {
+                    string combinedSeedName = string.Join("或", seedNames);
+                    // 依赖是对应的种子，数量固定为1
+                    prerequisitesInfo = $"{combinedSeedName} 1";
+                }
+                else
+                {
+                    prerequisitesInfo = "未知 1";
+                }
+            }
+            // 否则使用原来的前置植物依赖
+            else if (stage.prerequisitePlantIDs != null && stage.prerequisitePlantIDs.Count > 0)
+            {
+                List<string> prerequisites = new List<string>();
+                
+                for (int i = 0; i < stage.prerequisitePlantIDs.Count; i++)
+                {
+                    int prerequisiteId = stage.prerequisitePlantIDs[i];
+                    float weight = 1.0f;
+                    
+                    if (stage.prerequisiteWeights != null && i < stage.prerequisiteWeights.Count)
+                    {
+                        weight = stage.prerequisiteWeights[i];
+                    }
+                    
+                    string prerequisiteName = "未知";
+                    
+                    // 直接查找对应的植物名称
+                    if (plantDatabase.TryGetValue(prerequisiteId, out Plant.PlantStage prereqStage))
+                    {
+                        prerequisiteName = prereqStage.plantName;
+                    }
+                    
+                    // 添加前置植物信息 "植物名称 数量"
+                    prerequisites.Add($"{prerequisiteName} {weight}");
+                }
+                
+                prerequisitesInfo = string.Join("和", prerequisites);
+            }
+            else
+            {
+                prerequisitesInfo = "无依赖";
+            }
+            
+            // 组合完整信息: 植物名称=要求植物1（名称） 数量 要求植物2（名称） 数量
+            string plantInfo = $"{plantName}={prerequisitesInfo}";
+            plantInfoList.Add(plantInfo);
+        }
+        
+        return plantInfoList;
     }
 
 #endregion    
