@@ -54,6 +54,8 @@ MonoBehaviour:
     associatedLights: []
     plantID: 0
     plantName: "\u706B\uFF08\u79CD\u5B50\uFF09"
+    plantDescription: 
+    previewImagePath: 
     growthRate: 12
     witherRate: 0
     prerequisitePlantIDs: 
@@ -72,6 +74,8 @@ MonoBehaviour:
       rotation: 0
     plantID: 0
     plantName: "\u706B"
+    plantDescription: "\u706B\u662F\u4E00\u79CD\u7279\u6B8A\u7684\u690D\u7269"
+    previewImagePath: "\u7AE0\u9C7C\u567C/idle00"
     growthRate: 0
     witherRate: 0
     prerequisitePlantIDs: 
@@ -80,6 +84,7 @@ MonoBehaviour:
     updateWeights: []
     prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
   stageModelObject: {fileID: 0}
+  growthEffectPrefabPath: "\u70DF/\u70DF"
   growthRate: 1
   witherRate: 1
   plantID: 0
@@ -91,3 +96,5 @@ MonoBehaviour:
   textHeight: 1.5
   textColor: {r: 1, g: 1, b: 1, a: 1}
   textSize: 1
+  growthTimer: 0
+  witherTimer: 0

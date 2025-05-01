@@ -1043,6 +1043,8 @@ public class Plant : MonoBehaviour
         public List<LightingData> associatedLights; // 改为存储光照数据
         public int plantID; // 植物ID
         public string plantName; // 植物名称
+        public string plantDescription; // 新增：植物介绍
+        public string previewImagePath; // 新增：预览图路径
         public float growthRate; // 生长速度
         public float witherRate; // 新增枯萎速度参数
         public List<int> prerequisitePlantIDs; // 前置植物ID列表

@@ -270,8 +270,28 @@ public class PlantManager : MonoBehaviour
         // 初始化光源列表
         stage.associatedLights = new List<LightingData>();
         
-        // 解析预制体路径 (新增)
+        // 解析植物介绍和预览图路径（新增）
         int currentIndex = 3;
+        
+        // 解析植物介绍
+        if (currentIndex < values.Length && !string.IsNullOrEmpty(values[currentIndex]) && 
+            values[currentIndex] != "li" && values[currentIndex] != "gr" && 
+            values[currentIndex] != "pre" && values[currentIndex] != "up")
+        {
+            stage.plantDescription = values[currentIndex];
+            currentIndex++;
+        }
+        
+        // 解析预览图路径
+        if (currentIndex < values.Length && !string.IsNullOrEmpty(values[currentIndex]) && 
+            values[currentIndex] != "li" && values[currentIndex] != "gr" && 
+            values[currentIndex] != "pre" && values[currentIndex] != "up")
+        {
+            stage.previewImagePath = values[currentIndex];
+            currentIndex++;
+        }
+        
+        // 解析预制体路径
         if (currentIndex < values.Length && !string.IsNullOrEmpty(values[currentIndex]) && 
             values[currentIndex] != "li" && values[currentIndex] != "gr" && 
             values[currentIndex] != "pre" && values[currentIndex] != "up")
