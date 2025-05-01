@@ -460,52 +460,7 @@ public class PlantDatabaseUI : MonoBehaviour
             
             // 更新更新植物面板
             UpdateUpdatePanel(itemData);
-            
-            // Debug输出植物信息
-            Debug.Log($"=== 植物 {plantTypeName} (ID: {itemData.plantId}) ===");
-            
-            // 如果是花类型，输出可能的种子信息
-            if (itemData.plantStage.stageType == StageType.Flower && itemData.seedNameProbabilities.Count > 0)
-            {
-                Debug.Log("可能的种子来源及概率:");
-                foreach (var pair in itemData.seedNameProbabilities)
-                {
-                    Debug.Log($"  种子: {pair.Key}, 概率: {pair.Value:P2}");
-                }
-            }
-            
-            Debug.Log("前置植物ID和数量:");
-            foreach (var pair in itemData.prerequisitePlantCounts)
-            {
-                string plantName = "未知";
-                if (plantManager.GetPlantDatabase().TryGetValue(pair.Key, out Plant.PlantStage stage))
-                {
-                    plantName = stage.plantName;
-                }
-                Debug.Log($"  前置植物: {plantName} (ID: {pair.Key}), 数量: {pair.Value}");
-            }
-            
-            Debug.Log("更新植物ID和可更新状态:");
-            foreach (var pair in itemData.updatePlantAvailability)
-            {
-                string plantName = "未知";
-                if (plantManager.GetPlantDatabase().TryGetValue(pair.Key, out Plant.PlantStage stage))
-                {
-                    plantName = stage.plantName;
-                }
-                Debug.Log($"  更新植物: {plantName} (ID: {pair.Key}), 可更新: {pair.Value}");
-            }
-            
-            Debug.Log("更新植物ID和实时概率:");
-            foreach (var pair in itemData.updatePlantProbabilities)
-            {
-                string plantName = "未知";
-                if (plantManager.GetPlantDatabase().TryGetValue(pair.Key, out Plant.PlantStage stage))
-                {
-                    plantName = stage.plantName;
-                }
-                Debug.Log($"  更新植物: {plantName} (ID: {pair.Key}), 概率: {pair.Value:P2}");
-            }
+
         }
     }
     
@@ -550,7 +505,7 @@ public class PlantDatabaseUI : MonoBehaviour
                 {
                     // 获取种子中文名称
                     string chineseSeedName = itemData.GetChineseSeedName(seedName);
-                    textComponent.text = $"{chineseSeedName} (概率: {probability:P0})";
+                    textComponent.text = $"{chineseSeedName}\n(概率: {probability:P0})";
                     
                     // 检查是否存在于活跃植物中，如果是则加粗
                     if (IsSeedActive(seedName))
@@ -646,7 +601,7 @@ public class PlantDatabaseUI : MonoBehaviour
             if (textComponent != null)
             {
                 // 显示植物名称和概率
-                textComponent.text = $"{plantName} (概率: {probability:P0})";
+                textComponent.text = $"{plantName}\n(概率: {probability:P0})";
                 
                 // 如果可更新，加粗文本
                 if (isAvailable)
