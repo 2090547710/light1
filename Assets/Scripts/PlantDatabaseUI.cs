@@ -213,6 +213,8 @@ public class PlantDatabaseUI : MonoBehaviour
             int capturedPlantId = plantId;
             button.onClick.AddListener(() => OnPlantItemClicked(capturedPlantId));
         }
+        //默认选中火
+        OnPlantItemClicked(-1);
     }
     
     // 获取生成的所有植物项
@@ -548,7 +550,12 @@ public class PlantDatabaseUI : MonoBehaviour
                 // 检查火种子是否存在于活跃植物中
                 if (IsSeedActive("火种子"))
                 {
-                    textComponent.fontStyle = FontStyles.Bold;
+                    // 获取Image组件并设置颜色
+                    Image itemImage = itemObj.GetComponentInChildren<Image>();
+                    if (itemImage != null)
+                    {
+                        itemImage.color = selectedItemColor;
+                    }
                 }
             }
             return;
@@ -571,10 +578,15 @@ public class PlantDatabaseUI : MonoBehaviour
                     string chineseSeedName = itemData.GetChineseSeedName(seedName);
                     textComponent.text = $"{chineseSeedName}\n(概率: {probability:P0})";
                     
-                    // 检查是否存在于活跃植物中，如果是则加粗
+                    // 检查是否存在于活跃植物中，如果是则改变颜色
                     if (IsSeedActive(seedName))
                     {
-                        textComponent.fontStyle = FontStyles.Bold;
+                        // 获取Image组件并设置颜色
+                        Image itemImage = itemObj.GetComponentInChildren<Image>();
+                        if (itemImage != null)
+                        {
+                            itemImage.color = selectedItemColor;
+                        }
                     }
                 }
             }
@@ -613,10 +625,15 @@ public class PlantDatabaseUI : MonoBehaviour
                         {
                             textComponent.text = plantName;
                             
-                            // 如果当前数量满足要求，加粗文本
+                            // 如果当前数量满足要求，改变颜色
                             if (j < currentCount)
                             {
-                                textComponent.fontStyle = FontStyles.Bold;
+                                // 获取Image组件并设置颜色
+                                Image itemImage = itemObj.GetComponentInChildren<Image>();
+                                if (itemImage != null)
+                                {
+                                    itemImage.color = selectedItemColor;
+                                }
                             }
                         }
                     }
@@ -667,10 +684,15 @@ public class PlantDatabaseUI : MonoBehaviour
                 // 显示植物名称和概率
                 textComponent.text = $"{plantName}\n(概率: {probability:P0})";
                 
-                // 如果可更新，加粗文本
+                // 如果可更新，改变颜色
                 if (isAvailable)
                 {
-                    textComponent.fontStyle = FontStyles.Bold;
+                    // 获取Image组件并设置颜色
+                    Image itemImage = itemObj.GetComponentInChildren<Image>();
+                    if (itemImage != null)
+                    {
+                        itemImage.color = selectedItemColor;
+                    }
                 }
             }
         }
