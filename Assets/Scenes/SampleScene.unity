@@ -1531,8 +1531,11 @@ MonoBehaviour:
   zoomSpeed: 5
   minZoom: 2
   maxZoom: 50
-  smoothTime: 0.3
+  smoothTime: 0.25
   initialZoom: 10
+  scrollValue: 0
+  fixedAngleWithXZ: 45
+  useFixedAngle: 1
 --- !u!81 &668929552
 AudioListener:
   m_ObjectHideFlags: 0
@@ -1574,7 +1577,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 50
   orthographic: 0
   orthographic size: 5
   m_Depth: 0

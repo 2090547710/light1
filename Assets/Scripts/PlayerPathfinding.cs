@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Linq; // 添加LINQ命名空间
 using System;
+using System.Diagnostics; // 添加用于计时的命名空间
 
 public class PlayerPathfinding : MonoBehaviour
 {
@@ -35,10 +36,16 @@ public class PlayerPathfinding : MonoBehaviour
     [Header("交互设置")]
     public int interactiveLayer = 6; // 交互对象层级，默认为6
     
- 
+    [Header("调试设置")]
+    public bool showPathfindingDebug = true; // 是否显示寻路调试信息
+    private string pathfindingDebugInfo = ""; // 存储寻路调试信息
+
     // 添加检测模式标志
     private bool isDetectionModeActive = false;
     
+    [Header("高度设置")]
+    public float baseHeight = 1.5f; // 基础高度
+
     void Start()
     {
         playerObject = this.gameObject;
@@ -69,7 +76,6 @@ public class PlayerPathfinding : MonoBehaviour
     {
         // 更新着色器中的玩家位置
         UpdateShaderParameters();
-        
         // 只有在非检测模式下才处理左键点击
         if (!isDetectionModeActive && Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
@@ -114,6 +120,14 @@ public class PlayerPathfinding : MonoBehaviour
             
             // 请求路径
             var path = quadTree.FindPath(transform.position, targetPos);
+            
+            // 获取四叉树寻路调试信息
+            if (showPathfindingDebug)
+            {
+                pathfindingDebugInfo = quadTree.GetPathfindingDebugInfo();
+                UnityEngine.Debug.Log($"寻路信息: {pathfindingDebugInfo}");
+            }
+            
             if (path != null && path.Count > 0)
             {
                 // 转换路径点为世界坐标（保持高度）
@@ -131,6 +145,14 @@ public class PlayerPathfinding : MonoBehaviour
                 InsertToQuadTree();
                 
                 moveCoroutine = StartCoroutine(FollowPath());
+            }
+            else
+            {
+                // 路径为空，记录错误
+                if (showPathfindingDebug)
+                {
+                    UnityEngine.Debug.LogWarning($"寻路失败: 无法找到从 {transform.position} 到 {targetPos} 的路径");
+                }
             }
         }
     }
@@ -150,6 +172,9 @@ public class PlayerPathfinding : MonoBehaviour
     {
         while (currentPathIndex < currentPath.Length)
         {
+            // 在移动前更新玩家高度
+            UpdatePlayerHeight();
+            
             Vector3 targetPos = currentPath[currentPathIndex];
             // 添加中断检查点
             
@@ -185,7 +210,7 @@ public class PlayerPathfinding : MonoBehaviour
             InsertToQuadTree();
             
             // 检查是否已足够接近目标点
-            if (Vector3.Distance(transform.position, targetPos) <= stoppingDistance)
+            if (Vector2.Distance(new Vector2(transform.position.x, transform.position.z), new Vector2(targetPos.x, targetPos.z)) <= stoppingDistance)
             {
                 currentPathIndex++;
             }
@@ -216,6 +241,23 @@ public class PlayerPathfinding : MonoBehaviour
                 if (i > 0)
                     Gizmos.DrawLine(currentPath[i-1], currentPath[i]);
             }
+            
+            // 在场景视图中显示寻路调试信息
+            if (showPathfindingDebug && !string.IsNullOrEmpty(pathfindingDebugInfo))
+            {
+                UnityEditor.Handles.BeginGUI();
+                GUIStyle style = new GUIStyle();
+                style.normal.textColor = Color.yellow;
+                style.fontSize = 14;
+                style.fontStyle = FontStyle.Bold;
+                
+                // 在玩家上方显示寻路信息
+                Vector3 screenPos = Camera.current.WorldToScreenPoint(transform.position + Vector3.up * 2);
+                screenPos.y = Camera.current.pixelHeight - screenPos.y;
+                
+                UnityEditor.Handles.Label(new Vector2(screenPos.x, screenPos.y), pathfindingDebugInfo, style);
+                UnityEditor.Handles.EndGUI();
+            }
         }
 
         // 新增玩家所在节点绘制
@@ -242,5 +284,60 @@ public class PlayerPathfinding : MonoBehaviour
         // 绘制玩家光源范围
         Gizmos.color = new Color(1, 1, 0, 0.2f);
         Gizmos.DrawSphere(transform.position, playerLightRange);
+    }
+    
+    // 添加一个新的方法用于在游戏视图中显示调试信息
+    void OnGUI()
+    {
+        if (showPathfindingDebug && !string.IsNullOrEmpty(pathfindingDebugInfo))
+        {
+            GUIStyle style = new GUIStyle();
+            style.normal.textColor = Color.yellow;
+            style.fontSize = 16;
+            style.fontStyle = FontStyle.Bold;
+            style.alignment = TextAnchor.UpperLeft;
+            
+            GUI.Label(new Rect(10, 10, 300, 200), pathfindingDebugInfo, style);
+        }
+    }
+
+    // 更新玩家高度的新方法
+    private void UpdatePlayerHeight()
+    {
+        // 从玩家位置向下发射射线
+        Ray ray = new Ray(transform.position + Vector3.up * 10, Vector3.down);
+        RaycastHit hit;
+        
+        // 首先使用layerMask为7进行射线检测
+        int terrainLayer = 7;
+        int terrainLayerMask = 1 << terrainLayer;
+        
+        // 尝试与地形层碰撞
+        if (Physics.Raycast(ray, out hit, 20f, terrainLayerMask))
+        {
+            // 将玩家高度设置为碰撞点高度加上基础高度
+            Vector3 newPosition = transform.position;
+            newPosition.y = hit.point.y + baseHeight;
+            transform.position = newPosition;
+            
+            // 更新四叉树中的位置
+            quadTree.Remove(playerObject);
+            InsertToQuadTree();
+        }
+        else
+        {
+            // 如果没有检测到地形层碰撞，则尝试与mapLayer进行射线检测
+            if (Physics.Raycast(ray, out hit, 20f, mapLayer))
+            {
+                // 将玩家高度设置为碰撞点高度加上基础高度
+                Vector3 newPosition = transform.position;
+                newPosition.y = hit.point.y + baseHeight;
+                transform.position = newPosition;
+                
+                // 更新四叉树中的位置
+                quadTree.Remove(playerObject);
+                InsertToQuadTree();
+            }
+        }
     }
 } 

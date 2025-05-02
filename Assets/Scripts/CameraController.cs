@@ -20,10 +20,8 @@ public class CameraController : MonoBehaviour
 
     private Vector3 rotation = Vector3.zero;
     private Vector3 currentRotation;
-    private Vector3 rotationVelocity = Vector3.zero;
+    private Vector3 velocity = Vector3.zero;
     private float currentZoom;
-    private float targetZoom; // 新增目标缩放值变量
-    private float zoomVelocity; // 单独的缩放速度变量
 
     // 保存相机设置的键名
     private const string ROTATION_X_KEY = "CameraRotationX";
@@ -35,7 +33,6 @@ public class CameraController : MonoBehaviour
     {
         // 加载保存的相机设置
         LoadCameraSettings();
-        targetZoom = currentZoom; // 初始化目标缩放值
     }
 
     void OnApplicationFocus(bool focusStatus)
@@ -76,12 +73,13 @@ public class CameraController : MonoBehaviour
         // 只有在非冷却期或scroll为0时才应用缩放
         if (!inCooldownPeriod || Mathf.Approximately(scroll, 0f))
         {
-            targetZoom = Mathf.Clamp(targetZoom - scroll * zoomSpeed, minZoom, maxZoom);
+            currentZoom = Mathf.Clamp(currentZoom - scroll * zoomSpeed, minZoom, maxZoom);
         }
 
         // 平滑插值
-        currentRotation = Vector3.SmoothDamp(currentRotation, rotation, ref rotationVelocity, smoothTime);
-        currentZoom = Mathf.SmoothDamp(currentZoom, targetZoom, ref zoomVelocity, smoothTime);
+        currentRotation = Vector3.SmoothDamp(currentRotation, rotation, ref velocity, smoothTime);
+        float targetZoom = currentZoom; // 目标缩放值是通过上面鼠标滚轮输入计算出的
+        currentZoom = Mathf.SmoothDamp(currentZoom, targetZoom, ref velocity.z, smoothTime);
 
         // 计算新的位置和旋转
         if (useFixedAngle)
@@ -137,7 +135,7 @@ public class CameraController : MonoBehaviour
         PlayerPrefs.SetFloat(ROTATION_X_KEY, rotation.x);
         PlayerPrefs.SetFloat(ROTATION_Y_KEY, rotation.y);
         PlayerPrefs.SetFloat(ROTATION_Z_KEY, rotation.z);
-        PlayerPrefs.SetFloat(ZOOM_KEY, targetZoom); // 保存目标缩放值
+        PlayerPrefs.SetFloat(ZOOM_KEY, currentZoom);
         PlayerPrefs.Save();
     }
 
@@ -152,13 +150,11 @@ public class CameraController : MonoBehaviour
             rotation.z = PlayerPrefs.GetFloat(ROTATION_Z_KEY, 0);
             currentRotation = rotation;
             currentZoom = PlayerPrefs.GetFloat(ZOOM_KEY, initialZoom);
-            targetZoom = currentZoom;
         }
         else
         {
             // 使用初始缩放值
             currentZoom = initialZoom;
-            targetZoom = initialZoom;
         }
     }
 }

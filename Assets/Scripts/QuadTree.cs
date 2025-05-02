@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using System.Diagnostics;
 
 public class QuadTree
 {
@@ -598,9 +599,41 @@ public class QuadTree
     #endregion
        
     #region 路径规划
-    // 新增路径规划方法
+    // 新增调试计时器数据结构
+    public class PathfindingDebugInfo
+    {
+        public float TotalTime = 0;
+        public float NodeFindingTime = 0;
+        public float PathfindingTime = 0;
+        public float PathSimplificationTime = 0;
+        public int NodesEvaluated = 0;
+        public int OpenListMaxCount = 0;
+        public int ClosedSetMaxCount = 0;
+        public int NeighborEvaluations = 0;
+        public int LineOfSightChecks = 0;
+        public int FinalPathLength = 0;
+        public int OriginalPathLength = 0;
+    }
+
+    // 在类中添加最新的调试信息实例
+    public PathfindingDebugInfo LastPathfindingInfo { get; private set; } = new PathfindingDebugInfo();
+
+    // 修改寻路方法，添加性能计时
     public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
     {
+        // 添加超时处理
+        int maxIterations = 3000; // 最大迭代次数
+        int iterations = 0;
+        
+        // 总体计时器
+        Stopwatch totalTimer = new Stopwatch();
+        Stopwatch stepTimer = new Stopwatch();
+        PathfindingDebugInfo debugInfo = new PathfindingDebugInfo();
+        
+        totalTimer.Start();
+        
+        // 节点查找计时
+        stepTimer.Start();
         var startNode = FindLeafNode(startPos);
         var targetNode = FindLeafNode(targetPos);
         
@@ -625,6 +658,12 @@ public class QuadTree
             return null;
         }
         
+        debugInfo.NodeFindingTime = stepTimer.ElapsedMilliseconds;
+        stepTimer.Reset();
+        
+        // A*寻路计时
+        stepTimer.Start();
+        
         var openList = new List<QuadTreeNode>();
         var closedSet = new HashSet<QuadTreeNode>();
         // 初始化节点数据
@@ -636,18 +675,54 @@ public class QuadTree
 
         while (openList.Count > 0)
         {
+            iterations++;
+            if (iterations > maxIterations)
+            {
+                UnityEngine.Debug.Log("寻路超时，返回部分路径");
+                // 如果超时，尝试返回到目前为止找到的最佳路径
+                var bestNode = openList.OrderBy(n => n.HCost).First();
+                List<Vector3> partialPath = RetracePath(startNode, bestNode);
+                return partialPath;
+            }
+            
+            // 更新最大列表大小
+            debugInfo.OpenListMaxCount = Mathf.Max(debugInfo.OpenListMaxCount, openList.Count);
+            debugInfo.ClosedSetMaxCount = Mathf.Max(debugInfo.ClosedSetMaxCount, closedSet.Count);
+            
             var currentNode = openList.OrderBy(n => n.FCost).First();
+            debugInfo.NodesEvaluated++;
             
             if (currentNode == targetNode){
-                return RetracePath(startNode, targetNode);
-            }
+                List<Vector3> path = RetracePath(startNode, targetNode);
+                debugInfo.OriginalPathLength = path.Count;
                 
+                // 寻路部分用时
+                debugInfo.PathfindingTime = stepTimer.ElapsedMilliseconds;
+                stepTimer.Reset();
+                
+                // 路径简化计时
+                stepTimer.Start();
+                var simplifiedPath = SimplifyPath(path);
+                debugInfo.PathSimplificationTime = stepTimer.ElapsedMilliseconds;
+                debugInfo.FinalPathLength = simplifiedPath.Count;
+                
+                // 记录总用时
+                totalTimer.Stop();
+                debugInfo.TotalTime = totalTimer.ElapsedMilliseconds;
+                
+                // 保存调试信息
+                LastPathfindingInfo = debugInfo;
+                
+                return simplifiedPath;
+            }
 
             openList.Remove(currentNode);
             closedSet.Add(currentNode);
 
             foreach (var neighbor in GetNeighbors(currentNode))
             {
+                debugInfo.NeighborEvaluations++;
+                
                 if (!neighbor.IsWalkable || closedSet.Contains(neighbor))
                     continue;
 
@@ -657,6 +732,7 @@ public class QuadTree
                 if (currentNode.ParentNode != null && 
                     HasLineOfSight(currentNode.ParentNode, neighbor))
                 {
+                    debugInfo.LineOfSightChecks++;
                     float alternativeCost = currentNode.ParentNode.GCost + 
                                           Heuristic(currentNode.ParentNode, neighbor);
                     if (alternativeCost < tentativeGCost)
@@ -677,6 +753,13 @@ public class QuadTree
                 }
             }
         }
+        
+        // 如果寻路失败
+        totalTimer.Stop();
+        debugInfo.TotalTime = totalTimer.ElapsedMilliseconds;
+        debugInfo.PathfindingTime = stepTimer.ElapsedMilliseconds;
+        LastPathfindingInfo = debugInfo;
+        
         return null;
     }
 
@@ -701,20 +784,13 @@ public class QuadTree
         if (neighborCache.TryGetValue(node, out var cached))
             return cached;
 
-        // 定向获取8个方位的邻居，而不是整个区域搜索
         var neighbors = new List<QuadTreeNode>(8);
-        float offset = node.Size.x; // 基于节点尺寸的偏移量
-        
-        // 8个方向的偏移量
+        // 只获取四个主方向邻居，减少对角线邻居
         Vector2[] directions = new Vector2[] {
-            new Vector2(offset, 0),          // 右
-            new Vector2(-offset, 0),         // 左
-            new Vector2(0, offset),          // 上
-            new Vector2(0, -offset),         // 下
-            new Vector2(offset, offset),     // 右上
-            new Vector2(-offset, offset),    // 左上
-            new Vector2(-offset, -offset),   // 左下
-            new Vector2(offset, -offset)     // 右下
+            new Vector2(node.Size.x, 0),          // 右
+            new Vector2(-node.Size.x, 0),         // 左
+            new Vector2(0, node.Size.x),          // 上
+            new Vector2(0, -node.Size.x),         // 下
         };
         
         foreach (var dir in directions)
@@ -734,22 +810,21 @@ public class QuadTree
 
     private bool HasLineOfSight(QuadTreeNode from, QuadTreeNode to)
     {
-        Vector2 start = from.Center;
-        Vector2 end = to.Center;
-        
         // 如果距离很近，直接返回true
-        float distance = Vector2.Distance(start, end);
-        if (distance < MinNodeSize.x * 2)
+        float distance = Vector2.Distance(from.Center, to.Center);
+        if (distance < MinNodeSize.x * 3) // 增加直接返回的距离阈值
             return true;
         
-        // 减少检查点数量，使用较大步长
-        float step = Mathf.Max(MinNodeSize.x * 0.5f, distance / 5);
+        // 使用更大的步长
+        float step = Mathf.Max(MinNodeSize.x, distance / 3); // 增加步长
         
         QuadTreeNode prevNode = from;
         
+        int checkCount = 0;
         for (float t = 0; t <= 1; t += step / distance)
         {
-            Vector2 point = Vector2.Lerp(start, end, t);
+            checkCount++;
+            Vector2 point = Vector2.Lerp(from.Center, to.Center, t);
             var node = FindLeafNode(new Vector3(point.x, 0, point.y));
             
             if (node == null || !node.IsWalkable)
@@ -761,6 +836,10 @@ public class QuadTree
             
             prevNode = node;
         }
+        
+        // 增加统计值
+        LastPathfindingInfo.LineOfSightChecks += checkCount;
+        
         return true;
     }
 
@@ -835,11 +914,10 @@ public class QuadTree
         // 基础距离计算
         float baseDistance = Vector2.Distance(a.Center, b.Center);
         
-        // 考虑高度差异的惩罚因子
+        // 减小高度差异惩罚
         float heightDifference = Mathf.Abs(a.Height - b.Height);
-        float heightPenalty = heightDifference * 2.0f; // 高度差异惩罚系数，可以调整
+        float heightPenalty = heightDifference * 1.0f; // 从2.0降低到1.0
         
-        // 返回综合考虑平面距离和高度差异的启发式值
         return baseDistance + heightPenalty;
     }
 
@@ -1186,7 +1264,7 @@ public class QuadTree
     private bool IsHeightAccessible(QuadTreeNode from, QuadTreeNode to)
     {
         // 定义最大可攀爬高度差
-        float maxClimbableHeight = 0.15f; // 可以根据需要调整
+        float maxClimbableHeight = 0.01f; // 可以根据需要调整
         
         // 计算高度差
         float heightDifference = Mathf.Abs(from.Height - to.Height);
@@ -1698,6 +1776,98 @@ public class QuadTree
         }
         
         return maxHeight;
+    }
+
+    // 添加获取性能数据的方法
+    public string GetPathfindingDebugInfo()
+    {
+        if (LastPathfindingInfo == null)
+            return "尚无寻路数据";
+            
+        return $"寻路总耗时: {LastPathfindingInfo.TotalTime}ms\n" +
+               $"节点查找: {LastPathfindingInfo.NodeFindingTime}ms\n" +
+               $"寻路计算: {LastPathfindingInfo.PathfindingTime}ms\n" +
+               $"路径简化: {LastPathfindingInfo.PathSimplificationTime}ms\n" +
+               $"评估节点数: {LastPathfindingInfo.NodesEvaluated}\n" +
+               $"最大开放列表: {LastPathfindingInfo.OpenListMaxCount}\n" +
+               $"最大关闭列表: {LastPathfindingInfo.ClosedSetMaxCount}\n" +
+               $"邻居评估次数: {LastPathfindingInfo.NeighborEvaluations}\n" +
+               $"视线检查次数: {LastPathfindingInfo.LineOfSightChecks}\n" +
+               $"原始路径长度: {LastPathfindingInfo.OriginalPathLength}\n" +
+               $"最终路径长度: {LastPathfindingInfo.FinalPathLength}";
+    }
+
+    // 在 QuadTree 类中添加优先队列辅助类
+    private class PriorityQueue<T>
+    {
+        private List<T> data;
+        private readonly IComparer<T> comparer;
+
+        public PriorityQueue(IComparer<T> comparer)
+        {
+            this.data = new List<T>();
+            this.comparer = comparer;
+        }
+
+        public int Count => data.Count;
+
+        public void Enqueue(T item)
+        {
+            data.Add(item);
+            int childIndex = data.Count - 1;
+            while (childIndex > 0)
+            {
+                int parentIndex = (childIndex - 1) / 2;
+                if (comparer.Compare(data[childIndex], data[parentIndex]) >= 0)
+                    break;
+                T tmp = data[childIndex];
+                data[childIndex] = data[parentIndex];
+                data[parentIndex] = tmp;
+                childIndex = parentIndex;
+            }
+        }
+
+        public T Dequeue()
+        {
+            T frontItem = data[0];
+            int lastIndex = data.Count - 1;
+            data[0] = data[lastIndex];
+            data.RemoveAt(lastIndex);
+
+            if (lastIndex > 0)
+            {
+                int parentIndex = 0;
+                while (true)
+                {
+                    int leftChildIndex = parentIndex * 2 + 1;
+                    if (leftChildIndex >= data.Count)
+                        break;
+
+                    int rightChildIndex = leftChildIndex + 1;
+                    int bestChildIndex = (rightChildIndex < data.Count && comparer.Compare(data[rightChildIndex], data[leftChildIndex]) < 0) ? 
+                        rightChildIndex : leftChildIndex;
+
+                    if (comparer.Compare(data[parentIndex], data[bestChildIndex]) <= 0)
+                        break;
+
+                    T tmp = data[parentIndex];
+                    data[parentIndex] = data[bestChildIndex];
+                    data[bestChildIndex] = tmp;
+                    parentIndex = bestChildIndex;
+                }
+            }
+            return frontItem;
+        }
+
+        public bool Contains(T item)
+        {
+            return data.Contains(item);
+        }
+
+        public void Clear()
+        {
+            data.Clear();
+        }
     }
 }
 
