@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
         // 将四叉树实例赋给光照系统
         LightingManager.tree = tree;
         PlayerPathfinding.quadTree = tree;
-        QuadTreeTester.quadTree = tree;
+        PlantInteraction.quadTree = tree;
     }
     #endregion
     public GameObject[] objects;

@@ -507,7 +507,7 @@ public class Plant : MonoBehaviour
                 Debug.Log($"植物已更新为: {updatedStage.plantName} (ID: {updatedStage.plantID})");
             }
             
-            Grow();
+            Grow(false);
         }
         else
         {
@@ -543,7 +543,7 @@ public class Plant : MonoBehaviour
             maxStages = growthStages.Count;
             Debug.Log($"植物已更新为: {updatedStage.plantName} (ID: {updatedStage.plantID})");
             
-            Grow();
+            Grow(false);
         }
         else
         {

@@ -20,7 +20,7 @@ public class SequentialAnimator : MonoBehaviour
         }
         
         // 订阅交互事件
-        PlayerPathfinding.OnInteractiveObjectClicked += OnInteractiveObjectClicked;
+        PlantInteraction.OnInteractiveObjectClicked += OnInteractiveObjectClicked;
     }
     
     // 事件响应方法
@@ -33,7 +33,7 @@ public class SequentialAnimator : MonoBehaviour
     // 当对象被销毁时取消订阅
     private void OnDestroy()
     {
-        PlayerPathfinding.OnInteractiveObjectClicked -= OnInteractiveObjectClicked;
+        PlantInteraction.OnInteractiveObjectClicked -= OnInteractiveObjectClicked;
     }
     
     // 显示所有图片的公共方法

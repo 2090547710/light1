@@ -35,9 +35,9 @@ public class PlayerPathfinding : MonoBehaviour
     [Header("交互设置")]
     public int interactiveLayer = 6; // 交互对象层级，默认为6
     
-    // 定义事件
-    public static event Action OnInteractiveObjectClicked;
-    public static event Action<Plant> OnPlantClicked;
+ 
+    // 添加检测模式标志
+    private bool isDetectionModeActive = false;
     
     void Start()
     {
@@ -47,6 +47,22 @@ public class PlayerPathfinding : MonoBehaviour
         
         // 初始化着色器参数
         UpdateShaderParameters();
+        
+        // 订阅检测模式状态改变事件
+        PlantInteraction.OnDetectionModeChanged += HandleDetectionModeChanged;
+    }
+    
+    // 在脚本销毁时取消订阅事件
+    void OnDestroy()
+    {
+        PlantInteraction.OnDetectionModeChanged -= HandleDetectionModeChanged;
+    }
+    
+    // 处理检测模式状态改变
+    private void HandleDetectionModeChanged(bool isActive, PlantInteraction.DetectionModeType modeType)
+    {
+        isDetectionModeActive = isActive;
+        // 可以根据需要处理modeType参数
     }
 
     void Update()
@@ -54,108 +70,67 @@ public class PlayerPathfinding : MonoBehaviour
         // 更新着色器中的玩家位置
         UpdateShaderParameters();
         
-        if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) // 左键点击，且不在UI上
+        // 只有在非检测模式下才处理左键点击
+        if (!isDetectionModeActive && Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            
-            // 使用RaycastAll检测所有碰撞体
-            RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
-            // 检查是否有交互层的对象被点击
-            bool interactiveHit = false;
-            foreach (RaycastHit hit in hits)
+            HandleLeftClick();
+        }
+    }
+    
+    // 处理左键点击
+    private void HandleLeftClick()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        
+        // 使用RaycastAll检测所有碰撞体
+        RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
+ 
+        // 检查是否有MAP层的物体被击中
+        bool validHit = false;
+        RaycastHit mapHit = new RaycastHit();
+        
+        foreach (RaycastHit hit in hits)
+        {
+            if (((1 << hit.collider.gameObject.layer) & mapLayer) != 0)
             {
-                if (hit.collider.gameObject.layer == interactiveLayer)
-                {
-                    interactiveHit = true;
-                    // 触发事件
-                    OnInteractiveObjectClicked?.Invoke();
-                    break;
-                }
+                mapHit = hit;
+                validHit = true;
+                break;
             }
-            // 先检查是否点击到了植物
-            Plant clickedPlant = null;
-            foreach (RaycastHit hit in hits)
+        }
+        if (validHit)
+        {
+            // 保持玩家当前高度
+            Vector3 targetPos = mapHit.point;
+            targetPos.y = transform.position.y;
+            
+            // 生成并配置标记
+            if(markerPrefab)
             {
-                // 尝试获取植物组件（包括父对象）
-                Plant plant = hit.collider.GetComponent<Plant>();
+                GameObject marker = Instantiate(markerPrefab, targetPos+new Vector3(0,0.5f,0), Quaternion.identity);
+                marker.transform.localScale = Vector3.one * markerScale;
+                Destroy(marker, markerDuration);
+            }
+            
+            // 请求路径
+            var path = quadTree.FindPath(transform.position, targetPos);
+            if (path != null && path.Count > 0)
+            {
+                // 转换路径点为世界坐标（保持高度）
+                currentPath = path.Select(p => new Vector3(p.x, transform.position.y, p.z)).ToArray();
+                currentPathIndex = 0;
                 
-                // 如果直接组件没有找到，尝试在所有父对象中查找
-                if (plant == null)
+                // 停止之前的移动协程
+                if (moveCoroutine != null)
                 {
-                    plant = hit.collider.GetComponentInParent<Plant>();
-                }
-                
-                if (plant != null)
-                {
-                    clickedPlant = plant;
-                    break;
-                }
-            }
-            
-            // 如果点击到了植物，触发植物点击事件
-            if (clickedPlant != null)
-            {
-                OnPlantClicked?.Invoke(clickedPlant);
-                return; // 点击到植物后不再处理其他点击逻辑
-            }
-            
-            
-            if(interactiveHit)
-            {
-                return;
-            }
-            
-            // 检查是否有MAP层的物体被击中
-            bool validHit = false;
-            RaycastHit mapHit = new RaycastHit();
-            
-            foreach (RaycastHit hit in hits)
-            {
-                if (((1 << hit.collider.gameObject.layer) & mapLayer) != 0)
-                {
-                    mapHit = hit;
-                    validHit = true;
-                    break;
-                }
-            }
-            if (validHit)
-            {
-                // 保持玩家当前高度
-                Vector3 targetPos = mapHit.point;
-                targetPos.y = transform.position.y;
-                
-                // 生成并配置标记
-                if(markerPrefab)
-                {
-                    GameObject marker = Instantiate(markerPrefab, targetPos+new Vector3(0,0.5f,0), Quaternion.identity);
-                    marker.transform.localScale = Vector3.one * markerScale;
-                    Destroy(marker, markerDuration);
+                    StopCoroutine(moveCoroutine);
                 }
                 
-                // 请求路径
-                var path = quadTree.FindPath(transform.position, targetPos);
-                if (path != null && path.Count > 0)
-                {
-                    // 转换路径点为世界坐标（保持高度）
-                    currentPath = path.Select(p => new Vector3(p.x, transform.position.y, p.z)).ToArray();
-                    currentPathIndex = 0;
-                    
-                    // 停止之前的移动协程
-                    if (moveCoroutine != null)
-                    {
-                        StopCoroutine(moveCoroutine);
-                    }
-                    
-                    // 更新玩家在四叉树中的位置
-                    quadTree.Remove(playerObject);
-                    InsertToQuadTree();
-                    
-                    moveCoroutine = StartCoroutine(FollowPath());
-                }
-                else
-                {
-                    // Debug.LogWarning("无法找到到目标点的可行路径！");
-                }
+                // 更新玩家在四叉树中的位置
+                quadTree.Remove(playerObject);
+                InsertToQuadTree();
+                
+                moveCoroutine = StartCoroutine(FollowPath());
             }
         }
     }

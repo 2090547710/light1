@@ -1511,10 +1511,18 @@ public class PlantManager : MonoBehaviour
 
 #endregion    
 
+void Start()
+{
+    // 预先分配足够大的数组
+    List<Vector4> initialArray = new List<Vector4>(new Vector4[200]);
+    Shader.SetGlobalVectorArray("_PlantPositions", initialArray);
+    Shader.SetGlobalVectorArray("_FirePositions", initialArray);
+}
+
 void Update()
 {
     // 收集活跃植物的位置并传递给shader
-    int plantCount = Mathf.Min(activePlants.Count, 64); // 限制最大数量为64
+    int plantCount = Mathf.Min(activePlants.Count, 200); // 限制最大数量为200
     
     if (plantCount > 0)
     {

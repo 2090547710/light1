@@ -37,9 +37,9 @@ public class PlantInfoUI : MonoBehaviour
     private void Start()
     {
         // 订阅交互事件
-        PlayerPathfinding.OnPlantClicked += ShowPlantInfo;
+        PlantInteraction.OnPlantClicked += ShowPlantInfo;
         // 订阅植物铲除事件
-        QuadTreeTester.OnPlantRemoved += OnPlantRemoved;
+        PlantInteraction.OnPlantRemoved += OnPlantRemoved;
     }
     
     private void Update()
@@ -59,9 +59,9 @@ public class PlantInfoUI : MonoBehaviour
     private void OnDestroy()
     {
         // 取消订阅交互事件
-        PlayerPathfinding.OnPlantClicked -= ShowPlantInfo;
+        PlantInteraction.OnPlantClicked -= ShowPlantInfo;
         // 取消订阅植物铲除事件
-        QuadTreeTester.OnPlantRemoved -= OnPlantRemoved;
+        PlantInteraction.OnPlantRemoved -= OnPlantRemoved;
     }
     
     // 当植物被铲除时调用
