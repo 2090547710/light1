@@ -6,6 +6,7 @@ public class SimpleAnimatorController : MonoBehaviour
 {
     public Animator[] animators;
     public GameObject[] panels;
+    private bool arePanelsEnabled = false;
     
     // Start is called before the first frame update
     void Start()
@@ -86,6 +87,7 @@ public class SimpleAnimatorController : MonoBehaviour
                 panel.SetActive(true);
             }
         }
+        arePanelsEnabled = true;
     }
     
     // 禁用所有面板
@@ -98,6 +100,7 @@ public class SimpleAnimatorController : MonoBehaviour
                 panel.SetActive(false);
             }
         }
+        arePanelsEnabled = false;
     }
     
     // 启用指定索引的面板
@@ -115,6 +118,19 @@ public class SimpleAnimatorController : MonoBehaviour
         if (index >= 0 && index < panels.Length && panels[index] != null)
         {
             panels[index].SetActive(false);
+        }
+    }
+    
+    // 根据当前状态切换所有面板的显示/隐藏
+    public void ToggleAllPanels()
+    {
+        if (arePanelsEnabled)
+        {
+            DisableAllPanels();
+        }
+        else
+        {
+            EnableAllPanels();
         }
     }
 }

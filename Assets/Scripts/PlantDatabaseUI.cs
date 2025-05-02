@@ -20,11 +20,19 @@ public class PlantDatabaseUI : MonoBehaviour
     public Transform prerequisitePanelContent; // 前置植物面板内容区域
     public Transform updatePanelContent; // 更新植物面板内容区域
     
+    // 添加颜色配置
+    [Header("颜色配置")]
+    public Color normalItemColor = Color.white; // 普通项目的颜色
+    public Color selectedItemColor = new Color(0.8f, 0.8f, 0.8f); // 选中项目的颜色
+    
     // PlantManager引用
     private PlantManager plantManager;
     
     // 添加Fire引用
     public Fire firePrefab; // 在Inspector中指定火的预制体
+    
+    // 添加列表存储生成的植物项
+    private List<GameObject> generatedPlantItems = new List<GameObject>();
     
     // 滚动控制参数
     [Header("滚动控制")]
@@ -116,11 +124,17 @@ public class PlantDatabaseUI : MonoBehaviour
             Destroy(child.gameObject);
         }
         
+        // 清空列表
+        generatedPlantItems.Clear();
+        
         // 首先添加Fire特殊项目（如果有Fire预制体）
         if (firePrefab != null && firePrefab.growthStages.Count > 1)
         {
             // 实例化预制体
             GameObject fireItem = Instantiate(plantItemPrefab, contentTransform);
+            
+            // 添加到列表
+            generatedPlantItems.Add(fireItem);
             
             // 获取Text组件并设置为"火"
             TextMeshProUGUI textComponent = fireItem.GetComponentInChildren<TextMeshProUGUI>();
@@ -133,6 +147,9 @@ public class PlantDatabaseUI : MonoBehaviour
             PlantItemData fireItemData = fireItem.GetComponent<PlantItemData>() ?? fireItem.AddComponent<PlantItemData>();
             fireItemData.plantId = -1; // 特殊ID标记为火
             fireItemData.isFireItem = true; // 设置为火项目
+            
+            // 查找并保存Image组件引用
+            fireItemData.itemImage = fireItem.GetComponentInChildren<Image>();
             
             // 如果Fire有第二个生长阶段，使用它作为plantStage
             if (firePrefab.growthStages.Count > 1)
@@ -161,6 +178,9 @@ public class PlantDatabaseUI : MonoBehaviour
             // 实例化预制体
             GameObject plantItem = Instantiate(plantItemPrefab, contentTransform);
             
+            // 添加到列表
+            generatedPlantItems.Add(plantItem);
+            
             // 获取Text组件并设置为植物名称
             TextMeshProUGUI textComponent = plantItem.GetComponentInChildren<TextMeshProUGUI>();
             if (textComponent != null)
@@ -176,6 +196,10 @@ public class PlantDatabaseUI : MonoBehaviour
             PlantItemData itemData = plantItem.GetComponent<PlantItemData>() ?? plantItem.AddComponent<PlantItemData>();
             itemData.plantId = plantId;
             itemData.plantStage = plantStage;
+            
+            // 查找并保存Image组件引用
+            itemData.itemImage = plantItem.GetComponentInChildren<Image>();
+            
             itemData.RefreshData();
             
             // 添加点击事件
@@ -189,12 +213,12 @@ public class PlantDatabaseUI : MonoBehaviour
             int capturedPlantId = plantId;
             button.onClick.AddListener(() => OnPlantItemClicked(capturedPlantId));
         }
-        
-        // 生成完列表后，默认选中火项目（如果存在）
-        if (firePrefab != null && firePrefab.growthStages.Count > 1)
-        {
-            OnPlantItemClicked(-1);
-        }
+    }
+    
+    // 获取生成的所有植物项
+    public List<GameObject> GetGeneratedPlantItems()
+    {
+        return generatedPlantItems;
     }
     
     // 手动刷新植物列表
@@ -320,14 +344,30 @@ public class PlantDatabaseUI : MonoBehaviour
     {
         if (upButton != null)
         {
-            // 控制图片透明度
-            
+            // 控制上按钮图片透明度
+            Image upImage = upButton.GetComponent<Image>();
+            if (upImage != null)
+            {
+                // 当滚动到顶部时（normalizedPosition接近1）透明度减小
+                float alpha = plantScrollRect.verticalNormalizedPosition >= 0.99f ? 0.5f : 1f;
+                Color color = upImage.color;
+                color.a = alpha;
+                upImage.color = color;
+            }
         }
         
         if (downButton != null)
         {
-            // 控制图片透明度
-            
+            // 控制下按钮图片透明度
+            Image downImage = downButton.GetComponent<Image>();
+            if (downImage != null)
+            {
+                // 当滚动到底部时（normalizedPosition接近0）透明度减小
+                float alpha = plantScrollRect.verticalNormalizedPosition <= 0.01f ? 0.5f : 1f;
+                Color color = downImage.color;
+                color.a = alpha;
+                downImage.color = color;
+            }
         }
     }
 
@@ -404,15 +444,34 @@ public class PlantDatabaseUI : MonoBehaviour
     // 处理植物项点击事件
     private void OnPlantItemClicked(int plantId)
     {
-        // 查找对应的PlantItemData
+        // 使用生成的植物列表查找对应的PlantItemData
         PlantItemData itemData = null;
-        // 遍历content下的所有子物体
-        foreach (Transform child in plantScrollRect.content)
+        
+        // 先将所有项的颜色重置为正常颜色
+        foreach (GameObject plantItem in generatedPlantItems)
         {
-            PlantItemData childData = child.GetComponent<PlantItemData>();
-            if (childData != null && childData.plantId == plantId)
+            PlantItemData plantItemData = plantItem.GetComponent<PlantItemData>();
+            if (plantItemData != null && plantItemData.itemImage != null)
             {
-                itemData = childData;
+                // 设置为正常颜色
+                plantItemData.itemImage.color = normalItemColor;
+            }
+        }
+        
+        // 遍历生成的植物项列表，更高效地查找对应的数据
+        foreach (GameObject plantItem in generatedPlantItems)
+        {
+            PlantItemData plantItemData = plantItem.GetComponent<PlantItemData>();
+            if (plantItemData != null && plantItemData.plantId == plantId)
+            {
+                itemData = plantItemData;
+                
+                // 将被点击项的颜色变为选中颜色
+                if (plantItemData.itemImage != null)
+                {
+                    plantItemData.itemImage.color = selectedItemColor;
+                }
+                
                 break;
             }
         }
@@ -466,7 +525,6 @@ public class PlantDatabaseUI : MonoBehaviour
             
             // 更新更新植物面板
             UpdateUpdatePanel(itemData);
-
         }
     }
     
@@ -625,6 +683,9 @@ public class PlantItemData : MonoBehaviour
     public int plantId;
     public Plant.PlantStage plantStage; // 存储对应的PlantStage
     public bool isFireItem = false; // 标记是否为火项目
+    
+    // 新增：保存植物项的Image组件引用
+    public Image itemImage;
     
     // 存储前置植物ID和对应活跃数量
     public Dictionary<int, int> prerequisitePlantCounts = new Dictionary<int, int>();
