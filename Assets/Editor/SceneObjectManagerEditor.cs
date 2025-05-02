@@ -46,10 +46,12 @@ public class SceneObjectManagerEditor : Editor
         }
         
         // 加载按钮
+        GUI.enabled = Application.isPlaying; // 只在游戏运行时启用此按钮
         if (GUILayout.Button("加载场景物体", GUILayout.Height(30)))
         {
             sceneManager.LoadAllSceneObjects();
         }
+        GUI.enabled = true; // 恢复启用状态
         
         EditorGUILayout.EndHorizontal();
         

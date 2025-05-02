@@ -93,7 +93,7 @@ Material:
     - _EndPointColor: {r: 0.9411765, g: 0.9411765, b: 0.9411765, a: 1}
     - _FireColor: {r: 0.627451, g: 0.627451, b: 0.627451, a: 1}
     - _FireOutlineColor: {r: 0, g: 0, b: 0, a: 1}
-    - _MapBorderColor: {r: 0.9411765, g: 0.9411765, b: 0.9411765, a: 1}
+    - _MapBorderColor: {r: 1, g: 1, b: 1, a: 1}
     - _MapColor: {r: 1, g: 1, b: 1, a: 1}
     - _PlantColor: {r: 0.9411765, g: 0.9411765, b: 0.9411765, a: 1}
     - _PlantOutlineColor: {r: 0, g: 0, b: 0, a: 1}

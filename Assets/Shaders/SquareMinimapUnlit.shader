@@ -55,6 +55,11 @@ Shader "Custom/SquareMinimapUnlit"
             uniform float _ShowBeginPoint;
             uniform float _ShowEndPoint;
             
+            // 添加摄像机相关参数
+            uniform float3 _CameraWorldPos;  // 摄像机位置
+            uniform float _CameraRotationY;  // 摄像机Y轴旋转角度
+            uniform float _CameraZoom;       // 摄像机缩放值
+            
             // 添加植物位置数组(最多支持64个植物)
             uniform float3 _PlantPositions[64];
             uniform int _PlantCount;
@@ -82,6 +87,25 @@ Shader "Custom/SquareMinimapUnlit"
             fixed4 _FireColor;
             fixed4 _FireOutlineColor;
             float _FireSize;
+
+            // 添加旋转点函数
+            float2 RotatePoint(float2 pos, float2 center, float angle)
+            {
+                float s = sin(angle);
+                float c = cos(angle);
+                
+                // 将点移到原点
+                float2 translatedPoint = pos - center;
+                
+                // 旋转点
+                float2 rotatedPoint = float2(
+                    translatedPoint.x * c - translatedPoint.y * s,
+                    translatedPoint.x * s + translatedPoint.y * c
+                );
+                
+                // 移回原来的位置
+                return rotatedPoint + center;
+            }
 
             v2f vert (appdata v)
             {
@@ -172,11 +196,19 @@ Shader "Custom/SquareMinimapUnlit"
                     return _MapBorderColor;
                 }
                 
+                // 根据摄像机缩放调整地图尺寸
+                float adjustedMapSize = _MapSize * (1.0 + (_CameraZoom - 10) / 40.0);  // 10是初始缩放值，40是最大缩放范围
+                
                 // 将UV坐标转换为以玩家为中心的世界坐标偏移
-                float2 offset = (i.uv - 0.5) * _MapSize * _MapScale;
+                float2 offset = (i.uv - 0.5) * adjustedMapSize * _MapScale;
+                
+                // 应用相机旋转（弧度制），但旋转方向相反
+                float rotationRad = _CameraRotationY * 3.14159265359 / 180.0;
+                // 使用相反的旋转角度，这样当相机向左时，地图会向右移动
+                float2 rotatedOffset = RotatePoint(offset, float2(0, 0), -rotationRad);
                 
                 // 计算实际的世界坐标点
-                float2 worldPos = float2(_PlayerWorldPos.x, _PlayerWorldPos.z) + offset;
+                float2 worldPos = float2(_PlayerWorldPos.x, _PlayerWorldPos.z) + rotatedOffset;
                 
                 // 将世界坐标转换为_CompositeMap的UV坐标
                 float2 heightmapUV = (worldPos - _HeightmapParams.xy + _HeightmapParams.zw*0.5) / _HeightmapParams.zw;
@@ -191,9 +223,18 @@ Shader "Custom/SquareMinimapUnlit"
                 
                 // 绘制植物位置(三角形)
                 for (int p = 0; p < _PlantCount; p++) {
-                    float2 plantOffset = float2(_PlantPositions[p].x - _PlayerWorldPos.x, 
-                                             _PlantPositions[p].z - _PlayerWorldPos.z) / _MapSize / _MapScale;
-                    float2 plantUV = float2(0.5, 0.5) + plantOffset;
+                    // 计算植物相对于玩家的偏移
+                    float2 plantPos = float2(_PlantPositions[p].x, _PlantPositions[p].z);
+                    float2 playerPos = float2(_PlayerWorldPos.x, _PlayerWorldPos.z);
+                    float2 plantOffset = plantPos - playerPos;
+                    
+                    // 应用旋转
+                    plantOffset = RotatePoint(plantOffset, float2(0, 0), rotationRad);
+                    
+                    // 转换为UV坐标偏移
+                    plantOffset = plantOffset / adjustedMapSize / _MapScale;
+                    // 将植物图标稍微上移（Y轴负方向为上）
+                    float2 plantUV = float2(0.5, 0.5) + plantOffset + float2(0, 0.03);
                     
                     // 检查植物是否在地图范围内
                     if (abs(plantUV.x - 0.5) < 0.5 && abs(plantUV.y - 0.5) < 0.5) {
@@ -209,8 +250,16 @@ Shader "Custom/SquareMinimapUnlit"
                 
                 // 绘制火植物位置(倒三角形)
                 for (int f = 0; f < _FireCount; f++) {
-                    float2 fireOffset = float2(_FirePositions[f].x - _PlayerWorldPos.x, 
-                                           _FirePositions[f].z - _PlayerWorldPos.z) / _MapSize / _MapScale;
+                    // 计算火植物相对于玩家的偏移
+                    float2 firePos = float2(_FirePositions[f].x, _FirePositions[f].z);
+                    float2 playerPos = float2(_PlayerWorldPos.x, _PlayerWorldPos.z);
+                    float2 fireOffset = firePos - playerPos;
+                    
+                    // 应用旋转
+                    fireOffset = RotatePoint(fireOffset, float2(0, 0), rotationRad);
+                    
+                    // 转换为UV坐标偏移
+                    fireOffset = fireOffset / adjustedMapSize / _MapScale;
                     float2 fireUV = float2(0.5, 0.5) + fireOffset;
                     
                     // 检查火植物是否在地图范围内
@@ -227,7 +276,16 @@ Shader "Custom/SquareMinimapUnlit"
                 
                 // 计算起点在地图上的位置（如果激活）
                 if (_ShowBeginPoint > 0.5) {
-                    float2 beginPointOffset = float2(_BeginPointPos.x - _PlayerWorldPos.x, _BeginPointPos.z - _PlayerWorldPos.z) / _MapSize / _MapScale;
+                    // 计算起点相对于玩家的偏移
+                    float2 beginPos = float2(_BeginPointPos.x, _BeginPointPos.z);
+                    float2 playerPos = float2(_PlayerWorldPos.x, _PlayerWorldPos.z);
+                    float2 beginPointOffset = beginPos - playerPos;
+                    
+                    // 应用旋转
+                    beginPointOffset = RotatePoint(beginPointOffset, float2(0, 0), rotationRad);
+                    
+                    // 转换为UV坐标偏移
+                    beginPointOffset = beginPointOffset / adjustedMapSize / _MapScale;
                     float2 beginPointUV = float2(0.5, 0.5) + beginPointOffset;
                     
                     // 检查起点是否在地图范围内
@@ -244,7 +302,16 @@ Shader "Custom/SquareMinimapUnlit"
                 
                 // 计算终点在地图上的位置（如果激活）
                 if (_ShowEndPoint > 0.5) {
-                    float2 endPointOffset = float2(_EndPointPos.x - _PlayerWorldPos.x, _EndPointPos.z - _PlayerWorldPos.z) / _MapSize / _MapScale;
+                    // 计算终点相对于玩家的偏移
+                    float2 endPos = float2(_EndPointPos.x, _EndPointPos.z);
+                    float2 playerPos = float2(_PlayerWorldPos.x, _PlayerWorldPos.z);
+                    float2 endPointOffset = endPos - playerPos;
+                    
+                    // 应用旋转
+                    endPointOffset = RotatePoint(endPointOffset, float2(0, 0), rotationRad);
+                    
+                    // 转换为UV坐标偏移
+                    endPointOffset = endPointOffset / adjustedMapSize / _MapScale;
                     float2 endPointUV = float2(0.5, 0.5) + endPointOffset;
                     
                     // 检查终点是否在地图范围内

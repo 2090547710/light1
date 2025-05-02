@@ -45,6 +45,7 @@ public class PlantManagerEditor : Editor
         }
         
         // 加载按钮
+        GUI.enabled = Application.isPlaying; // 只在游戏运行时启用此按钮
         if (GUILayout.Button("加载植物数据", GUILayout.Height(30)))
         {
             string fullPath = Path.Combine(Application.dataPath, "..", savePath);
@@ -57,6 +58,7 @@ public class PlantManagerEditor : Editor
                 EditorUtility.DisplayDialog("错误", "找不到存档文件: " + fullPath, "确定");
             }
         }
+        GUI.enabled = true; // 恢复启用状态
         
         EditorGUILayout.EndHorizontal();
         
