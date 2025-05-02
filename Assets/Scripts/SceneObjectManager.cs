@@ -30,6 +30,40 @@ public class SceneObjectManager : MonoBehaviour
         }
     }
     
+    void Update()
+    {
+        // 将起点和终点坐标传递给shader
+        if (GameManager.Instance != null)
+        {
+            bool hasBeginPoint = GameManager.Instance.beginPoint != null;
+            bool hasEndPoint = GameManager.Instance.endPoint != null;
+            
+            // 起点坐标
+            if (hasBeginPoint)
+            {
+                Vector3 beginPos = GameManager.Instance.beginPoint.transform.position;
+                Shader.SetGlobalVector("_BeginPointPos", beginPos);
+                Shader.SetGlobalFloat("_ShowBeginPoint", 1.0f);
+            }
+            else
+            {
+                Shader.SetGlobalFloat("_ShowBeginPoint", 0.0f);
+            }
+            
+            // 终点坐标
+            if (hasEndPoint)
+            {
+                Vector3 endPos = GameManager.Instance.endPoint.transform.position;
+                Shader.SetGlobalVector("_EndPointPos", endPos);
+                Shader.SetGlobalFloat("_ShowEndPoint", 1.0f);
+            }
+            else
+            {
+                Shader.SetGlobalFloat("_ShowEndPoint", 0.0f);
+            }
+        }
+    }
+    
     // 注册物体
     public void RegisterSceneObject(SceneObjectProperty sceneObject)
     {

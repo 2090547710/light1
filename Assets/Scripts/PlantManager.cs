@@ -1510,4 +1510,55 @@ public class PlantManager : MonoBehaviour
     }
 
 #endregion    
+
+void Update()
+{
+    // 收集活跃植物的位置并传递给shader
+    int plantCount = Mathf.Min(activePlants.Count, 64); // 限制最大数量为64
+    
+    if (plantCount > 0)
+    {
+        List<Vector4> plantPositionsV4 = new List<Vector4>();
+        List<Vector4> firePositionsV4 = new List<Vector4>();
+        
+        for (int i = 0; i < plantCount; i++)
+        {
+            if (activePlants[i] != null && !activePlants[i].isWithered)
+            {
+                Vector3 pos = activePlants[i].transform.position;
+                
+                // 检查是否为火植物
+                if (activePlants[i] is Fire)
+                {
+                    firePositionsV4.Add(new Vector4(pos.x, pos.y, pos.z, 0));
+                }
+                else
+                {
+                    plantPositionsV4.Add(new Vector4(pos.x, pos.y, pos.z, 0));
+                }
+            }
+        }
+        
+        // 传递普通植物位置给shader
+        Shader.SetGlobalVectorArray("_PlantPositions", plantPositionsV4);
+        Shader.SetGlobalInt("_PlantCount", plantPositionsV4.Count);
+        
+        // 只有当有火植物时才传递火植物坐标
+        if (firePositionsV4.Count > 0)
+        {
+            Shader.SetGlobalVectorArray("_FirePositions", firePositionsV4);
+            Shader.SetGlobalInt("_FireCount", firePositionsV4.Count);
+        }
+        else
+        {
+            Shader.SetGlobalInt("_FireCount", 0);
+        }
+    }
+    else
+    {
+        // 如果没有植物，设置数量为0
+        Shader.SetGlobalInt("_PlantCount", 0);
+        Shader.SetGlobalInt("_FireCount", 0);
+    }
+}
 }
