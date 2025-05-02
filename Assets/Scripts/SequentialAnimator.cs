@@ -29,6 +29,7 @@ public class SequentialAnimator : MonoBehaviour
         ShowAllImages();
     }
     
+
     // 当对象被销毁时取消订阅
     private void OnDestroy()
     {

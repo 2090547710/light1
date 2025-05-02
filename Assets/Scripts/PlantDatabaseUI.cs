@@ -189,6 +189,12 @@ public class PlantDatabaseUI : MonoBehaviour
             int capturedPlantId = plantId;
             button.onClick.AddListener(() => OnPlantItemClicked(capturedPlantId));
         }
+        
+        // 生成完列表后，默认选中火项目（如果存在）
+        if (firePrefab != null && firePrefab.growthStages.Count > 1)
+        {
+            OnPlantItemClicked(-1);
+        }
     }
     
     // 手动刷新植物列表
