@@ -205,19 +205,20 @@ public class PlantInteraction : MonoBehaviour
         switch (mode)
         {
             case DetectionModeType.Dig:
-                Debug.Log("进入铲土模式，点击左键铲除植物，右键取消");
+                Debug.Log("进入铲土模式，点击左键铲除植物");
+                MessageManager.instance.SendMessage("进入铲土模式，点击左键铲除植物", PlayerPathfinding.Instance.transform, MessageType.Info, 3f);
                 break;
             case DetectionModeType.Water:
-                Debug.Log("进入浇水模式，点击左键浇水，右键取消");
+                Debug.Log("进入浇水模式，点击左键浇水");
                 break;
             case DetectionModeType.Seed:
-                Debug.Log("进入种子模式，点击左键种植，右键取消");
+                Debug.Log("进入种子模式，点击左键种植");
                 break;
             case DetectionModeType.Fire:
-                Debug.Log("进入火模式，点击左键点火，右键取消");
+                Debug.Log("进入火模式，点击左键点火");
                 break;
             case DetectionModeType.Info:
-                Debug.Log("进入信息查看模式，点击左键查看信息，右键取消");
+                Debug.Log("进入信息查看模式，点击左键查看信息");
                 break;
         }
         

@@ -188,20 +188,20 @@ public class ObjectSelector : MonoBehaviour
                 if (selector.editingProperties.size <= 0)
                 {
                     selector.editingProperties.size = 0.01f;
-                    EditorGUILayout.HelpBox("Size必须大于0", MessageType.Warning);
+                    EditorGUILayout.HelpBox("Size必须大于0", UnityEditor.MessageType.Warning);
                 }
                 
                 selector.editingProperties.isSeed = EditorGUILayout.Toggle("Is Seed", selector.editingProperties.isSeed);
                 if(selector.editingProperties.isSeed && selector.editingProperties.isObstacle)
                 {
                     selector.editingProperties.isObstacle = false;
-                    EditorGUILayout.HelpBox("Seed不能同时是Obstacle", MessageType.Warning);
+                    EditorGUILayout.HelpBox("Seed不能同时是Obstacle", UnityEditor.MessageType.Warning);
                 }
                 selector.editingProperties.isObstacle = EditorGUILayout.Toggle("Is Obstacle", selector.editingProperties.isObstacle);
                 if(selector.editingProperties.isObstacle && selector.editingProperties.isSeed)
                 {
                     selector.editingProperties.isSeed = false;
-                    EditorGUILayout.HelpBox("Obstacle不能同时是Seed", MessageType.Warning);
+                    EditorGUILayout.HelpBox("Obstacle不能同时是Seed", UnityEditor.MessageType.Warning);
                 }
                 selector.editingProperties.heightMap = (Texture2D)EditorGUILayout.ObjectField("Height Map", selector.editingProperties.heightMap, typeof(Texture2D), false);
                 
@@ -267,7 +267,7 @@ public class ObjectSelector : MonoBehaviour
         {
             if (targetSelector == null || targetSelector.SelectedObject == null)
             {
-                EditorGUILayout.HelpBox("未选中有效的对象", MessageType.Info);
+                EditorGUILayout.HelpBox("未选中有效的对象", UnityEditor.MessageType.Info);
                 return;
             }
             
@@ -495,7 +495,7 @@ public class ObjectSelector : MonoBehaviour
                             lightElement.isSeed = newIsSeed;
                             if (newIsSeed && lightElement.isObstacle) {
                                 lightElement.isObstacle = false;
-                                EditorGUILayout.HelpBox("种子不能同时为障碍物", MessageType.Warning);
+                                EditorGUILayout.HelpBox("种子不能同时为障碍物", UnityEditor.MessageType.Warning);
                             }
                         }
 
@@ -504,7 +504,7 @@ public class ObjectSelector : MonoBehaviour
                             lightElement.isObstacle = newIsObstacle;
                             if (newIsObstacle && lightElement.isSeed) {
                                 lightElement.isSeed = false;
-                                EditorGUILayout.HelpBox("障碍物不能同时为种子", MessageType.Warning);
+                                EditorGUILayout.HelpBox("障碍物不能同时为种子", UnityEditor.MessageType.Warning);
                             }
                         }
 

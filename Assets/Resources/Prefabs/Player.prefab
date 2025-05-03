@@ -166,7 +166,7 @@ MonoBehaviour:
   playerLightRange: 5
   playerLightIntensity: 0.3
   interactiveLayer: 6
-  showPathfindingDebug: 1
+  showPathfindingDebug: 0
   baseHeight: 1.5
   keyboardMoveSpeed: 5
   maxHeightDifference: 0.01

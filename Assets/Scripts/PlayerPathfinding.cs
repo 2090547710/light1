@@ -61,7 +61,7 @@ public class PlayerPathfinding : MonoBehaviour
         Instance = this;
         playerObject = this.gameObject;
         InsertToQuadTree(); // 初始插入
-        
+
         stoppingDistance=quadTree.MinNodeSize.x/2-0.05f;
         
         // 初始化着色器参数
@@ -82,6 +82,11 @@ public class PlayerPathfinding : MonoBehaviour
     {
         isDetectionModeActive = isActive;
         // 可以根据需要处理modeType参数
+    }
+
+    void Start()
+    {
+        MessageManager.instance.SendMessage("Hello, World!", transform, MessageType.Info, 3f);
     }
 
     void Update()
