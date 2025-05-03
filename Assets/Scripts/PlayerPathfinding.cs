@@ -54,10 +54,14 @@ public class PlayerPathfinding : MonoBehaviour
     // 当前玩家所在节点
     private QuadTree.QuadTreeNode currentPlayerNode;
     
-    void Start()
+    public static PlayerPathfinding Instance { get; private set; }
+
+    private void Awake()
     {
+        Instance = this;
         playerObject = this.gameObject;
         InsertToQuadTree(); // 初始插入
+        
         stoppingDistance=quadTree.MinNodeSize.x/2-0.05f;
         
         // 初始化着色器参数

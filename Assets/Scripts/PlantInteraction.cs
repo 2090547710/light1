@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using System.Collections;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class PlantInteraction : MonoBehaviour
 {
@@ -17,6 +18,14 @@ public class PlantInteraction : MonoBehaviour
         Info      // 信息查看模式
     }
     
+    // 添加检测范围设置
+    [Header("检测范围设置")]
+    public float digDetectionRange = 3f;    // 铲除模式检测范围
+    public float waterDetectionRange = 2f;  // 浇水模式检测范围
+    public float seedDetectionRange = 4f;   // 种子模式检测范围
+    public float fireDetectionRange = 3f;   // 火模式检测范围
+    public float infoDetectionRange = 5f;   // 信息查看模式检测范围
+    
     [Header("测试设置")]
     public List<GameObject> prefabToSpawn; // 改为预制体列表
     [SerializeField] private LayerMask groundLayer;
@@ -27,7 +36,7 @@ public class PlantInteraction : MonoBehaviour
 
     public static QuadTree quadTree;
     public Camera mainCamera;
-
+    
     private List<GameObject> objects = new List<GameObject>();
     private float darkCooldownTimer; // 障碍物冷却计时器
 
@@ -58,9 +67,32 @@ public class PlantInteraction : MonoBehaviour
     public Button fireButton;   // 火模式按钮
     public Button infoButton;   // 信息查看模式按钮
 
+    [Header("实时范围显示")]
+    public bool useRangeIndicator = true;         // 是否使用范围指示器
+    private GameObject rangeIndicator;            // 范围指示器游戏对象
+
+    [Header("范围可视化设置")]      // 是否显示检测范围
+    public Color digRangeColor = new Color(1, 0, 0, 0.2f);       // 铲土模式范围颜色
+    public Color waterRangeColor = new Color(0, 0, 1, 0.2f);     // 浇水模式范围颜色
+    public Color seedRangeColor = new Color(0, 1, 0, 0.2f);      // 种子模式范围颜色
+    public Color fireRangeColor = new Color(1, 0.5f, 0, 0.2f);   // 火模式范围颜色
+    public Color infoRangeColor = new Color(1, 1, 0, 0.2f);      // 信息查看模式范围颜色
+
+    [Header("圆环描边设置")]
+    public Color outlineColor = new Color(0, 0, 0, 0.7f);        // 描边颜色
+    public float mainLineWidth = 0.1f;                           // 主圆环线宽
+    public float outlineWidth = 0.14f;                           // 描边线宽
+    public int circleSegments = 50;                              // 圆环分段数
+
     void Start()
     {
         mainCamera = Camera.main;
+        
+        // 创建范围指示器
+        if (useRangeIndicator)
+        {
+            CreateRangeIndicator();
+        }
         
         // 为模式按钮添加监听
         if (digButton != null)
@@ -93,6 +125,13 @@ public class PlantInteraction : MonoBehaviour
             // 如果按下左键且有有效检测
             if (Input.GetMouseButtonDown(0) && hasValidDetection)
             {
+                // 检查是否有UI元素遮挡点击
+                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                {
+                    Debug.Log("UI元素遮挡了操作");
+                    return;
+                }
+                
                 ExecuteActionBasedOnMode();
                 // 延迟0.1秒退出检测状态
                 StartCoroutine(DelayedExitDetectionMode(0.1f));
@@ -148,6 +187,12 @@ public class PlantInteraction : MonoBehaviour
         {
             ToggleDetectionMode(DetectionModeType.Water);
         }
+
+        // 更新范围指示器
+        if (useRangeIndicator && rangeIndicator != null)
+        {
+            UpdateRangeIndicator();
+        }
     }
     
     // 进入检测模式 - 增加模式类型参数
@@ -178,6 +223,13 @@ public class PlantInteraction : MonoBehaviour
         
         // 触发事件通知其他组件，同时传递模式类型
         OnDetectionModeChanged?.Invoke(true, mode);
+
+        // 显示范围指示器
+        if (useRangeIndicator && rangeIndicator != null)
+        {
+            rangeIndicator.SetActive(true);
+            UpdateRangeIndicator();
+        }
     }
 
     // 执行射线检测并高亮显示可选择的对象
@@ -220,6 +272,8 @@ public class PlantInteraction : MonoBehaviour
     // 执行铲土检测
     private void PerformDigDetection(Ray ray)
     {
+        if (!CheckInRange(digDetectionRange)) return;
+        
         // 检测种子和植物
         if (Physics.Raycast(ray, out RaycastHit digHit, 100f, 1 << 6))
         {
@@ -255,6 +309,8 @@ public class PlantInteraction : MonoBehaviour
     // 执行浇水检测
     private void PerformWaterDetection(Ray ray)
     {
+        if (!CheckInRange(waterDetectionRange)) return;
+        
         // 检测植物以浇水
         if (Physics.Raycast(ray, out RaycastHit waterHit, 100f, 1 << 13))
         {
@@ -281,6 +337,8 @@ public class PlantInteraction : MonoBehaviour
     // 执行种植检测
     private void PerformSeedDetection(Ray ray)
     {
+        if (!CheckInRange(seedDetectionRange)) return;
+        
         // 检测地面以种植
         if (Physics.Raycast(ray, out RaycastHit seedHit, 100f, groundLayer))
         {
@@ -294,6 +352,8 @@ public class PlantInteraction : MonoBehaviour
     // 执行火焰检测
     private void PerformFireDetection(Ray ray)
     {
+        if (!CheckInRange(fireDetectionRange)) return;
+        
         // 检测地面以放置火
         if (Physics.Raycast(ray, out RaycastHit fireHit, 100f, groundLayer))
         {
@@ -307,6 +367,8 @@ public class PlantInteraction : MonoBehaviour
     // 执行信息查看检测
     private void PerformInfoDetection(Ray ray)
     {
+        if (!CheckInRange(infoDetectionRange)) return;
+        
         // 使用RaycastAll检测所有碰撞体
         RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
         
@@ -364,6 +426,12 @@ public class PlantInteraction : MonoBehaviour
         Debug.Log($"退出{GetModeName(currentDetectionMode)}模式");
         // 触发事件通知其他组件
         OnDetectionModeChanged?.Invoke(false, currentDetectionMode);
+
+        // 隐藏范围指示器
+        if (useRangeIndicator && rangeIndicator != null)
+        {
+            rangeIndicator.SetActive(false);
+        }
     }
     
     // 获取模式名称
@@ -1008,6 +1076,183 @@ public class PlantInteraction : MonoBehaviour
         {
             TestFire(hit.point);
             LightingManager.UpdateDirtyLights();
+        }
+    }
+
+    // 检查目标是否在指定范围内的辅助方法
+    private bool CheckInRange(float range)
+    {
+        if (PlayerPathfinding.Instance == null) return true; // 如果没有找到玩家引用，允许任何操作
+        
+        // 获取玩家位置
+        Vector3 playerPosition = PlayerPathfinding.Instance.transform.position;
+        
+        // 检查点击位置（世界坐标）
+        if (Physics.Raycast(mainCamera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+        {
+            // 计算XZ平面上的距离
+            float distance = Vector2.Distance(
+                new Vector2(playerPosition.x, playerPosition.z),
+                new Vector2(hit.point.x, hit.point.z)
+            );
+            
+            // 如果距离超过范围，返回false
+            if (distance > range)
+            {
+                Debug.Log($"超出{GetModeName(currentDetectionMode)}模式的操作范围");
+                return false;
+            }
+            
+            return true;
+        }
+        
+        return false; // 如果射线没有命中，则不在范围内
+    }
+
+    // 创建范围指示器
+    private void CreateRangeIndicator()
+    {
+        // 创建一个空游戏对象作为圆环的容器
+        rangeIndicator = new GameObject("DetectionRangeIndicator");
+        
+        // 设置父对象为当前对象
+        rangeIndicator.transform.SetParent(transform);
+        
+        // 初始时隐藏
+        rangeIndicator.SetActive(false);
+        
+        // 添加主圆环的线渲染器组件
+        LineRenderer mainLineRenderer = rangeIndicator.AddComponent<LineRenderer>();
+        
+        // 设置线渲染器属性
+        mainLineRenderer.positionCount = circleSegments + 1;
+        mainLineRenderer.useWorldSpace = false;
+        mainLineRenderer.startWidth = mainLineWidth;
+        mainLineRenderer.endWidth = mainLineWidth;
+        
+        // 创建半透明材质
+        Material mainMaterial = new Material(Shader.Find("Sprites/Default"));
+        mainMaterial.color = new Color(1, 1, 1, 0.5f);
+        mainLineRenderer.material = mainMaterial;
+        mainLineRenderer.name = "MainCircle";
+        
+        // 添加第二个线渲染器作为描边
+        GameObject outlineObj = new GameObject("OutlineCircle");
+        outlineObj.transform.SetParent(rangeIndicator.transform);
+        outlineObj.transform.localPosition = Vector3.zero;
+        
+        LineRenderer outlineRenderer = outlineObj.AddComponent<LineRenderer>();
+        outlineRenderer.positionCount = circleSegments + 1;
+        outlineRenderer.useWorldSpace = false;
+        outlineRenderer.startWidth = outlineWidth;
+        outlineRenderer.endWidth = outlineWidth;
+        
+        // 创建描边材质
+        Material outlineMaterial = new Material(Shader.Find("Sprites/Default"));
+        outlineMaterial.color = outlineColor;
+        outlineRenderer.material = outlineMaterial;
+        
+        // 创建圆环形状 - 两个渲染器使用相同的点
+        for (int i = 0; i <= circleSegments; i++)
+        {
+            float angle = i * (2 * Mathf.PI / circleSegments);
+            float x = Mathf.Sin(angle);
+            float z = Mathf.Cos(angle);
+            Vector3 pos = new Vector3(x, 0, z);
+            
+            // 设置两个渲染器的位置
+            mainLineRenderer.SetPosition(i, pos);
+            outlineRenderer.SetPosition(i, pos);
+        }
+    }
+
+    // 更新范围指示器
+    private void UpdateRangeIndicator()
+    {
+        if (PlayerPathfinding.Instance == null) return;
+        
+        // 获取玩家位置
+        Vector3 playerPosition = PlayerPathfinding.Instance.transform.position;
+        
+        // 根据是否在检测模式来显示或隐藏
+        rangeIndicator.SetActive(isInDetectionMode);
+        
+        if (isInDetectionMode)
+        {
+            // 设置位置
+            rangeIndicator.transform.position = new Vector3(
+                playerPosition.x,
+                0.05f, // 稍微抬高避免Z-fighting
+                playerPosition.z
+            );
+            
+            // 获取当前模式的范围
+            float range = GetCurrentModeRange();
+            
+            // 设置圆环大小
+            rangeIndicator.transform.localScale = new Vector3(range, 1, range);
+            
+            // 设置颜色
+            Color color = GetCurrentModeColor();
+            
+            // 更新主圆环颜色
+            LineRenderer mainLineRenderer = rangeIndicator.GetComponent<LineRenderer>();
+            if (mainLineRenderer != null)
+            {
+                Material material = mainLineRenderer.material;
+                material.color = color;
+            }
+            
+            // 保持描边颜色为设置的颜色
+            Transform outlineObj = rangeIndicator.transform.Find("OutlineCircle");
+            if (outlineObj != null)
+            {
+                LineRenderer outlineRenderer = outlineObj.GetComponent<LineRenderer>();
+                if (outlineRenderer != null)
+                {
+                    outlineRenderer.material.color = outlineColor;
+                }
+            }
+        }
+    }
+
+    // 获取当前模式的范围
+    private float GetCurrentModeRange()
+    {
+        switch (currentDetectionMode)
+        {
+            case DetectionModeType.Dig:
+                return digDetectionRange;
+            case DetectionModeType.Water:
+                return waterDetectionRange;
+            case DetectionModeType.Seed:
+                return seedDetectionRange;
+            case DetectionModeType.Fire:
+                return fireDetectionRange;
+            case DetectionModeType.Info:
+                return infoDetectionRange;
+            default:
+                return 1f;
+        }
+    }
+
+    // 获取当前模式的颜色
+    private Color GetCurrentModeColor()
+    {
+        switch (currentDetectionMode)
+        {
+            case DetectionModeType.Dig:
+                return digRangeColor;
+            case DetectionModeType.Water:
+                return waterRangeColor;
+            case DetectionModeType.Seed:
+                return seedRangeColor;
+            case DetectionModeType.Fire:
+                return fireRangeColor;
+            case DetectionModeType.Info:
+                return infoRangeColor;
+            default:
+                return Color.white;
         }
     }
 } 
