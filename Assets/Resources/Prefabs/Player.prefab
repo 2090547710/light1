@@ -168,7 +168,8 @@ MonoBehaviour:
   interactiveLayer: 6
   showPathfindingDebug: 1
   baseHeight: 1.5
-  heightThreshold: 0.5
+  keyboardMoveSpeed: 5
+  maxHeightDifference: 0.01
 --- !u!114 &4471405134082509040
 MonoBehaviour:
   m_ObjectHideFlags: 0

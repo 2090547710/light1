@@ -46,6 +46,14 @@ public class PlayerPathfinding : MonoBehaviour
     [Header("高度设置")]
     public float baseHeight = 1.5f; // 基础高度
 
+    // 新增键盘移动设置
+    [Header("键盘移动设置")]
+    public float keyboardMoveSpeed = 3f; // 键盘移动速度
+    public float maxHeightDifference = 0.01f; // 最大可行走高度差
+
+    // 当前玩家所在节点
+    private QuadTree.QuadTreeNode currentPlayerNode;
+    
     void Start()
     {
         playerObject = this.gameObject;
@@ -76,11 +84,106 @@ public class PlayerPathfinding : MonoBehaviour
     {
         // 更新着色器中的玩家位置
         UpdateShaderParameters();
+        
+        // 更新当前玩家节点引用
+        currentPlayerNode = quadTree.FindLeafNode(transform.position);
+        
         // 只有在非检测模式下才处理左键点击
         if (!isDetectionModeActive && Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
             HandleLeftClick();
         }
+        
+        // 如果没有正在执行的寻路协程，才处理WASD输入
+        if (moveCoroutine == null)
+        {
+            // 处理WASD键盘输入
+            HandleKeyboardInput();
+        }
+    }
+    
+    // 处理键盘WASD输入
+    private void HandleKeyboardInput()
+    {
+        // 获取水平和垂直输入
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        
+        // 如果有输入
+        if (horizontal != 0 || vertical != 0)
+        {
+            // 创建基于摄像机方向的移动向量
+            Vector3 cameraForward = Camera.main.transform.forward;
+            Vector3 cameraRight = Camera.main.transform.right;
+            
+            // 将摄像机方向投影到XZ平面
+            cameraForward.y = 0;
+            cameraRight.y = 0;
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+            
+            // 计算移动方向
+            Vector3 moveDirection = (cameraForward * vertical + cameraRight * horizontal).normalized;
+            
+            // 计算目标位置
+            Vector3 targetPosition = transform.position + moveDirection * keyboardMoveSpeed * Time.deltaTime;
+            
+            // 检查目标位置是否可行走
+            if (CanMoveToPosition(targetPosition))
+            {
+                // 如果可移动，则更新位置
+                transform.position = targetPosition;
+                
+                // 更新玩家在四叉树中的位置
+                quadTree.Remove(playerObject);
+                InsertToQuadTree();
+                
+                // 更新玩家高度
+                UpdatePlayerHeight();
+                
+                // 如果移动方向不为零，设置旋转
+                if (moveDirection != Vector3.zero)
+                {
+                    // 计算目标旋转
+                    Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+                    
+                    // 根据设置决定是否使用平滑旋转
+                    if (smoothRotation)
+                    {
+                        transform.rotation = Quaternion.Slerp(
+                            transform.rotation, 
+                            targetRotation, 
+                            rotationSpeed * Time.deltaTime);
+                    }
+                    else
+                    {
+                        transform.rotation = targetRotation;
+                    }
+                }
+            }
+        }
+    }
+    
+    // 检查目标位置是否可行走
+    private bool CanMoveToPosition(Vector3 targetPosition)
+    {
+        // 查找目标位置的四叉树节点
+        QuadTree.QuadTreeNode targetNode = quadTree.FindLeafNode(targetPosition);
+        
+        // 如果节点不存在，则不可行走
+        if (targetNode == null)
+            return false;
+        
+        // 检查节点是否可行走
+        if (!targetNode.IsWalkable)
+            return false;
+        
+        // 检查高度差
+        float heightDifference = Mathf.Abs(targetNode.Height - (currentPlayerNode != null ? currentPlayerNode.Height : 0));
+        if (heightDifference > maxHeightDifference)
+            return false;
+        
+        return true;
     }
     
     // 处理左键点击
@@ -217,6 +320,9 @@ public class PlayerPathfinding : MonoBehaviour
             
             yield return null;
         }
+        
+        // 路径结束后重置协程引用
+        moveCoroutine = null;
     }
 
     // 将InsertToQuadTree方法改为公共方法，以便其他类可以调用
@@ -298,6 +404,19 @@ public class PlayerPathfinding : MonoBehaviour
             style.alignment = TextAnchor.UpperLeft;
             
             GUI.Label(new Rect(10, 10, 300, 200), pathfindingDebugInfo, style);
+        }
+        
+        // 显示玩家当前节点高度信息
+        if (currentPlayerNode != null)
+        {
+            GUIStyle style = new GUIStyle();
+            style.normal.textColor = Color.green;
+            style.fontSize = 14;
+            style.fontStyle = FontStyle.Bold;
+            style.alignment = TextAnchor.UpperRight;
+            
+            string nodeInfo = $"节点高度: {currentPlayerNode.Height:F2}\n可行走: {currentPlayerNode.IsWalkable}";
+            GUI.Label(new Rect(Screen.width - 200, 10, 190, 100), nodeInfo, style);
         }
     }
 

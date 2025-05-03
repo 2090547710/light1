@@ -1531,11 +1531,11 @@ MonoBehaviour:
   zoomSpeed: 5
   minZoom: 2
   maxZoom: 50
-  smoothTime: 0.25
+  smoothTime: 0
   initialZoom: 10
   scrollValue: 0
   fixedAngleWithXZ: 45
-  useFixedAngle: 1
+  useFixedAngle: 0
 --- !u!81 &668929552
 AudioListener:
   m_ObjectHideFlags: 0
