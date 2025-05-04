@@ -113,8 +113,9 @@ public class MessageDisplay : MonoBehaviour
         // 初始时隐藏
         canvasGroup.alpha = 0;
         
-        // 使按钮初始不可交互而不是隐藏，避免影响现有显示
+        // 初始时按钮不可交互且不可见
         closeButton.interactable = false;
+        closeButton.gameObject.SetActive(false);
     }
     
     private void OnEnable()
@@ -127,6 +128,9 @@ public class MessageDisplay : MonoBehaviour
         {
             MessageEventSystem.OnMessageReceived += EnqueueMessage;
         }
+        
+        // 订阅关卡加载事件
+        LevelSelectUI.OnLevelLoaded += ResetState;
     }
     
     private void OnDisable()
@@ -139,6 +143,9 @@ public class MessageDisplay : MonoBehaviour
         {
             MessageEventSystem.OnMessageReceived -= EnqueueMessage;
         }
+        
+        // 取消订阅关卡加载事件
+        LevelSelectUI.OnLevelLoaded -= ResetState;
         
         if (displayCoroutine != null)
         {
@@ -245,8 +252,9 @@ public class MessageDisplay : MonoBehaviour
             UpdateBackgroundSize();
         }
         
-        // 关闭按钮不可交互
+        // 关闭按钮不可交互且隐藏(Auto类型)
         closeButton.interactable = false;
+        closeButton.gameObject.SetActive(false);
         
         // 淡入
         float startTime = Time.time;
@@ -303,8 +311,9 @@ public class MessageDisplay : MonoBehaviour
                 UpdateBackgroundSize();
             }
             
-            // 根据消息类型设置关闭按钮的可交互性
-            closeButton.interactable = true; // 点击消息总是可以点击关闭
+            // 根据消息类型设置关闭按钮的可交互性和可见性
+            closeButton.interactable = currentMessage.Type == MessageType.Click;
+            closeButton.gameObject.SetActive(currentMessage.Type == MessageType.Click);
             
             // 淡入
             float startTime = Time.time;
@@ -424,10 +433,11 @@ public class MessageDisplay : MonoBehaviour
             canvasGroup.alpha = 0;
         }
         
-        // 设置按钮为不可交互
+        // 设置按钮为不可交互且不可见
         if (closeButton != null)
         {
             closeButton.interactable = false;
+            closeButton.gameObject.SetActive(false);
         }
     }
 }

@@ -49,6 +49,11 @@ MonoBehaviour:
   prefabPath: Prefabs/Lighthouse
   lightSourcesData: []
   lightSources: []
+  interactionRadius: 2
+  canInteract: 1
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &2629238423045050402
 PrefabInstance:
   m_ObjectHideFlags: 0

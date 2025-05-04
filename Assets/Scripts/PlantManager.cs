@@ -72,12 +72,13 @@ public class PlantManager : MonoBehaviour
 
 #region 数据库加载与解析
     // 加载植物数据库
-    public void LoadPlantDatabase()
+    public void LoadPlantDatabase(string customPath = null)
     {
-        TextAsset csvFile = Resources.Load<TextAsset>(plantDatabasePath);
+        string pathToLoad = customPath ?? plantDatabasePath;
+        TextAsset csvFile = Resources.Load<TextAsset>(pathToLoad);
         if (csvFile == null)
         {
-            Debug.LogError("找不到植物数据库文件: " + plantDatabasePath);
+            Debug.LogError("找不到植物数据库文件: " + pathToLoad);
             return;
         }
         // 清空数据库
@@ -122,13 +123,13 @@ public class PlantManager : MonoBehaviour
     }
     
     // 加载种子映射数据
-    public void LoadSeedMappings()
+    public void LoadSeedMappings(string customPath = null)
     {
-        
-        TextAsset csvFile = Resources.Load<TextAsset>(seedMappingPath);
+        string pathToLoad = customPath ?? seedMappingPath;
+        TextAsset csvFile = Resources.Load<TextAsset>(pathToLoad);
         if (csvFile == null)
         {
-            Debug.LogError("找不到种子映射文件: " + seedMappingPath);
+            Debug.LogError("找不到种子映射文件: " + pathToLoad);
             return;
         }
         // 清空种子映射

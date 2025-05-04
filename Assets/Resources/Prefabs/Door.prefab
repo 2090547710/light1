@@ -49,6 +49,11 @@ MonoBehaviour:
   prefabPath: Prefabs/Door
   lightSourcesData: []
   lightSources: []
+  interactionRadius: 2
+  canInteract: 1
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &1704451388292860621
 PrefabInstance:
   m_ObjectHideFlags: 0

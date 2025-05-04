@@ -1,0 +1,10 @@
+种子尺寸,生长速度,prefab,size,isObstacle,isSeed,lightHeight,heightMap,edgeHeightMap,GrowthRate,WitherRate,植物ID,植物名称,权重,植物ID,植物名称,权重
+Small,Slow,Prefabs/Seed,3,FALSE,TRUE,0.2,种子高度图,种子范围高度图,0.6,0.6,1,玫瑰,10,5,郁金香,1
+Medium,Medium,Prefabs/Seed,5,FALSE,TRUE,0.3,种子高度图,种子范围高度图,0.6,0.6,3,向日葵,1,,,
+Large,Fast,Prefabs/Seed,7,FALSE,TRUE,0.4,种子高度图,种子范围高度图,0.6,0.6,5,郁金香,1,,,
+Small,Fast,Prefabs/Seed,3.5,FALSE,TRUE,0.25,种子高度图,种子范围高度图,0.6,0.6,1,玫瑰,1,,,
+Medium,Slow,Prefabs/Seed,5,FALSE,TRUE,0.35,种子高度图,种子范围高度图,0.7,0.7,3,向日葵,1,,,
+Large,Medium,Prefabs/Seed,7,FALSE,TRUE,0.45,种子高度图,种子范围高度图,0.6,0.6,5,郁金香,1,1,玫瑰,1
+Small,Medium,Prefabs/Seed,3.5,FALSE,TRUE,0.45,种子高度图,种子范围高度图,0.6,0.6,5,郁金香,1,1,玫瑰,1
+Medium,Fast,Prefabs/Seed,5,FALSE,TRUE,0.45,种子高度图,种子范围高度图,0.6,0.6,5,郁金香,1,1,玫瑰,1
+Large,Slow,Prefabs/Seed,7,FALSE,TRUE,0.2,种子高度图,种子范围高度图,0.6,0.6,1,玫瑰,1,5,郁金香,1

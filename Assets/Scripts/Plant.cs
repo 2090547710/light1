@@ -53,7 +53,6 @@ public class Plant : MonoBehaviour
     [Header("生长特效")]
     public string growthEffectPrefabPath = "烟/烟"; // 生长特效预制体路径
     private GameObject growthEffectObject; // 存储生长特效对象的引用
-    private PngSequencePlayer effectPlayer; // PNG序列播放器组件
 
     [Header("生长速度设置")]
     public float growthRate = 1.0f; // 生长速度
@@ -243,10 +242,9 @@ public class Plant : MonoBehaviour
         PerformGrow();
     }
 
-    // 新增：带动画效果的生长协程
+    // 带动画效果的生长协程
     private IEnumerator GrowWithAnimation(float targetSize)
     {
-
         // 执行大小变化动画
         yield return StartCoroutine(AnimateLightSizeChange(targetSize, 1.0f, null, 0.05f));
         
@@ -254,72 +252,7 @@ public class Plant : MonoBehaviour
         PerformGrow();
     }
 
-    // 创建生长特效的方法
-    private void CreateGrowthEffect(Action onEffectComplete = null)
-    {
-        // 如果路径为空，不创建特效，直接执行回调
-        if (string.IsNullOrEmpty(growthEffectPrefabPath))
-        {
-            onEffectComplete?.Invoke();
-            return;
-        }
-        
-        // 加载预制体
-        GameObject effectPrefab = Resources.Load<GameObject>(growthEffectPrefabPath);
-        if (effectPrefab == null)
-        {
-            Debug.LogWarning($"无法加载生长特效预制体: {growthEffectPrefabPath}");
-            onEffectComplete?.Invoke();
-            return;
-        }
-        
-        // 在当前植物位置创建特效
-        growthEffectObject = Instantiate(effectPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
-        
-        // 获取PngSequencePlayer组件
-        effectPlayer = growthEffectObject.GetComponent<PngSequencePlayer>();
-        if (effectPlayer == null)
-        {
-            Debug.LogWarning("生长特效预制体缺少PngSequencePlayer组件");
-            Destroy(growthEffectObject);
-            growthEffectObject = null;
-            onEffectComplete?.Invoke();
-            return;
-        }
-        
-        // 存储回调
-        this.onEffectComplete = onEffectComplete;
-        
-        // 订阅动画完成事件
-        effectPlayer.OnAnimationLooped += OnGrowthEffectComplete;
-    }
-
-    // 修改特效播放完成回调
-    private void OnGrowthEffectComplete()
-    {
-        // 取消订阅事件
-        if (effectPlayer != null)
-        {
-            effectPlayer.OnAnimationLooped -= OnGrowthEffectComplete;
-        }
-        
-        // 销毁特效对象
-        if (growthEffectObject != null)
-        {
-            Destroy(growthEffectObject);
-            growthEffectObject = null;
-        }
-        
-        // 执行回调
-        if (onEffectComplete != null)
-        {
-            var callback = onEffectComplete;
-            onEffectComplete = null;
-            callback();
-        }
-    }
-
-    // 新增：实际执行生长的逻辑（从原Grow方法移植）
+    // 实际执行生长的逻辑
     private void PerformGrow()
     {
         // 禁用并移除所有现有光源组件
@@ -375,7 +308,7 @@ public class Plant : MonoBehaviour
             stageModelObject = null;
         }
         
-        // 禁用并移除所有现有光源组件（此处保留，因为这是在CreateGrowthEffect之前执行的）
+        // 禁用并移除所有现有光源组件
         lightSources.ForEach(l => {
             l.RemoveLighting();
             LightingManager.tree.Remove(l.gameObject);
@@ -383,21 +316,19 @@ public class Plant : MonoBehaviour
         });
         lightSources.Clear();
         
-        // 只有在stageIndex不等于0时才创建生长特效
-        if (stageIndex != 0)
-        {
-            CreateGrowthEffect(() => LoadPrefabAndCreateLights(stage));
-        }
-        else
-        {
-            // 如果是stageIndex等于0，直接加载预制体和创建光源
-            LoadPrefabAndCreateLights(stage);
-        }
+        LoadPrefabAndCreateLights(stage);
+     
     }
 
-    // 新增加载预制体和创建光源的方法，避免代码重复
+    // 加载预制体和创建光源的方法
     private void LoadPrefabAndCreateLights(PlantStage stage)
     {
+        // 首先检查对象是否已被销毁
+        if (this == null || gameObject == null)
+        {
+            return;
+        }
+        
         // 根据预制体路径加载并创建预制体
         if (!string.IsNullOrEmpty(stage.prefabPath))
         {
@@ -418,12 +349,20 @@ public class Plant : MonoBehaviour
         
         // 根据数据创建并初始化光源组件
         stage.associatedLights.ForEach(data => {
-            var newLight = gameObject.AddComponent<Lighting>();
-            newLight.InitializeFromData(data);
-            lightSources.Add(newLight); // 添加到光源列表
+            // 再次检查对象是否已被销毁
+            if (this != null && gameObject != null)
+            {
+                var newLight = gameObject.AddComponent<Lighting>();
+                newLight.InitializeFromData(data);
+                lightSources.Add(newLight); // 添加到光源列表
+            }
         });
-        LightingManager.tree.Insert(gameObject);
-        LightingManager.UpdateDirtyLights(); // 更新所有脏标记的光源
+        
+        if (this != null && gameObject != null)
+        {
+            LightingManager.tree.Insert(gameObject);
+            LightingManager.UpdateDirtyLights(); // 更新所有脏标记的光源
+        }
     }
 
     public void TryWither()
@@ -1251,10 +1190,18 @@ public class Plant : MonoBehaviour
         tempStage.plantName = currentStageData.plantName;
         tempStage.growthRate = currentStageData.growthRate;
         tempStage.witherRate = currentStageData.witherRate; // 复制枯萎速度
-        tempStage.prerequisitePlantIDs = new List<int>(currentStageData.prerequisitePlantIDs);
-        tempStage.prerequisiteWeights = new List<float>(currentStageData.prerequisiteWeights);
-        tempStage.updatePlantIDs = new List<int>(currentStageData.updatePlantIDs);
-        tempStage.updateWeights = new List<float>(currentStageData.updateWeights);
+        tempStage.prerequisitePlantIDs = currentStageData.prerequisitePlantIDs != null 
+            ? new List<int>(currentStageData.prerequisitePlantIDs) 
+            : new List<int>();
+        tempStage.prerequisiteWeights = currentStageData.prerequisiteWeights != null 
+            ? new List<float>(currentStageData.prerequisiteWeights) 
+            : new List<float>();
+        tempStage.updatePlantIDs = currentStageData.updatePlantIDs != null 
+            ? new List<int>(currentStageData.updatePlantIDs) 
+            : new List<int>();
+        tempStage.updateWeights = currentStageData.updateWeights != null 
+            ? new List<float>(currentStageData.updateWeights) 
+            : new List<float>();
         tempStage.prefabPath = currentStageData.prefabPath;
         
         // 从当前活跃的光源获取最新的LightingData

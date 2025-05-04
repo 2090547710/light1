@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 // 场景物体类型枚举
 public enum SceneObjectType
@@ -28,6 +29,61 @@ public class SceneObjectProperty : MonoBehaviour
     
     // 光源组件列表
     public List<Lighting> lightSources = new List<Lighting>();
+    
+    // 交互相关变量
+    public float interactionRadius = 3f;  // 交互半径
+    public UnityEvent onInteract;         // 交互事件
+    private bool playerInRange = false;   // 玩家是否在范围内
+    
+    // 检测玩家是否在交互范围内
+    private void Update()
+    {
+        if (objectType == SceneObjectType.BeginPoint || objectType == SceneObjectType.EndPoint)
+        {
+            // 获取玩家位置
+            Vector3 playerPosition = PlayerPathfinding.Instance.transform.position;
+            // 创建只保留xz坐标的新位置
+            Vector3 playerPositionXZ = new Vector3(playerPosition.x, 0, playerPosition.z);
+            Vector3 objectPositionXZ = new Vector3(transform.position.x, 0, transform.position.z);
+            // 计算xz平面距离
+            float distance = Vector3.Distance(objectPositionXZ, playerPositionXZ);
+            
+            // 更新玩家是否在范围内
+            playerInRange = distance <= interactionRadius;
+            // 检测输入
+            if (playerInRange && Input.GetKeyDown(KeyCode.E))
+            {
+                Interact();
+            }
+        }
+    }
+    
+    // 交互方法
+    public void Interact()
+    {
+
+        // 触发交互事件
+        onInteract?.Invoke();
+            
+        // 根据不同类型执行不同操作
+        switch (objectType)
+        {
+            case SceneObjectType.BeginPoint:
+                Debug.Log("与开始点交互");
+                // 在这里添加开始点特定逻辑
+                LevelSelectUI.Instance.LoadPreviousLevel();
+                break;
+                    
+            case SceneObjectType.EndPoint:
+                Debug.Log("与结束点交互");
+                // 在这里添加结束点特定逻辑
+                LevelSelectUI.Instance.CompleteAndLoadNextLevel();
+                break;
+        }
+        
+    }
+    
+ 
     
     // 添加光源数据
     public void AddLightSourceData(LightingData lightData)

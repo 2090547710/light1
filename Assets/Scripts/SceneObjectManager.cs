@@ -83,7 +83,7 @@ public class SceneObjectManager : MonoBehaviour
     }
     
     // 保存所有场景物体
-    public void SaveAllSceneObjects()
+    public void SaveAllSceneObjects(string customPath = null)
     {
         List<SceneObjectSaveData> saveDataList = new List<SceneObjectSaveData>();
         
@@ -102,29 +102,34 @@ public class SceneObjectManager : MonoBehaviour
         // 序列化为JSON
         string json = JsonUtility.ToJson(wrapper, true);
         
+        // 使用自定义路径或默认路径
+        string pathToSave = customPath ?? saveFilePath;
+        
         // 创建保存目录（如果不存在）
-        string directory = Path.GetDirectoryName(saveFilePath);
+        string directory = Path.GetDirectoryName(pathToSave);
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }
         
         // 写入文件
-        File.WriteAllText(saveFilePath, json);
-        Debug.Log($"场景物体已保存到: {saveFilePath}");
+        File.WriteAllText(pathToSave, json);
+        Debug.Log($"场景物体已保存到: {pathToSave}");
     }
     
     // 从存档加载场景物体
-    public void LoadAllSceneObjects()
+    public void LoadAllSceneObjects(string customPath = null)
     {
-        if (!File.Exists(saveFilePath))
+        string pathToLoad = customPath ?? saveFilePath;
+        
+        if (!File.Exists(pathToLoad))
         {
-            Debug.LogWarning($"找不到保存文件: {saveFilePath}");
+            Debug.LogWarning($"找不到保存文件: {pathToLoad}");
             return;
         }
         
         // 读取JSON
-        string json = File.ReadAllText(saveFilePath);
+        string json = File.ReadAllText(pathToLoad);
         
         // 反序列化
         SceneObjectSaveDataWrapper wrapper = JsonUtility.FromJson<SceneObjectSaveDataWrapper>(json);
@@ -185,7 +190,7 @@ public class SceneObjectManager : MonoBehaviour
                     newObject.layer = 9;
                     break;
                 case SceneObjectType.BeginPoint:
-                    newObject.layer = 12;
+                    newObject.layer = 11;
                     // 更新GameManager中的开始点引用
                     if (GameManager.Instance != null)
                     {
@@ -193,7 +198,7 @@ public class SceneObjectManager : MonoBehaviour
                     }
                     break;
                 case SceneObjectType.EndPoint:
-                    newObject.layer = 11;
+                    newObject.layer = 10;
                     // 更新GameManager中的结束点引用
                     if (GameManager.Instance != null)
                     {
