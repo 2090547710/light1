@@ -66,7 +66,6 @@ public class PlayerPathfinding : MonoBehaviour
         
         // 初始化着色器参数
         UpdateShaderParameters();
-        
         // 订阅检测模式状态改变事件
         PlantInteraction.OnDetectionModeChanged += HandleDetectionModeChanged;
     }
