@@ -11,7 +11,6 @@ public class MessageManager : MonoBehaviour
     [SerializeField] private GameObject messageDisplayPrefab;
     [SerializeField] private Canvas messageCanvas;
     [SerializeField] private Vector3 positionOffset = new Vector3(0, 80f, 0);
-    [SerializeField] private int maxMessageLength = 100;
     [SerializeField] private int initialPoolSize = 5;
     [SerializeField] private int maxPoolSize = 20;
     [SerializeField] private int paddingLeft = 10;
@@ -115,7 +114,7 @@ public class MessageManager : MonoBehaviour
         }
     }
 
-    public void SendMessage(string message, Transform targetTransform = null, MessageType type = MessageType.Info, float duration = 3f)
+    public void SendMessage(string message, Transform targetTransform = null, MessageType type = MessageType.Auto, float duration = 3f)
     {
         if (string.IsNullOrEmpty(message)) return;
 
@@ -124,22 +123,8 @@ public class MessageManager : MonoBehaviour
         // 如果目标transform已经有关联的消息显示器，则使用现有的
         if (targetTransform != null && transformToDisplayMap.TryGetValue(targetTransform, out messageDisplay))
         {
-            // 将消息添加到现有的队列中
-            // 根据长度拆分消息
-            if (message.Length > maxMessageLength)
-            {
-                List<string> messageParts = SplitMessage(message, maxMessageLength);
-                
-                // 添加所有部分（它们将按顺序显示）
-                foreach (string part in messageParts)
-                {
-                    messageDisplay.AddMessage(part, type, duration);
-                }
-            }
-            else
-            {
-                messageDisplay.AddMessage(message, type, duration);
-            }
+            // 将消息添加到现有的队列中 - 移除消息分割
+            messageDisplay.AddMessage(message, type, duration);
         }
         else
         {
@@ -162,25 +147,8 @@ public class MessageManager : MonoBehaviour
                 }
             }
             
-            Debug.Log("messageLength:"+message.Length);
-            // 根据长度拆分消息
-            if (message.Length > maxMessageLength)
-            {
-                List<string> messageParts = SplitMessage(message, maxMessageLength);
-                
-                // 初始化第一部分
-                messageDisplay.Initialize(messageParts[0], messageCanvas.transform, type, duration);
-                
-                // 添加剩余部分（它们将按顺序显示）
-                for (int i = 1; i < messageParts.Count; i++)
-                {
-                    messageDisplay.AddMessage(messageParts[i], type, duration);
-                }
-            }
-            else
-            {
-                messageDisplay.Initialize(message, messageCanvas.transform, type, duration);
-            }
+            // 删除日志和消息分割代码
+            messageDisplay.Initialize(message, messageCanvas.transform, type, duration);
         }
     }
 
@@ -225,25 +193,6 @@ public class MessageManager : MonoBehaviour
     {
         // 全局消息显示在默认位置
         SendMessage(messageEvent.Message, null, messageEvent.Type, messageEvent.Duration);
-    }
-
-    private List<string> SplitMessage(string message, int maxLength)
-    {
-        List<string> parts = new List<string>();
-        
-        for (int i = 0; i < message.Length; i += maxLength)
-        {
-            if (i + maxLength > message.Length)
-            {
-                parts.Add(message.Substring(i));
-            }
-            else
-            {
-                parts.Add(message.Substring(i, maxLength));
-            }
-        }
-        
-        return parts;
     }
 }
 
