@@ -210,15 +210,19 @@ public class PlantInteraction : MonoBehaviour
                 break;
             case DetectionModeType.Water:
                 Debug.Log("进入浇水模式，点击左键浇水");
+                MessageManager.instance.SendMessage("进入浇水模式，点击左键浇水", PlayerPathfinding.Instance.transform, MessageType.Info, 3f);
                 break;
             case DetectionModeType.Seed:
                 Debug.Log("进入种子模式，点击左键种植");
+                MessageManager.instance.SendMessage("进入种子模式，点击左键种植", PlayerPathfinding.Instance.transform, MessageType.Info, 3f);
                 break;
             case DetectionModeType.Fire:
                 Debug.Log("进入火模式，点击左键点火");
+                MessageManager.instance.SendMessage("进入火模式，点击左键点火", PlayerPathfinding.Instance.transform, MessageType.Info, 3f);
                 break;
             case DetectionModeType.Info:
                 Debug.Log("进入信息查看模式，点击左键查看信息");
+                MessageManager.instance.SendMessage("进入信息查看模式，点击左键查看信息", PlayerPathfinding.Instance.transform, MessageType.Info, 3f);
                 break;
         }
         

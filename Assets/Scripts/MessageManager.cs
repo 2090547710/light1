@@ -14,13 +14,26 @@ public class MessageManager : MonoBehaviour
     [SerializeField] private int maxMessageLength = 100;
     [SerializeField] private int initialPoolSize = 5;
     [SerializeField] private int maxPoolSize = 20;
+    [SerializeField] private int paddingLeft = 10;
+    [SerializeField] private int paddingRight = 10;
+    [SerializeField] private int paddingTop = 5;
+    [SerializeField] private int paddingBottom = 5;
+    
+    private RectOffset messagePadding;
+    // 提供公共访问器获取padding
+    public RectOffset MessagePadding => messagePadding;
 
     private List<MessageDisplay> activeMessageDisplays = new List<MessageDisplay>();
     private Queue<GameObject> messageObjectPool = new Queue<GameObject>();
+    // 添加一个Dictionary来跟踪每个transform对应的消息显示组件
+    private Dictionary<Transform, MessageDisplay> transformToDisplayMap = new Dictionary<Transform, MessageDisplay>();
 
     private void Awake()
     {
         instance = this;
+        
+        // 在Awake中初始化RectOffset
+        messagePadding = new RectOffset(paddingLeft, paddingRight, paddingTop, paddingBottom);
 
         if (messageCanvas == null)
         {
@@ -64,6 +77,12 @@ public class MessageManager : MonoBehaviour
         if (!activeMessageDisplays.Contains(display))
         {
             activeMessageDisplays.Add(display);
+            
+            // 如果有目标transform，将其添加到映射中
+            if (display.TargetTransform != null && !transformToDisplayMap.ContainsKey(display.TargetTransform))
+            {
+                transformToDisplayMap.Add(display.TargetTransform, display);
+            }
         }
     }
 
@@ -72,6 +91,12 @@ public class MessageManager : MonoBehaviour
         if (activeMessageDisplays.Contains(display))
         {
             activeMessageDisplays.Remove(display);
+            
+            // 从映射中移除
+            if (display.TargetTransform != null && transformToDisplayMap.ContainsKey(display.TargetTransform))
+            {
+                transformToDisplayMap.Remove(display.TargetTransform);
+            }
             
             // 将对象归还到池中
             GameObject displayObj = display.gameObject;
@@ -94,37 +119,68 @@ public class MessageManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(message)) return;
 
-        // 创建消息对象
-        GameObject messageObj = GetMessageObjectFromPool(targetTransform);
-        if (messageObj == null) return;
+        MessageDisplay messageDisplay;
         
-        MessageDisplay messageDisplay = messageObj.GetComponent<MessageDisplay>();
-        if (messageDisplay == null) return;
-        
-        // 设置跟踪目标
-        if (targetTransform != null)
+        // 如果目标transform已经有关联的消息显示器，则使用现有的
+        if (targetTransform != null && transformToDisplayMap.TryGetValue(targetTransform, out messageDisplay))
         {
-            messageDisplay.SetTargetTransform(targetTransform, positionOffset);
-        }
-        
-        Debug.Log("messageLength:"+message.Length);
-        // 根据长度拆分消息
-        if (message.Length > maxMessageLength)
-        {
-            List<string> messageParts = SplitMessage(message, maxMessageLength);
-            
-            // 初始化第一部分
-            messageDisplay.Initialize(messageParts[0], messageCanvas.transform, type, duration);
-            
-            // 添加剩余部分（它们将按顺序显示）
-            for (int i = 1; i < messageParts.Count; i++)
+            // 将消息添加到现有的队列中
+            // 根据长度拆分消息
+            if (message.Length > maxMessageLength)
             {
-                messageDisplay.AddMessage(messageParts[i], type, duration);
+                List<string> messageParts = SplitMessage(message, maxMessageLength);
+                
+                // 添加所有部分（它们将按顺序显示）
+                foreach (string part in messageParts)
+                {
+                    messageDisplay.AddMessage(part, type, duration);
+                }
+            }
+            else
+            {
+                messageDisplay.AddMessage(message, type, duration);
             }
         }
         else
         {
-            messageDisplay.Initialize(message, messageCanvas.transform, type, duration);
+            // 创建新的消息对象
+            GameObject messageObj = GetMessageObjectFromPool(targetTransform);
+            if (messageObj == null) return;
+            
+            messageDisplay = messageObj.GetComponent<MessageDisplay>();
+            if (messageDisplay == null) return;
+            
+            // 设置跟踪目标
+            if (targetTransform != null)
+            {
+                messageDisplay.SetTargetTransform(targetTransform, positionOffset);
+                
+                // 添加到映射中
+                if (!transformToDisplayMap.ContainsKey(targetTransform))
+                {
+                    transformToDisplayMap.Add(targetTransform, messageDisplay);
+                }
+            }
+            
+            Debug.Log("messageLength:"+message.Length);
+            // 根据长度拆分消息
+            if (message.Length > maxMessageLength)
+            {
+                List<string> messageParts = SplitMessage(message, maxMessageLength);
+                
+                // 初始化第一部分
+                messageDisplay.Initialize(messageParts[0], messageCanvas.transform, type, duration);
+                
+                // 添加剩余部分（它们将按顺序显示）
+                for (int i = 1; i < messageParts.Count; i++)
+                {
+                    messageDisplay.AddMessage(messageParts[i], type, duration);
+                }
+            }
+            else
+            {
+                messageDisplay.Initialize(message, messageCanvas.transform, type, duration);
+            }
         }
     }
 

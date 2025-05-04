@@ -73,6 +73,7 @@ public class MessageDisplay : MonoBehaviour
     [SerializeField] private Color errorColor = Color.red;
     [SerializeField] private Color successColor = Color.green;
     [SerializeField] private float fadeTime = 0.5f;
+    [SerializeField] private Image backgroundImage;
     
     private TMP_Text textComponent;
     private CanvasGroup canvasGroup;
@@ -81,6 +82,9 @@ public class MessageDisplay : MonoBehaviour
     private bool isDisplaying = false;
     private Transform targetTransform;
     private Vector3 positionOffset;
+    
+    // 添加目标Transform的公共访问器
+    public Transform TargetTransform => targetTransform;
     
     private void Awake()
     {
@@ -95,6 +99,15 @@ public class MessageDisplay : MonoBehaviour
         if (canvasGroup == null)
         {
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+        
+        if (backgroundImage == null)
+        {
+            backgroundImage = GetComponentInChildren<Image>();
+            if (backgroundImage == null)
+            {
+                Debug.LogWarning("MessageDisplay未找到背景图像组件");
+            }
         }
         
         // 初始时隐藏
@@ -188,6 +201,12 @@ public class MessageDisplay : MonoBehaviour
                         textComponent.color = infoColor;
                         break;
                 }
+                
+                // 等待一帧以确保ContentSizeFitter更新了文本尺寸
+                yield return null;
+                
+                // 根据文本尺寸调整背景图像大小
+                UpdateBackgroundSize();
             }
             
             // 淡入
@@ -220,6 +239,29 @@ public class MessageDisplay : MonoBehaviour
         
         isDisplaying = false;
         displayCoroutine = null;
+    }
+    
+    private void UpdateBackgroundSize()
+    {
+        if (backgroundImage != null && textComponent != null)
+        {
+            // 获取文本的首选尺寸
+            float textWidth = textComponent.preferredWidth;
+            float textHeight = textComponent.preferredHeight;
+            
+            // 从MessageManager获取padding
+            RectOffset padding = (MessageManager.instance != null) 
+                ? MessageManager.instance.MessagePadding 
+                : new RectOffset(10, 10, 5, 5); // 默认值，以防MessageManager不可用
+            
+            // 添加padding
+            float backgroundWidth = textWidth + padding.left + padding.right;
+            float backgroundHeight = textHeight + padding.top + padding.bottom;
+            
+            // 更新背景图像尺寸
+            RectTransform bgRectTransform = backgroundImage.rectTransform;
+            bgRectTransform.sizeDelta = new Vector2(backgroundWidth, backgroundHeight);
+        }
     }
     
     public void SetTargetTransform(Transform target, Vector3 offset)

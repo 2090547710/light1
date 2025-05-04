@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6856580055598245579}
   - component: {fileID: 1290435408456911676}
-  - component: {fileID: 3084974131768983062}
   - component: {fileID: 5408608374696663411}
   - component: {fileID: -4876141945041353701}
+  - component: {fileID: 8406453424131690356}
   m_Layer: 5
   m_Name: "\u63D0\u793A\u4FE1\u606F\u9884\u5236\u4F53"
   m_TagString: Untagged
@@ -38,8 +38,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.42, y: -5.86}
-  m_SizeDelta: {x: 199.16, y: 68.29}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1290435408456911676
 CanvasRenderer:
@@ -49,36 +49,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3257366257890364420}
   m_CullTransparentMesh: 1
---- !u!114 &3084974131768983062
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3257366257890364420}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &5408608374696663411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -96,8 +66,8 @@ MonoBehaviour:
   warningColor: {r: 0, g: 0, b: 0, a: 1}
   errorColor: {r: 0, g: 0, b: 0, a: 1}
   successColor: {r: 0, g: 0, b: 0, a: 1}
-  displayDuration: 3
   fadeTime: 0.5
+  backgroundImage: {fileID: 0}
 --- !u!114 &-4876141945041353701
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,6 +80,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7806d095a50d89244b6d6362c3a4fdad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8406453424131690356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257366257890364420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 2
+  m_VerticalFit: 2
 --- !u!1 &5976883892109719986
 GameObject:
   m_ObjectHideFlags: 0
@@ -121,6 +105,7 @@ GameObject:
   - component: {fileID: 3365541512837424115}
   - component: {fileID: 5076020195278676993}
   - component: {fileID: 6837006135385562514}
+  - component: {fileID: 2933982692322363910}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -145,7 +130,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -0.00125, y: -0.00000071526}
-  m_SizeDelta: {x: 196.35, y: 65.27}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5076020195278676993
 CanvasRenderer:
@@ -175,7 +160,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 1111111
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e011bf36f9b50804789530cfcd8effd3, type: 2}
   m_sharedMaterial: {fileID: 6669332898377854394, guid: e011bf36f9b50804789530cfcd8effd3, type: 2}
@@ -244,6 +229,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2933982692322363910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5976883892109719986}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 2
+  m_VerticalFit: 2
 --- !u!1 &9047434843948415795
 GameObject:
   m_ObjectHideFlags: 0
