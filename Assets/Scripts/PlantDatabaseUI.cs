@@ -53,6 +53,10 @@ public class PlantDatabaseUI : MonoBehaviour
     public TextMeshProUGUI plantDescriptionText; // 植物介绍文本
     public Image plantPreviewImage; // 植物预览图
 
+    // 添加SimpleAnimatorController引用
+    [Header("动画控制器")]
+    public SimpleAnimatorController animatorController;
+
     private void Start()
     {
         plantManager = PlantManager.Instance;
@@ -386,6 +390,12 @@ public class PlantDatabaseUI : MonoBehaviour
                 targetPos = Mathf.Clamp01(targetPos);
                 ScrollToPosition(targetPos);
             }
+        }
+        
+        // 检测TAB键控制面板显示/隐藏
+        if (Input.GetKeyDown(KeyCode.Tab) && animatorController != null)
+        {
+            animatorController.ToggleAllPanels();
         }
     }
 

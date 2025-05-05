@@ -62,6 +62,7 @@ public class LightingManager : MonoBehaviour
 
     // 用于存储所有Lighting创建的quad
     public static List<GameObject> lightingQuads = new List<GameObject>();
+    public static bool showLightingQuads = true; // 默认显示边缘高度图
     #endregion
 
     #region Unity生命周期方法
@@ -884,20 +885,11 @@ static void HideSimplifiedBoundaryMenu()
         lightingQuads.Clear();
     }
     
-    void OnGUI()
+    // 替换原有的显示和隐藏方法
+    public static void ToggleLightingQuads(bool show = true)
     {
-        if (GUILayout.Button("Hide All Lighting Edge", GUILayout.Width(200),GUILayout.Height(50)))
-        {
-            HideAllLightingQuads();
-        }
-        if (GUILayout.Button("Show All Lighting Edge", GUILayout.Width(200),GUILayout.Height(50)))
-        {
-            ShowAllLightingQuads();
-        }
-    }
-    // 隐藏所有Lighting创建的quad
-    public static void HideAllLightingQuads()
-    {
+        showLightingQuads = show;
+        
         foreach (var quad in lightingQuads)
         {
             if (quad != null)
@@ -905,23 +897,7 @@ static void HideSimplifiedBoundaryMenu()
                 MeshRenderer renderer = quad.GetComponentInChildren<MeshRenderer>();
                 if (renderer != null)
                 {
-                    renderer.enabled = false;
-                }
-            }
-        }
-    }
-    
-    // 显示所有Lighting创建的quad
-    public static void ShowAllLightingQuads()
-    {
-        foreach (var quad in lightingQuads)
-        {
-            if (quad != null)
-            {
-                MeshRenderer renderer = quad.GetComponentInChildren<MeshRenderer>();
-                if (renderer != null)
-                {
-                    renderer.enabled = true;
+                    renderer.enabled = showLightingQuads;
                 }
             }
         }

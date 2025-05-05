@@ -177,7 +177,6 @@ public class AudioManager : MonoBehaviour
         return newSource;
     }
 
-
     // 静态方法，用于其他脚本调用
     public static void TriggerPlayMusic(string musicName)
     {
@@ -192,6 +191,45 @@ public class AudioManager : MonoBehaviour
     public static void TriggerPlaySFX(string sfxName, float volumeScale = 1.0f)
     {
         OnPlaySFX?.Invoke(sfxName, volumeScale);
+    }
+    
+    // 设置音乐音量
+    public void SetMusicVolume(float volume)
+    {
+        musicVolume = Mathf.Clamp01(volume);
+        _lastMusicVolume = musicVolume;
+        
+        if (musicSource != null)
+        {
+            musicSource.volume = musicVolume;
+        }
+    }
+    
+    // 设置音效音量
+    public void SetSFXVolume(float volume)
+    {
+        sfxVolume = Mathf.Clamp01(volume);
+        _lastSfxVolume = sfxVolume;
+        
+        foreach (AudioSource source in sfxSources)
+        {
+            if (source != null)
+            {
+                source.volume = sfxVolume;
+            }
+        }
+    }
+    
+    // 获取音乐音量
+    public float GetMusicVolume()
+    {
+        return musicVolume;
+    }
+    
+    // 获取音效音量
+    public float GetSFXVolume()
+    {
+        return sfxVolume;
     }
 
     // Start is called before the first frame update

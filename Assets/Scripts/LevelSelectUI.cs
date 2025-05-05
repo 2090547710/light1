@@ -35,6 +35,7 @@ public class LevelSelectUI : MonoBehaviour
     public class SaveData
     {
         public List<LevelSaveData> levelSaveDataList = new List<LevelSaveData>();
+        public int lastPlayedLevelID = -1; // 存储最后一次游玩的关卡ID
     }
     
     // 添加当前关卡ID和名称的属性
@@ -48,10 +49,7 @@ public class LevelSelectUI : MonoBehaviour
     
     [Tooltip("关卡信息列表")]
     public List<LevelInfo> levels = new List<LevelInfo>();
-    
-    [Tooltip("关卡选择按钮列表")]
-    public List<Button> levelButtons = new List<Button>();
-    
+       
     [Tooltip("倒计时计时器引用")]
     public CountdownTimer countdownTimer;
     
@@ -80,26 +78,7 @@ public class LevelSelectUI : MonoBehaviour
         
         // 检查并警告重复的levelID
         CheckDuplicateLevelIDs();
-        
-        // 确保关卡数量与按钮数量匹配
-        int buttonCount = Mathf.Min(levels.Count, levelButtons.Count);
-        
-        // 为每个按钮添加点击事件
-        for (int i = 0; i < buttonCount; i++)
-        {
-            int levelIndex = i; // 创建局部变量以便在lambda表达式中使用
-            
-            if (levelButtons[i] != null)
-            {
-                // 添加按钮点击事件
-                levelButtons[i].onClick.AddListener(() => LoadLevel(levelIndex));
-            }
-            else
-            {
-                Debug.LogWarning($"按钮 {i} 为空");
-            }
-        }
-        
+                
         // 添加倒计时结束事件监听
         if (countdownTimer != null)
         {
@@ -108,6 +87,7 @@ public class LevelSelectUI : MonoBehaviour
         
         // 初始化关卡名称显示
         UpdateLevelNameText();
+        
     }
     
     private void LoadSaveData()
@@ -167,6 +147,10 @@ public class LevelSelectUI : MonoBehaviour
         // 更新当前关卡ID和名称
         this.currentLevelID = levelID;
         this.currentLevelName = levelInfo.levelName;
+        
+        // 更新最后游玩的关卡ID
+        saveData.lastPlayedLevelID = levelID;
+        SaveGameData();
         
         // 更新UI显示
         UpdateLevelNameText();
@@ -329,6 +313,9 @@ public class LevelSelectUI : MonoBehaviour
             Debug.LogWarning("没有加载任何关卡，无法保存");
             return;
         }
+        
+        // 更新最后游玩的关卡ID
+        saveData.lastPlayedLevelID = currentLevelID;
         
         // 查找当前关卡的存档数据
         LevelSaveData currentLevelData = null;
@@ -665,6 +652,7 @@ public class LevelSelectUI : MonoBehaviour
         
         // 创建新的SaveData对象
         saveData = new SaveData();
+        saveData.lastPlayedLevelID = -1; // 确保重置lastPlayedLevelID
         
         // 删除存档文件
         if (File.Exists(saveDataPath))
@@ -747,6 +735,36 @@ public class LevelSelectUI : MonoBehaviour
             else
             {
                 currentLevelNameText.text = "未选择关卡";
+            }
+        }
+    }
+
+    // 添加一个新方法，用于加载最后一次游玩的关卡
+    public void LoadLastPlayedLevel()
+    {
+        // 检查是否需要加载最后一次游玩的关卡
+        if (saveData.lastPlayedLevelID >= 0)
+        {
+            // 查找关卡在levels列表中的索引
+            int levelIndex = -1;
+            for (int i = 0; i < levels.Count; i++)
+            {
+                if (levels[i].levelID == saveData.lastPlayedLevelID)
+                {
+                    levelIndex = i;
+                    break;
+                }
+            }
+            
+            if (levelIndex >= 0)
+            {
+                // 自动加载最后一次游玩的关卡
+                LoadLevel(levelIndex);
+                Debug.Log($"已自动加载上次游玩的关卡: ID={saveData.lastPlayedLevelID}");
+            }
+            else
+            {
+                Debug.LogWarning($"无法找到上次游玩的关卡(ID={saveData.lastPlayedLevelID})");
             }
         }
     }

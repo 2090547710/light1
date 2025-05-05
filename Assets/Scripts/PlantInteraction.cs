@@ -8,6 +8,12 @@ using UnityEngine.EventSystems;
 
 public class PlantInteraction : MonoBehaviour
 {
+    // 添加单例模式
+    public static PlantInteraction Instance { get; private set; }
+    
+    // 是否允许交互
+    private bool interactionEnabled = true;
+    
     // 定义检测模式枚举
     public enum DetectionModeType
     {
@@ -84,9 +90,25 @@ public class PlantInteraction : MonoBehaviour
     public float outlineWidth = 0.14f;                           // 描边线宽
     public int circleSegments = 50;                              // 圆环分段数
 
+    private void Awake()
+    {
+        // 设置单例
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void Start()
     {
         mainCamera = Camera.main;
+        
+        // 添加订阅StartUI事件
+        StartUI.OnStartUIVisibilityChanged += HandleStartUIVisibilityChange;
         
         // 创建范围指示器
         if (useRangeIndicator)
@@ -113,6 +135,10 @@ public class PlantInteraction : MonoBehaviour
 
     void Update()
     {
+        // 如果交互被禁用，直接返回
+        if (!interactionEnabled)
+            return;
+            
         // 更新冷却计时器
         darkCooldownTimer -= Time.deltaTime;
 
@@ -1259,5 +1285,45 @@ public class PlantInteraction : MonoBehaviour
             default:
                 return Color.white;
         }
+    }
+
+    // 新增方法：启用交互
+    public void EnableInteraction()
+    {
+        interactionEnabled = true;
+        Debug.Log("植物交互功能已启用");
+    }
+    
+    // 新增方法：禁用交互
+    public void DisableInteraction()
+    {
+        // 如果正在检测模式中，先退出
+        if (isInDetectionMode)
+        {
+            ExitDetectionMode();
+        }
+        
+        interactionEnabled = false;
+        Debug.Log("植物交互功能已禁用");
+    }
+
+    // 处理UI可见性变化的方法
+    private void HandleStartUIVisibilityChange(bool isVisible)
+    {
+        if (isVisible)
+        {
+            DisableInteraction();
+        }
+        else
+        {
+            EnableInteraction();
+        }
+    }
+
+    // 在OnDestroy中取消订阅
+    void OnDestroy()
+    {
+        // 取消订阅StartUI事件
+        StartUI.OnStartUIVisibilityChanged -= HandleStartUIVisibilityChange;
     }
 } 

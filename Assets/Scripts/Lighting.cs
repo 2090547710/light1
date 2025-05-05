@@ -682,7 +682,7 @@ public class Lighting : MonoBehaviour
         float yOffset = 0.01f * (GetInstanceID() % 1000) / 1000f; // 基于实例ID创建微小偏移
         edgeQuad.transform.localPosition = new Vector3(0, 0.05f+yOffset, 0);
         // 水平放置quad，但要考虑rotation属性
-        edgeQuad.transform.localRotation = Quaternion.Euler(90, rotation, 0);
+        edgeQuad.transform.localRotation = Quaternion.Euler(90, -rotation, 0);
         
         // 设置quad的缩放以匹配size
         quad.transform.localScale = new Vector3(size, size, 1);
@@ -707,6 +707,9 @@ public class Lighting : MonoBehaviour
         // 应用材质
         Renderer renderer = quad.GetComponent<Renderer>();
         renderer.material = material;
+        
+        // 根据LightingManager中的显示状态设置可见性
+        renderer.enabled = LightingManager.showLightingQuads;
         
         // 添加到管理器的列表中
         LightingManager.lightingQuads.Add(edgeQuad);
