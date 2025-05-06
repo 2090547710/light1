@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using TMPro;
+using UnityEngine.EventSystems;
 
 public class StartUI : MonoBehaviour
 {
@@ -240,6 +241,52 @@ public class StartUI : MonoBehaviour
         }
     }
     
+    // 为按钮添加事件处理脚本
+    private void AddButtonHoverEvents(Button button)
+    {
+        if (button != null)
+        {
+            // 获取或添加EventTrigger组件
+            EventTrigger trigger = button.gameObject.GetComponent<EventTrigger>();
+            if (trigger == null)
+            {
+                trigger = button.gameObject.AddComponent<EventTrigger>();
+            }
+            
+            // 添加鼠标进入事件
+            EventTrigger.Entry entryEnter = new EventTrigger.Entry();
+            entryEnter.eventID = EventTriggerType.PointerEnter;
+            entryEnter.callback.AddListener((data) => { OnButtonPointerEnter(button); });
+            trigger.triggers.Add(entryEnter);
+            
+            // 添加鼠标离开事件
+            EventTrigger.Entry entryExit = new EventTrigger.Entry();
+            entryExit.eventID = EventTriggerType.PointerExit;
+            entryExit.callback.AddListener((data) => { OnButtonPointerExit(button); });
+            trigger.triggers.Add(entryExit);
+        }
+    }
+    
+    // 鼠标进入按钮事件处理
+    private void OnButtonPointerEnter(Button button)
+    {
+        TextMeshProUGUI buttonText = button.GetComponentInChildren<TextMeshProUGUI>();
+        if (buttonText != null)
+        {
+            buttonText.fontStyle = FontStyles.Underline;
+        }
+    }
+    
+    // 鼠标离开按钮事件处理
+    private void OnButtonPointerExit(Button button)
+    {
+        TextMeshProUGUI buttonText = button.GetComponentInChildren<TextMeshProUGUI>();
+        if (buttonText != null)
+        {
+            buttonText.fontStyle = FontStyles.Normal;
+        }
+    }
+    
     private void BindButtonEvents()
     {
         // 查找并绑定新游戏按钮
@@ -248,6 +295,9 @@ public class StartUI : MonoBehaviour
             newGameButton = newGamePanel.GetComponentInChildren<Button>();
             if (newGameButton != null)
             {
+                // 添加鼠标悬停事件
+                AddButtonHoverEvents(newGameButton);
+                
                 if (hasSaveData)
                 {
                     // 如果有存档，点击显示警告
@@ -277,6 +327,9 @@ public class StartUI : MonoBehaviour
             continueGameButton = continueGamePanel.GetComponentInChildren<Button>();
             if (continueGameButton != null)
             {
+                // 添加鼠标悬停事件
+                AddButtonHoverEvents(continueGameButton);
+                
                 continueGameButton.onClick.AddListener(() => {
                     SetSelectedButton(continueGameButton);
                     ContinueGame();
@@ -300,6 +353,9 @@ public class StartUI : MonoBehaviour
                 warningYesButton = yesButtonTransform.GetComponent<Button>();
                 if (warningYesButton != null)
                 {
+                    // 添加鼠标悬停事件
+                    AddButtonHoverEvents(warningYesButton);
+                    
                     warningYesButton.onClick.AddListener(() => {
                         SetSelectedButton(warningYesButton);
                         OnWarningYesButtonClicked();
@@ -320,6 +376,9 @@ public class StartUI : MonoBehaviour
                 warningNoButton = noButtonTransform.GetComponent<Button>();
                 if (warningNoButton != null)
                 {
+                    // 添加鼠标悬停事件
+                    AddButtonHoverEvents(warningNoButton);
+                    
                     warningNoButton.onClick.AddListener(() => {
                         SetSelectedButton(warningNoButton);
                         CloseWarningMessage();
@@ -339,6 +398,9 @@ public class StartUI : MonoBehaviour
         // 绑定选项按钮
         if (optionsButton != null)
         {
+            // 添加鼠标悬停事件
+            AddButtonHoverEvents(optionsButton);
+            
             optionsButton.onClick.AddListener(() => {
                 SetSelectedButton(optionsButton);
                 ShowOptionsPanel();
@@ -348,6 +410,9 @@ public class StartUI : MonoBehaviour
         // 绑定选项面板关闭按钮
         if (optionsCloseButton != null)
         {
+            // 添加鼠标悬停事件
+            AddButtonHoverEvents(optionsCloseButton);
+            
             optionsCloseButton.onClick.AddListener(() => {
                 SetSelectedButton(optionsCloseButton);
                 CloseOptionsPanel();
@@ -357,6 +422,9 @@ public class StartUI : MonoBehaviour
         // 绑定退出游戏按钮
         if (exitButton != null)
         {
+            // 添加鼠标悬停事件
+            AddButtonHoverEvents(exitButton);
+            
             exitButton.onClick.AddListener(() => {
                 SetSelectedButton(exitButton);
                 ShowExitGameWarning();
@@ -552,7 +620,7 @@ public class StartUI : MonoBehaviour
 
     // 公共方法：保存当前游戏并显示开始界面
     public void SaveGameAndShowUI()
-    {
+    {        
         // 先保存当前游戏
         if (LevelSelectUI.Instance != null)
         {

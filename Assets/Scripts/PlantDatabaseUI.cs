@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 public class PlantDatabaseUI : MonoBehaviour
 {
@@ -171,6 +172,9 @@ public class PlantDatabaseUI : MonoBehaviour
             }
             
             button.onClick.AddListener(() => OnPlantItemClicked(-1)); // 使用-1作为火的特殊ID
+            
+            // 添加鼠标悬停事件
+            AddButtonHoverEvents(button);
         }
         
         // 然后添加正常的植物数据库项目
@@ -216,8 +220,12 @@ public class PlantDatabaseUI : MonoBehaviour
             // 存储itemData的引用，以便在点击事件中使用
             int capturedPlantId = plantId;
             button.onClick.AddListener(() => OnPlantItemClicked(capturedPlantId));
+            
+            // 添加鼠标悬停事件
+            AddButtonHoverEvents(button);
         }
-        //默认选中火
+        
+        // 默认选中火
         OnPlantItemClicked(-1);
     }
     
@@ -540,6 +548,24 @@ public class PlantDatabaseUI : MonoBehaviour
         }
     }
     
+    // 为面板中的信息项目添加下划线悬停效果
+    private void AddHoverEventsToInfoItems(Transform panelContent)
+    {
+        if (panelContent == null) return;
+        
+        foreach (Transform child in panelContent)
+        {
+            Button button = child.GetComponent<Button>();
+            if (button == null)
+            {
+                button = child.gameObject.AddComponent<Button>();
+                button.transition = Selectable.Transition.None; // 不改变视觉状态
+            }
+            
+            AddButtonHoverEvents(button);
+        }
+    }
+    
     // 更新前置植物面板
     private void UpdatePrerequisitePanel(PlantItemData itemData)
     {
@@ -650,6 +676,9 @@ public class PlantDatabaseUI : MonoBehaviour
                 }
             }
         }
+        
+        // 为面板项目添加悬停效果
+        AddHoverEventsToInfoItems(prerequisitePanelContent);
     }
     
     // 更新更新植物面板
@@ -705,6 +734,55 @@ public class PlantDatabaseUI : MonoBehaviour
                     }
                 }
             }
+        }
+        
+        // 为面板项目添加悬停效果
+        AddHoverEventsToInfoItems(updatePanelContent);
+    }
+    
+    // 为按钮添加事件处理脚本
+    private void AddButtonHoverEvents(Button button)
+    {
+        if (button != null)
+        {
+            // 获取或添加EventTrigger组件
+            EventTrigger trigger = button.gameObject.GetComponent<EventTrigger>();
+            if (trigger == null)
+            {
+                trigger = button.gameObject.AddComponent<EventTrigger>();
+            }
+            
+            // 添加鼠标进入事件
+            EventTrigger.Entry entryEnter = new EventTrigger.Entry();
+            entryEnter.eventID = EventTriggerType.PointerEnter;
+            entryEnter.callback.AddListener((data) => { OnButtonPointerEnter(button); });
+            trigger.triggers.Add(entryEnter);
+            
+            // 添加鼠标离开事件
+            EventTrigger.Entry entryExit = new EventTrigger.Entry();
+            entryExit.eventID = EventTriggerType.PointerExit;
+            entryExit.callback.AddListener((data) => { OnButtonPointerExit(button); });
+            trigger.triggers.Add(entryExit);
+        }
+    }
+    
+    // 鼠标进入按钮事件处理
+    private void OnButtonPointerEnter(Button button)
+    {
+        TextMeshProUGUI buttonText = button.GetComponentInChildren<TextMeshProUGUI>();
+        if (buttonText != null)
+        {
+            buttonText.fontStyle = FontStyles.Underline;
+        }
+    }
+    
+    // 鼠标离开按钮事件处理
+    private void OnButtonPointerExit(Button button)
+    {
+        TextMeshProUGUI buttonText = button.GetComponentInChildren<TextMeshProUGUI>();
+        if (buttonText != null)
+        {
+            buttonText.fontStyle = FontStyles.Normal;
         }
     }
 }

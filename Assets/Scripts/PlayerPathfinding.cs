@@ -401,33 +401,6 @@ public class PlayerPathfinding : MonoBehaviour
         Gizmos.DrawSphere(transform.position, playerLightRange);
     }
     
-    // 添加一个新的方法用于在游戏视图中显示调试信息
-    void OnGUI()
-    {
-        if (showPathfindingDebug && !string.IsNullOrEmpty(pathfindingDebugInfo))
-        {
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = Color.yellow;
-            style.fontSize = 16;
-            style.fontStyle = FontStyle.Bold;
-            style.alignment = TextAnchor.UpperLeft;
-            
-            GUI.Label(new Rect(10, 10, 300, 200), pathfindingDebugInfo, style);
-        }
-        
-        // 显示玩家当前节点高度信息
-        if (currentPlayerNode != null)
-        {
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = Color.green;
-            style.fontSize = 14;
-            style.fontStyle = FontStyle.Bold;
-            style.alignment = TextAnchor.UpperRight;
-            
-            string nodeInfo = $"节点高度: {currentPlayerNode.Height:F2}\n可行走: {currentPlayerNode.IsWalkable}";
-            GUI.Label(new Rect(Screen.width - 200, 10, 190, 100), nodeInfo, style);
-        }
-    }
 
     // 更新玩家高度的新方法
     private void UpdatePlayerHeight()
