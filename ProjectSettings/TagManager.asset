@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - "\u97F3\u4E50\u97F3\u91CF"
+  - "\u97F3\u6548\u97F3\u91CF"
   layers:
   - Default
   - TransparentFX

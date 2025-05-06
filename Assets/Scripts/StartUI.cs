@@ -13,6 +13,16 @@ public class StartUI : MonoBehaviour
     // 是否当前显示开始界面
     private bool isUIActive = true;
     
+    // 当前选中的按钮
+    private Button currentSelectedButton;
+    
+    // 按钮颜色设置
+    [Tooltip("按钮正常状态颜色")]
+    public Color normalButtonColor = Color.white;
+    
+    [Tooltip("按钮选中状态颜色")]
+    public Color selectedButtonColor = new Color(0.8f, 0.8f, 1f);
+    
     [Tooltip("开始界面主Panel")]
     public GameObject startUIPanel;
     
@@ -180,6 +190,54 @@ public class StartUI : MonoBehaviour
             sfxVolumeSlider.value = volumeSettings.sfxVolume;
             AudioManager.Instance.SetSFXVolume(volumeSettings.sfxVolume);
         }
+        
+        // 初始化所有按钮颜色为正常状态
+        InitializeButtonColors();
+    }
+    
+    // 初始化所有按钮颜色
+    private void InitializeButtonColors()
+    {
+        // 设置所有按钮为正常颜色
+        SetButtonColor(newGameButton, normalButtonColor);
+        SetButtonColor(continueGameButton, normalButtonColor);
+        SetButtonColor(optionsButton, normalButtonColor);
+        SetButtonColor(optionsCloseButton, normalButtonColor);
+        SetButtonColor(exitButton, normalButtonColor);
+        SetButtonColor(warningYesButton, normalButtonColor);
+        SetButtonColor(warningNoButton, normalButtonColor);
+    }
+    
+    // 设置按钮颜色
+    private void SetButtonColor(Button button, Color color)
+    {
+        if (button != null)
+        {
+            Image buttonImage = button.GetComponentInChildren<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.color = color;
+            }
+        }
+    }
+    
+    // 设置当前选中的按钮
+    private void SetSelectedButton(Button button)
+    {
+        // 如果有之前选中的按钮，恢复为正常颜色
+        if (currentSelectedButton != null)
+        {
+            SetButtonColor(currentSelectedButton, normalButtonColor);
+        }
+        
+        // 设置新的当前按钮
+        currentSelectedButton = button;
+        
+        // 更改当前按钮颜色
+        if (currentSelectedButton != null)
+        {
+            SetButtonColor(currentSelectedButton, selectedButtonColor);
+        }
     }
     
     private void BindButtonEvents()
@@ -193,12 +251,18 @@ public class StartUI : MonoBehaviour
                 if (hasSaveData)
                 {
                     // 如果有存档，点击显示警告
-                    newGameButton.onClick.AddListener(ShowNewGameWarning);
+                    newGameButton.onClick.AddListener(() => {
+                        SetSelectedButton(newGameButton);
+                        ShowNewGameWarning();
+                    });
                 }
                 else
                 {
                     // 如果没有存档，直接开始新游戏
-                    newGameButton.onClick.AddListener(StartNewGame);
+                    newGameButton.onClick.AddListener(() => {
+                        SetSelectedButton(newGameButton);
+                        StartNewGame();
+                    });
                 }
             }
             else
@@ -213,7 +277,10 @@ public class StartUI : MonoBehaviour
             continueGameButton = continueGamePanel.GetComponentInChildren<Button>();
             if (continueGameButton != null)
             {
-                continueGameButton.onClick.AddListener(ContinueGame);
+                continueGameButton.onClick.AddListener(() => {
+                    SetSelectedButton(continueGameButton);
+                    ContinueGame();
+                });
             }
             else
             {
@@ -233,7 +300,10 @@ public class StartUI : MonoBehaviour
                 warningYesButton = yesButtonTransform.GetComponent<Button>();
                 if (warningYesButton != null)
                 {
-                    warningYesButton.onClick.AddListener(OnWarningYesButtonClicked);
+                    warningYesButton.onClick.AddListener(() => {
+                        SetSelectedButton(warningYesButton);
+                        OnWarningYesButtonClicked();
+                    });
                 }
                 else
                 {
@@ -250,7 +320,10 @@ public class StartUI : MonoBehaviour
                 warningNoButton = noButtonTransform.GetComponent<Button>();
                 if (warningNoButton != null)
                 {
-                    warningNoButton.onClick.AddListener(CloseWarningMessage);
+                    warningNoButton.onClick.AddListener(() => {
+                        SetSelectedButton(warningNoButton);
+                        CloseWarningMessage();
+                    });
                 }
                 else
                 {
@@ -266,30 +339,28 @@ public class StartUI : MonoBehaviour
         // 绑定选项按钮
         if (optionsButton != null)
         {
-            optionsButton.onClick.AddListener(ShowOptionsPanel);
+            optionsButton.onClick.AddListener(() => {
+                SetSelectedButton(optionsButton);
+                ShowOptionsPanel();
+            });
         }
         
         // 绑定选项面板关闭按钮
         if (optionsCloseButton != null)
         {
-            optionsCloseButton.onClick.AddListener(CloseOptionsPanel);
-        }
-        
-        // 绑定音量滑动条事件
-        if (musicVolumeSlider != null)
-        {
-            musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
-        }
-        
-        if (sfxVolumeSlider != null)
-        {
-            sfxVolumeSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
+            optionsCloseButton.onClick.AddListener(() => {
+                SetSelectedButton(optionsCloseButton);
+                CloseOptionsPanel();
+            });
         }
         
         // 绑定退出游戏按钮
         if (exitButton != null)
         {
-            exitButton.onClick.AddListener(ShowExitGameWarning);
+            exitButton.onClick.AddListener(() => {
+                SetSelectedButton(exitButton);
+                ShowExitGameWarning();
+            });
         }
     }
     
@@ -489,6 +560,16 @@ public class StartUI : MonoBehaviour
             LevelSelectUI.Instance.SaveCurrentLevel();
             Debug.Log("已保存当前游戏状态");
         }
+        
+        // 重置当前选中的按钮
+        if (currentSelectedButton != null)
+        {
+            SetButtonColor(currentSelectedButton, normalButtonColor);
+            currentSelectedButton = null;
+        }
+        
+        // 确保所有按钮都恢复为正常颜色
+        InitializeButtonColors();
         
         // 再显示开始界面
         ShowStartUI();
