@@ -175,9 +175,11 @@ public class PlantInteraction : MonoBehaviour
                 }
                 
                 ExecuteActionBasedOnMode();
-                // 设置退出标志位并延迟0.1秒退出检测状态
+                // 设置退出标志位并延迟0.5秒退出检测状态
                 isExitingDetectionMode = true;
-                StartCoroutine(DelayedExitDetectionMode(0.1f));
+                PlayExitAnimation(currentDetectionMode);
+
+                StartCoroutine(DelayedExitDetectionMode(0.5f));
             }
         }
         // 使用if-else if结构确保每帧只响应一个按键
@@ -192,11 +194,7 @@ public class PlantInteraction : MonoBehaviour
         {
             ToggleDetectionMode(DetectionModeType.Dig);
         }
-        // 按Z键枯萎所有植物
-        else if (Input.GetKeyDown(KeyCode.Z))
-        {
-            WitherAllPlants();
-        }
+
         // 按空格键更新光照
         else if (Input.GetKeyDown(KeyCode.Space))
         {

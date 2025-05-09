@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SimpleAnimatorController : MonoBehaviour
 {
     public Animator[] animators;
     public GameObject[] panels;
+    public Button toggleButton;
     private bool arePanelsEnabled = false;
     
     // Start is called before the first frame update
@@ -13,6 +15,12 @@ public class SimpleAnimatorController : MonoBehaviour
     {
         // 初始化时可以选择是否隐藏所有动画对象
         // HideAll();
+        
+        // 为按钮添加监听
+        if (toggleButton != null)
+        {
+            toggleButton.onClick.AddListener(ToggleAllPanels);
+        }
     }
 
     // Update is called once per frame

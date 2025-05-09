@@ -75,7 +75,7 @@ MonoBehaviour:
     plantID: 0
     plantName: "\u706B"
     plantDescription: "\u706B\u662F\u4E00\u79CD\u7279\u6B8A\u7684\u690D\u7269"
-    previewImagePath: "\u7AE0\u9C7C\u567C/idle00"
+    previewImagePath: "\u7AE0\u9C7C\u567C/\u8EAB\u4F5300"
     growthRate: 0
     witherRate: 0
     prerequisitePlantIDs: 

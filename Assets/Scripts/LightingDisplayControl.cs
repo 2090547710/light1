@@ -9,6 +9,10 @@ public class LightingDisplayControl : MonoBehaviour
     public Button toggleButton;
     public TextMeshProUGUI buttonText;
     
+    // 添加Sprite引用
+    public Sprite showLightingSprite;  // 显示光照范围时的按钮图标
+    public Sprite hideLightingSprite;  // 隐藏光照范围时的按钮图标
+    
     private bool isDisplaying = true;
     
     // Start is called before the first frame update
@@ -17,6 +21,7 @@ public class LightingDisplayControl : MonoBehaviour
         // 初始化状态
         isDisplaying = LightingManager.showLightingQuads;
         UpdateButtonText();
+        UpdateButtonSprite();
         
         // 为按钮添加监听
         if (toggleButton != null)
@@ -50,6 +55,9 @@ public class LightingDisplayControl : MonoBehaviour
         
         // 更新按钮文本
         UpdateButtonText();
+        
+        // 更新按钮图标
+        UpdateButtonSprite();
     }
     
     // 更新按钮文本
@@ -58,6 +66,19 @@ public class LightingDisplayControl : MonoBehaviour
         if (buttonText != null)
         {
             buttonText.text = isDisplaying ? "隐藏光照范围" : "显示光照范围";
+        }
+    }
+    
+    // 更新按钮图标
+    private void UpdateButtonSprite()
+    {
+        if (toggleButton != null)
+        {
+            Image buttonImage = toggleButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.sprite = isDisplaying ? hideLightingSprite : showLightingSprite;
+            }
         }
     }
     
