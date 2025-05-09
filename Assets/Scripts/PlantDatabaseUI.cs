@@ -785,6 +785,18 @@ public class PlantDatabaseUI : MonoBehaviour
             buttonText.fontStyle = FontStyles.Normal;
         }
     }
+
+    /// <summary>
+    /// 强制滚动到列表顶部
+    /// </summary>
+    public void ScrollToTop()
+    {
+        if (plantScrollRect == null || isScrolling)
+            return;
+        
+        // 直接调用ScrollToPosition方法，参数设为1.0f（代表顶部）
+        ScrollToPosition(1.0f);
+    }
 }
 
 // 用于存储植物项数据的组件

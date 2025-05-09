@@ -24,6 +24,9 @@ public class CameraController : MonoBehaviour
     private float lastFocusChangeTime = 0f;
     private float focusChangeCooldown = 0.5f; // 焦点变化后的冷却时间
 
+    // 新增变量控制滚轮是否启用
+    public bool scrollWheelEnabled = true;
+
     private Vector3 rotation = Vector3.zero;
     private Vector3 currentRotation;
     private Vector3 velocity = Vector3.zero;
@@ -49,12 +52,16 @@ public class CameraController : MonoBehaviour
     {
         // 注册PlantInteraction的事件
         PlantInteraction.OnDetectionModeChanged += HandleDetectionModeChanged;
+        // 订阅面板状态变化事件
+        SimpleAnimatorController.OnPanelStateChanged += HandlePanelStateChanged;
     }
 
     void OnDisable()
     {
         // 取消注册PlantInteraction的事件
         PlantInteraction.OnDetectionModeChanged -= HandleDetectionModeChanged;
+        // 取消订阅面板状态变化事件
+        SimpleAnimatorController.OnPanelStateChanged -= HandlePanelStateChanged;
     }
 
     void Start()
@@ -68,6 +75,13 @@ public class CameraController : MonoBehaviour
     {
         // 当进入检测模式时禁用右键，退出检测模式时启用右键
         rightMouseEnabled = !isInDetectionMode;
+    }
+
+    // 处理面板状态变化
+    private void HandlePanelStateChanged(bool panelsEnabled)
+    {
+        // 当面板启用时禁用滚轮，面板禁用时启用滚轮
+        scrollWheelEnabled = !panelsEnabled;
     }
 
     void OnApplicationFocus(bool focusStatus)
@@ -100,7 +114,11 @@ public class CameraController : MonoBehaviour
         }
 
         // 鼠标滚轮缩放
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        float scroll = 0;
+        if (scrollWheelEnabled)
+        {
+            scroll = Input.GetAxis("Mouse ScrollWheel");
+        }
         scrollValue = scroll; // 更新公开属性
         
         // 检查窗口焦点变化后的冷却期
@@ -192,5 +210,11 @@ public class CameraController : MonoBehaviour
             // 使用初始缩放值
             currentZoom = initialZoom;
         }
+    }
+
+    // 公共方法用于设置滚轮状态
+    public void SetScrollWheelEnabled(bool enabled)
+    {
+        scrollWheelEnabled = enabled;
     }
 }

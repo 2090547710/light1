@@ -10,6 +10,13 @@ public class SimpleAnimatorController : MonoBehaviour
     public Button toggleButton;
     private bool arePanelsEnabled = false;
     
+    // 添加PlantDatabaseUI引用
+    public PlantDatabaseUI plantDatabaseUI;
+    
+    // 定义事件
+    public delegate void PanelStateChanged(bool panelsEnabled);
+    public static event PanelStateChanged OnPanelStateChanged;
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -96,6 +103,18 @@ public class SimpleAnimatorController : MonoBehaviour
             }
         }
         arePanelsEnabled = true;
+        
+        // 面板启用时同时滚动到顶部
+        if (plantDatabaseUI != null)
+        {
+            plantDatabaseUI.ScrollToTop();
+        }
+        
+        // 触发事件
+        if (OnPanelStateChanged != null)
+        {
+            OnPanelStateChanged(true);
+        }
     }
     
     // 禁用所有面板
@@ -109,6 +128,12 @@ public class SimpleAnimatorController : MonoBehaviour
             }
         }
         arePanelsEnabled = false;
+        
+        // 触发事件
+        if (OnPanelStateChanged != null)
+        {
+            OnPanelStateChanged(false);
+        }
     }
     
     // 启用指定索引的面板
