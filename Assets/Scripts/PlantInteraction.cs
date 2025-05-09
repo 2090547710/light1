@@ -230,6 +230,9 @@ public class PlantInteraction : MonoBehaviour
         isInDetectionMode = true;
         currentDetectionMode = mode;
         
+        // 播放对应的进入动画
+        PlayEnterAnimation(mode);
+        
         // 根据不同模式显示不同提示
         switch (mode)
         {
@@ -454,17 +457,6 @@ public class PlantInteraction : MonoBehaviour
     // 退出检测模式
     private void ExitDetectionMode()
     {
-        // 如果当前是种子模式或火模式，触发所有Animator的SeedHide动画
-        if (currentDetectionMode == DetectionModeType.Seed || currentDetectionMode == DetectionModeType.Fire)
-        {
-            foreach (Animator animator in animatorList)
-            {
-                if (animator != null && HasParameter(animator, "SeedHide"))
-                {
-                    animator.SetTrigger("SeedHide");
-                }
-            }
-        }
         
         isInDetectionMode = false;
         hasValidDetection = false;
@@ -1058,46 +1050,39 @@ public class PlantInteraction : MonoBehaviour
         // 如果当前不在检测模式或者模式不同，则进入新的模式
         if (!isInDetectionMode || currentDetectionMode != mode)
         {
-            // 特殊情况处理：如果是从火模式到种子模式或从种子模式到火模式的直接切换
-            bool isSpecialTransition = isInDetectionMode && 
-                ((currentDetectionMode == DetectionModeType.Fire && mode == DetectionModeType.Seed) || 
-                 (currentDetectionMode == DetectionModeType.Seed && mode == DetectionModeType.Fire));
-            
-            // 普通情况：如果当前在检测模式但模式不同，先退出当前模式
-            if (isInDetectionMode && currentDetectionMode != mode && !isSpecialTransition)
+            // 如果当前在检测模式但模式不同，先播放当前模式的退出动画
+            if (isInDetectionMode && currentDetectionMode != mode)
             {
-                ExitDetectionMode();
-            }
-            else if (isSpecialTransition)
-            {
-                // 特殊切换不需要隐藏种子动画，只需要更新内部状态
+                // 根据当前模式播放对应的退出动画
+                PlayExitAnimation(currentDetectionMode);
+                
+                // 通知系统退出当前模式
                 isInDetectionMode = false;
                 hasValidDetection = false;
                 detectedObject = null;
                 
                 // 触发事件通知其他组件
                 OnDetectionModeChanged?.Invoke(false, currentDetectionMode);
+                
+                // 延迟一小段时间后进入新模式，给退出动画留出播放时间
+                StartCoroutine(DelayedEnterMode(mode, 0.5f));
+                return true;
             }
-            
-            // 如果进入种子模式或火模式，触发所有Animator的Seed动画
-            if (mode == DetectionModeType.Seed || mode == DetectionModeType.Fire)
+            else
             {
-                foreach (Animator animator in animatorList)
-                {
-                    if (animator != null && HasParameter(animator, "Seed"))
-                    {
-                        animator.SetTrigger("Seed");
-                    }
-                }
+                // 直接进入新模式
+                EnterDetectionMode(mode);
+                return true;
             }
-            
-            EnterDetectionMode(mode);
-            return true;
         }
         // 如果当前已在指定模式，则退出
         else
         {
-            StartCoroutine(DelayedExitDetectionMode(0.1f));
+            // 播放退出动画
+            PlayExitAnimation(currentDetectionMode);
+            
+            // 延迟退出检测状态
+            StartCoroutine(DelayedExitDetectionMode(0.5f));
             return false;
         }
     }
@@ -1379,5 +1364,117 @@ public class PlantInteraction : MonoBehaviour
                 return true;
         }
         return false;
+    }
+
+    // 添加播放退出动画的方法
+    private void PlayExitAnimation(DetectionModeType mode)
+    {
+        switch (mode)
+        {
+            case DetectionModeType.Dig:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "DigHide"))
+                    {
+                        animator.SetTrigger("DigHide");
+                    }
+                }
+                break;
+            
+            case DetectionModeType.Seed:
+            case DetectionModeType.Fire:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "SeedHide"))
+                    {
+                        animator.SetTrigger("SeedHide");
+                    }
+                }
+                break;
+            
+            case DetectionModeType.Water:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "WaterHide"))
+                    {
+                        animator.SetTrigger("WaterHide");
+                    }
+                }
+                break;
+            
+            case DetectionModeType.Info:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "InfoHide"))
+                    {
+                        animator.SetTrigger("InfoHide");
+                    }
+                }
+                break;
+        }
+    }
+
+    // 添加播放进入动画的方法
+    private void PlayEnterAnimation(DetectionModeType mode)
+    {
+        switch (mode)
+        {
+            case DetectionModeType.Dig:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "Dig"))
+                    {
+                        animator.SetTrigger("Dig");
+                    }
+                }
+                break;
+            
+            case DetectionModeType.Seed:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "Seed"))
+                    {
+                        animator.SetTrigger("Seed");
+                    }
+                }
+                break;
+            
+            case DetectionModeType.Fire:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "Seed"))
+                    {
+                        animator.SetTrigger("Seed");
+                    }
+                }
+                break;
+            
+            case DetectionModeType.Water:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "Water"))
+                    {
+                        animator.SetTrigger("Water");
+                    }
+                }
+                break;
+            
+            case DetectionModeType.Info:
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "Info"))
+                    {
+                        animator.SetTrigger("Info");
+                    }
+                }
+                break;
+        }
+    }
+
+    // 延迟进入模式的协程
+    private IEnumerator DelayedEnterMode(DetectionModeType mode, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        EnterDetectionMode(mode);
     }
 } 
