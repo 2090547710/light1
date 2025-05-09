@@ -90,6 +90,9 @@ public class PlantInteraction : MonoBehaviour
     public float outlineWidth = 0.14f;                           // 描边线宽
     public int circleSegments = 50;                              // 圆环分段数
 
+    [Header("动画控制")]
+    public List<Animator> animatorList = new List<Animator>(); // 添加Animator列表
+
     private void Awake()
     {
         // 设置单例
@@ -451,6 +454,18 @@ public class PlantInteraction : MonoBehaviour
     // 退出检测模式
     private void ExitDetectionMode()
     {
+        // 如果当前是种子模式，触发所有Animator的SeedHide动画
+        if (currentDetectionMode == DetectionModeType.Seed)
+        {
+            foreach (Animator animator in animatorList)
+            {
+                if (animator != null && HasParameter(animator, "SeedHide"))
+                {
+                    animator.SetTrigger("SeedHide");
+                }
+            }
+        }
+        
         isInDetectionMode = false;
         hasValidDetection = false;
         detectedObject = null;
@@ -1049,6 +1064,18 @@ public class PlantInteraction : MonoBehaviour
                 ExitDetectionMode();
             }
             
+            // 如果进入种子模式，触发所有Animator的Seed动画
+            if (mode == DetectionModeType.Seed)
+            {
+                foreach (Animator animator in animatorList)
+                {
+                    if (animator != null && HasParameter(animator, "Seed"))
+                    {
+                        animator.SetTrigger("Seed");
+                    }
+                }
+            }
+            
             EnterDetectionMode(mode);
             return true;
         }
@@ -1325,5 +1352,17 @@ public class PlantInteraction : MonoBehaviour
     {
         // 取消订阅StartUI事件
         StartUI.OnStartUIVisibilityChanged -= HandleStartUIVisibilityChange;
+    }
+
+    private static bool HasParameter(Animator animator, string paramName)
+    {
+        if (animator == null) return false;
+        
+        foreach (AnimatorControllerParameter param in animator.parameters)
+        {
+            if (param.name == paramName)
+                return true;
+        }
+        return false;
     }
 } 
