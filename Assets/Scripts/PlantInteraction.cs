@@ -195,7 +195,7 @@ public class PlantInteraction : MonoBehaviour
             ToggleDetectionMode(DetectionModeType.Seed);
         }
         // 按键2插入障碍物
-        else if (Input.GetKeyDown(KeyCode.Alpha2) && darkCooldownTimer <= 0)
+        else if (Input.GetKeyDown(KeyCode.Alpha3) && darkCooldownTimer <= 0)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f, groundLayer))
@@ -206,7 +206,7 @@ public class PlantInteraction : MonoBehaviour
             }
         }
         // 按键4插入火 - 修改为GetKeyDown
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             Debug.Log("火");
             ToggleDetectionMode(DetectionModeType.Fire);
@@ -454,8 +454,8 @@ public class PlantInteraction : MonoBehaviour
     // 退出检测模式
     private void ExitDetectionMode()
     {
-        // 如果当前是种子模式，触发所有Animator的SeedHide动画
-        if (currentDetectionMode == DetectionModeType.Seed)
+        // 如果当前是种子模式或火模式，触发所有Animator的SeedHide动画
+        if (currentDetectionMode == DetectionModeType.Seed || currentDetectionMode == DetectionModeType.Fire)
         {
             foreach (Animator animator in animatorList)
             {
@@ -1058,14 +1058,29 @@ public class PlantInteraction : MonoBehaviour
         // 如果当前不在检测模式或者模式不同，则进入新的模式
         if (!isInDetectionMode || currentDetectionMode != mode)
         {
-            // 如果当前在检测模式但模式不同，先退出当前模式
-            if (isInDetectionMode && currentDetectionMode != mode)
+            // 特殊情况处理：如果是从火模式到种子模式或从种子模式到火模式的直接切换
+            bool isSpecialTransition = isInDetectionMode && 
+                ((currentDetectionMode == DetectionModeType.Fire && mode == DetectionModeType.Seed) || 
+                 (currentDetectionMode == DetectionModeType.Seed && mode == DetectionModeType.Fire));
+            
+            // 普通情况：如果当前在检测模式但模式不同，先退出当前模式
+            if (isInDetectionMode && currentDetectionMode != mode && !isSpecialTransition)
             {
                 ExitDetectionMode();
             }
+            else if (isSpecialTransition)
+            {
+                // 特殊切换不需要隐藏种子动画，只需要更新内部状态
+                isInDetectionMode = false;
+                hasValidDetection = false;
+                detectedObject = null;
+                
+                // 触发事件通知其他组件
+                OnDetectionModeChanged?.Invoke(false, currentDetectionMode);
+            }
             
-            // 如果进入种子模式，触发所有Animator的Seed动画
-            if (mode == DetectionModeType.Seed)
+            // 如果进入种子模式或火模式，触发所有Animator的Seed动画
+            if (mode == DetectionModeType.Seed || mode == DetectionModeType.Fire)
             {
                 foreach (Animator animator in animatorList)
                 {

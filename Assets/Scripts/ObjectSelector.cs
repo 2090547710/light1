@@ -29,7 +29,7 @@ public class ObjectSelector : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha3))
+        if (Input.GetKeyDown(KeyCode.Alpha4))
         {
             // 只使用射线检测选择
             TryRaycastSelection();
