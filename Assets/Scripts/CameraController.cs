@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
+    // 添加单例
+    public static CameraController Instance;
+    
     public Transform target;       // 要围绕的目标物体
     public float rotationSpeed = 5f;
     public float zoomSpeed = 5f;
@@ -12,6 +15,9 @@ public class CameraController : MonoBehaviour
     public float scrollValue; // 新增显示scroll值的公开属性
     public float fixedAngleWithXZ = 45f; // 摄像机-玩家连线与XZ平面的固定夹角
     public bool useFixedAngle = true; // 是否使用固定夹角模式
+    
+    // 新增变量控制右键是否启用
+    public bool rightMouseEnabled = true;
     
     // 新增变量，用于处理窗口焦点变化
     private bool hasFocus = true;
@@ -29,10 +35,39 @@ public class CameraController : MonoBehaviour
     private const string ROTATION_Z_KEY = "CameraRotationZ";
     private const string ZOOM_KEY = "CameraZoom";
 
+    private void Awake()
+    {
+        // 设置单例
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        
+    }
+
+    void OnEnable()
+    {
+        // 注册PlantInteraction的事件
+        PlantInteraction.OnDetectionModeChanged += HandleDetectionModeChanged;
+    }
+
+    void OnDisable()
+    {
+        // 取消注册PlantInteraction的事件
+        PlantInteraction.OnDetectionModeChanged -= HandleDetectionModeChanged;
+    }
+
     void Start()
     {
         // 加载保存的相机设置
         LoadCameraSettings();
+    }
+
+    // 处理检测模式变化的方法
+    private void HandleDetectionModeChanged(bool isInDetectionMode, PlantInteraction.DetectionModeType mode)
+    {
+        // 当进入检测模式时禁用右键，退出检测模式时启用右键
+        rightMouseEnabled = !isInDetectionMode;
     }
 
     void OnApplicationFocus(bool focusStatus)
@@ -47,7 +82,8 @@ public class CameraController : MonoBehaviour
         if(target==null){
             return;
         }
-        if (Input.GetMouseButton(1))
+        // 修改为检查rightMouseEnabled
+        if (Input.GetMouseButton(1) && rightMouseEnabled)
         {
             if (useFixedAngle)
             {

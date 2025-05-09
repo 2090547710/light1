@@ -93,6 +93,9 @@ public class PlantInteraction : MonoBehaviour
     [Header("动画控制")]
     public List<Animator> animatorList = new List<Animator>(); // 添加Animator列表
 
+    // 添加一个新的布尔变量来跟踪是否正在退出检测模式
+    private bool isExitingDetectionMode = false;
+
     private void Awake()
     {
         // 设置单例
@@ -151,6 +154,16 @@ public class PlantInteraction : MonoBehaviour
             // 执行射线检测
             PerformDetection();
             
+            // 如果按下右键且不在退出过程中，退出当前检测模式
+            if (Input.GetMouseButtonDown(1) && !isExitingDetectionMode)
+            {
+                isExitingDetectionMode = true; // 设置标志位
+                PlayExitAnimation(currentDetectionMode);
+                
+                StartCoroutine(DelayedExitDetectionMode(0.5f));
+                return;
+            }
+            
             // 如果按下左键且有有效检测
             if (Input.GetMouseButtonDown(0) && hasValidDetection)
             {
@@ -162,10 +175,10 @@ public class PlantInteraction : MonoBehaviour
                 }
                 
                 ExecuteActionBasedOnMode();
-                // 延迟0.1秒退出检测状态
+                // 设置退出标志位并延迟0.1秒退出检测状态
+                isExitingDetectionMode = true;
                 StartCoroutine(DelayedExitDetectionMode(0.1f));
             }
-
         }
         // 使用if-else if结构确保每帧只响应一个按键
             
@@ -237,24 +250,24 @@ public class PlantInteraction : MonoBehaviour
         switch (mode)
         {
             case DetectionModeType.Dig:
-                Debug.Log("进入铲土模式，点击左键铲除植物");
-                MessageManager.instance.SendMessage("进入铲土模式，点击左键铲除植物", PlayerPathfinding.Instance.transform, MessageType.Auto, 3f);
+                Debug.Log("左键点击植物铲土，右键退出噼");
+                MessageManager.instance.SendMessage("左键点击植物铲土，右键退出噼", PlayerPathfinding.Instance.transform, MessageType.Auto, 1f);
                 break;
             case DetectionModeType.Water:
-                Debug.Log("进入浇水模式，点击左键浇水");
-                MessageManager.instance.SendMessage("进入浇水模式，点击左键浇水", PlayerPathfinding.Instance.transform, MessageType.Auto, 3f);
+                Debug.Log("左键点击植物浇水，右键退出噼");
+                MessageManager.instance.SendMessage("左键点击植物浇水，右键退出噼", PlayerPathfinding.Instance.transform, MessageType.Auto, 1f);
                 break;
             case DetectionModeType.Seed:
-                Debug.Log("进入种子模式，点击左键种植");
-                MessageManager.instance.SendMessage("进入种子模式，点击左键种植", PlayerPathfinding.Instance.transform, MessageType.Auto, 3f);
+                Debug.Log("左键点击地面种植种子，右键退出噼");
+                MessageManager.instance.SendMessage("左键点击地面种植种子，右键退出噼", PlayerPathfinding.Instance.transform, MessageType.Auto, 1f);
                 break;
             case DetectionModeType.Fire:
-                Debug.Log("进入火模式，点击左键点火");
-                MessageManager.instance.SendMessage("进入火模式，点击左键点火", PlayerPathfinding.Instance.transform, MessageType.Auto, 3f);
+                Debug.Log("左键点击地面种植火，右键退出噼");
+                MessageManager.instance.SendMessage("左键点击地面种植火，右键退出噼", PlayerPathfinding.Instance.transform, MessageType.Auto, 1f);
                 break;
             case DetectionModeType.Info:
-                Debug.Log("进入信息查看模式，点击左键查看信息");
-                MessageManager.instance.SendMessage("进入信息查看模式，点击左键查看信息", PlayerPathfinding.Instance.transform, MessageType.Auto, 3f);
+                Debug.Log("左键点击植物查看信息，右键退出噼");
+                MessageManager.instance.SendMessage("左键点击植物查看信息，右键退出噼", PlayerPathfinding.Instance.transform, MessageType.Auto, 1f);
                 break;
         }
         
@@ -457,10 +470,10 @@ public class PlantInteraction : MonoBehaviour
     // 退出检测模式
     private void ExitDetectionMode()
     {
-        
         isInDetectionMode = false;
         hasValidDetection = false;
         detectedObject = null;
+        isExitingDetectionMode = false; // 重置标志位
         Debug.Log($"退出{GetModeName(currentDetectionMode)}模式");
         // 触发事件通知其他组件
         OnDetectionModeChanged?.Invoke(false, currentDetectionMode);
@@ -1041,18 +1054,26 @@ public class PlantInteraction : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         ExitDetectionMode();
+        isExitingDetectionMode = false; // 重置标志位
     }
 
 
     // 检测模式开关切换方法 - 可以从外部调用
     public bool ToggleDetectionMode(DetectionModeType mode)
     {
+        // 如果正在退出检测模式，直接返回false
+        if (isExitingDetectionMode)
+            return false;
+        
         // 如果当前不在检测模式或者模式不同，则进入新的模式
         if (!isInDetectionMode || currentDetectionMode != mode)
         {
             // 如果当前在检测模式但模式不同，先播放当前模式的退出动画
             if (isInDetectionMode && currentDetectionMode != mode)
             {
+                // 设置标志位
+                isExitingDetectionMode = true;
+                
                 // 根据当前模式播放对应的退出动画
                 PlayExitAnimation(currentDetectionMode);
                 
@@ -1078,6 +1099,8 @@ public class PlantInteraction : MonoBehaviour
         // 如果当前已在指定模式，则退出
         else
         {
+            // 设置标志位
+            isExitingDetectionMode = true;
             // 播放退出动画
             PlayExitAnimation(currentDetectionMode);
             
@@ -1475,6 +1498,7 @@ public class PlantInteraction : MonoBehaviour
     private IEnumerator DelayedEnterMode(DetectionModeType mode, float delay)
     {
         yield return new WaitForSeconds(delay);
+        isExitingDetectionMode = false; // 重置标志位
         EnterDetectionMode(mode);
     }
 } 
