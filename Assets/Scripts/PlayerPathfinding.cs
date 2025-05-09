@@ -56,6 +56,15 @@ public class PlayerPathfinding : MonoBehaviour
     
     public static PlayerPathfinding Instance { get; private set; }
 
+    [Header("表情设置")]
+    public Transform expressionTransform; // 表情对象的Transform引用
+    public float expressionFixedZOffset = -0.01f; // 相对摄像机的固定Z轴偏移
+    private Vector3 lastMoveDirection; // 存储最后的移动方向
+    private Vector3 expressionDefaultOffset; // 表情的默认偏移
+    public float expressionLookIntensity = 0.2f; // 表情看向移动方向的强度
+    public float expressionSmoothSpeed = 5f; // 表情恢复中心位置的平滑速度
+    private Vector3 currentExpressionOffset; // 当前表情偏移值
+
     private void Awake()
     {
         Instance = this;
@@ -63,6 +72,13 @@ public class PlayerPathfinding : MonoBehaviour
         InsertToQuadTree(); // 初始插入
 
         stoppingDistance=quadTree.MinNodeSize.x/2-0.05f;
+        
+        // 保存表情的默认位置偏移（相对于父对象）
+        if (expressionTransform != null)
+        {
+            expressionDefaultOffset = expressionTransform.localPosition;
+            currentExpressionOffset = expressionDefaultOffset; // 初始化当前偏移
+        }
         
         // 初始化着色器参数
         UpdateShaderParameters();
@@ -97,6 +113,9 @@ public class PlayerPathfinding : MonoBehaviour
         // 更新当前玩家节点引用
         currentPlayerNode = quadTree.FindLeafNode(transform.position);
         
+        // 更新表情朝向
+        UpdateExpressionLook();
+        
         // 只有在非检测模式下才处理左键点击
         if (!isDetectionModeActive && Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
@@ -109,6 +128,36 @@ public class PlayerPathfinding : MonoBehaviour
             // 处理WASD键盘输入
             HandleKeyboardInput();
         }
+    }
+    
+    // 新增：更新表情朝向的方法
+    private void UpdateExpressionLook()
+    {
+        if (expressionTransform == null) return;
+        
+        // 获取相机方向
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null) return;
+        
+        // 计算目标偏移
+        Vector3 targetOffset = expressionDefaultOffset;
+        
+        // 如果有移动方向，调整表情的偏移
+        if (lastMoveDirection != Vector3.zero)
+        {
+            // 将世界空间的移动方向转换为相对于相机的方向
+            Vector3 viewportDirection = mainCamera.WorldToViewportPoint(transform.position + lastMoveDirection) - mainCamera.WorldToViewportPoint(transform.position);
+            // 应用强度系数并添加到偏移量
+            targetOffset.x += viewportDirection.x * expressionLookIntensity;
+            targetOffset.y += viewportDirection.y * expressionLookIntensity;
+        }
+        
+        // 平滑过渡到目标偏移
+        currentExpressionOffset = Vector3.Lerp(currentExpressionOffset, targetOffset, Time.deltaTime * expressionSmoothSpeed);
+        
+        // 设置表情的位置，保持z轴为固定值
+        currentExpressionOffset.z = expressionFixedZOffset;
+        expressionTransform.localPosition = currentExpressionOffset;
     }
     
     // 处理键盘WASD输入
@@ -133,6 +182,9 @@ public class PlayerPathfinding : MonoBehaviour
             
             // 计算移动方向
             Vector3 moveDirection = (cameraForward * vertical + cameraRight * horizontal).normalized;
+            
+            // 保存最后的移动方向用于表情控制
+            lastMoveDirection = moveDirection;
             
             // 计算目标位置
             Vector3 targetPosition = transform.position + moveDirection * keyboardMoveSpeed * Time.deltaTime;
@@ -170,6 +222,11 @@ public class PlayerPathfinding : MonoBehaviour
                     }
                 }
             }
+        }
+        else
+        {
+            // 当没有输入时，重置移动方向
+            lastMoveDirection = Vector3.zero;
         }
     }
     
@@ -288,7 +345,6 @@ public class PlayerPathfinding : MonoBehaviour
             UpdatePlayerHeight();
             
             Vector3 targetPos = currentPath[currentPathIndex];
-            // 添加中断检查点
             
             // 移除了距离检查循环，改为每帧移动一次
             float step = moveSpeed * Time.deltaTime;
@@ -301,6 +357,9 @@ public class PlayerPathfinding : MonoBehaviour
             Vector3 direction = targetPos - transform.position;
             if (direction != Vector3.zero)
             {
+                // 保存移动方向用于表情控制
+                lastMoveDirection = direction.normalized;
+                
                 // 计算目标旋转
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
                 
@@ -330,7 +389,8 @@ public class PlayerPathfinding : MonoBehaviour
             yield return null;
         }
         
-        // 路径结束后重置协程引用
+        // 路径结束后重置方向和协程引用
+        lastMoveDirection = Vector3.zero;
         moveCoroutine = null;
     }
 

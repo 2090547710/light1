@@ -385,6 +385,9 @@ MonoBehaviour:
   baseHeight: 1.8
   keyboardMoveSpeed: 5
   maxHeightDifference: 0.01
+  expressionTransform: {fileID: 251579978915965405}
+  expressionFixedZOffset: -0.01
+  expressionLookIntensity: 5
 --- !u!114 &4471405134082509040
 MonoBehaviour:
   m_ObjectHideFlags: 0
