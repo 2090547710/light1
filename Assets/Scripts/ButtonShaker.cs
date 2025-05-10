@@ -24,6 +24,13 @@ public class ButtonShaker : MonoBehaviour
     [Tooltip("触发抖动的键盘按键")]
     public KeyCode triggerKey = KeyCode.None;
     
+    [Header("自动抖动设置")]
+    [Tooltip("是否启用自动抖动")]
+    public bool enableAutoShake = false;
+    
+    [Tooltip("自动抖动间隔时间(秒)")]
+    public float autoShakeInterval = 3f;
+    
     // 按钮组件引用
     private Button button;
     // 按钮的RectTransform
@@ -32,6 +39,8 @@ public class ButtonShaker : MonoBehaviour
     private Vector2 originalPosition;
     // 是否正在抖动
     private bool isShaking = false;
+    // 自动抖动计时器
+    private float autoShakeTimer = 0f;
     
     void Awake()
     {
@@ -115,6 +124,31 @@ public class ButtonShaker : MonoBehaviour
         {
             StartShake();
         }
+        
+        // 自动抖动逻辑
+        if (enableAutoShake && !isShaking)
+        {
+            autoShakeTimer += Time.deltaTime;
+            if (autoShakeTimer >= autoShakeInterval)
+            {
+                autoShakeTimer = 0f;
+                StartShake();
+            }
+        }
+    }
+    
+    // 切换自动抖动状态
+    public void ToggleAutoShake()
+    {
+        enableAutoShake = !enableAutoShake;
+        autoShakeTimer = 0f;
+    }
+    
+    // 设置自动抖动状态
+    public void SetAutoShake(bool enabled)
+    {
+        enableAutoShake = enabled;
+        autoShakeTimer = 0f;
     }
 
     private void OnDestroy()

@@ -58,7 +58,10 @@ public class MessageDisplay : MonoBehaviour
     [SerializeField] private float fadeTime = 0.5f;
     [SerializeField] private Image backgroundImage;
     [SerializeField] private Button closeButton;
-    [SerializeField]private TMP_Text textComponent;
+    [SerializeField] private TMP_Text textComponent;
+    [SerializeField] private float minClickMessageWidth = 100f;  // 点击类消息最小宽度
+    [SerializeField] private float minClickMessageHeight = 50f;  // 点击类消息最小高度
+    [SerializeField] private ButtonShaker buttonShaker;  // 添加ButtonShaker引用
     
     private CanvasGroup canvasGroup;
     private Queue<MessageEvent> messageQueue = new Queue<MessageEvent>();
@@ -113,9 +116,23 @@ public class MessageDisplay : MonoBehaviour
         // 初始时隐藏
         canvasGroup.alpha = 0;
         
-        // 初始时按钮不可交互且不可见
         closeButton.interactable = false;
-        closeButton.gameObject.SetActive(false);
+
+        // 获取ButtonShaker组件
+        if (buttonShaker == null)
+        {
+            buttonShaker = GetComponent<ButtonShaker>();
+            if (buttonShaker == null)
+            {
+                buttonShaker = gameObject.AddComponent<ButtonShaker>();
+            }
+        }
+        
+        // 初始时禁用自动抖动
+        if (buttonShaker != null)
+        {
+            buttonShaker.SetAutoShake(false);
+        }
     }
     
     private void OnEnable()
@@ -252,9 +269,15 @@ public class MessageDisplay : MonoBehaviour
             UpdateBackgroundSize();
         }
         
-        // 关闭按钮不可交互且隐藏(Auto类型)
+        // 显示按钮但设置为不可交互(Auto类型)
+        closeButton.gameObject.SetActive(true);
         closeButton.interactable = false;
-        closeButton.gameObject.SetActive(false);
+        
+        // 确保禁用自动抖动
+        if (buttonShaker != null)
+        {
+            buttonShaker.SetAutoShake(false);
+        }
         
         // 淡入
         float startTime = Time.time;
@@ -314,6 +337,12 @@ public class MessageDisplay : MonoBehaviour
             // 根据消息类型设置关闭按钮的可交互性和可见性
             closeButton.interactable = currentMessage.Type == MessageType.Click;
             closeButton.gameObject.SetActive(currentMessage.Type == MessageType.Click);
+            
+            // 如果是Click类型消息，启用自动抖动
+            if (currentMessage.Type == MessageType.Click && buttonShaker != null)
+            {
+                buttonShaker.SetAutoShake(true);
+            }
             
             // 淡入
             float startTime = Time.time;
@@ -378,8 +407,8 @@ public class MessageDisplay : MonoBehaviour
             // 为点击类型的消息，确保背景足够大以容纳关闭按钮
             if (currentMessage != null && currentMessage.Type == MessageType.Click)
             {
-                backgroundWidth = Mathf.Max(backgroundWidth, 100);  // 确保最小宽度
-                backgroundHeight = Mathf.Max(backgroundHeight, 50); // 确保最小高度
+                backgroundWidth = Mathf.Max(backgroundWidth, minClickMessageWidth);  // 使用属性
+                backgroundHeight = Mathf.Max(backgroundHeight, minClickMessageHeight); // 使用属性
             }
             
             // 更新背景图像尺寸
@@ -438,6 +467,12 @@ public class MessageDisplay : MonoBehaviour
         {
             closeButton.interactable = false;
             closeButton.gameObject.SetActive(false);
+        }
+        
+        // 禁用自动抖动
+        if (buttonShaker != null)
+        {
+            buttonShaker.SetAutoShake(false);
         }
     }
 }
