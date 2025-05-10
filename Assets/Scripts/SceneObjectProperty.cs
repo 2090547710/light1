@@ -61,7 +61,6 @@ public class SceneObjectProperty : MonoBehaviour
     // 交互方法
     public void Interact()
     {
-
         // 触发交互事件
         onInteract?.Invoke();
             
@@ -70,17 +69,53 @@ public class SceneObjectProperty : MonoBehaviour
         {
             case SceneObjectType.BeginPoint:
                 Debug.Log("与开始点交互");
-                // 在这里添加开始点特定逻辑
+
                 LevelSelectUI.Instance.LoadPreviousLevel();
+            
                 break;
                     
             case SceneObjectType.EndPoint:
                 Debug.Log("与结束点交互");
-                // 在这里添加结束点特定逻辑
-                LevelSelectUI.Instance.CompleteAndLoadNextLevel();
+                
+                // 找到最远的终点
+                float farthestDistance = 0f;
+                bool isFarthest = true;
+                
+                if (GameManager.Instance != null && GameManager.Instance.endPoints.Count > 0)
+                {
+                    // 遍历所有终点，比较距离
+                    foreach (GameObject endPoint in GameManager.Instance.endPoints)
+                    {
+                        if (endPoint != null && endPoint.gameObject != this.gameObject)
+                        {
+                            float distance = Vector3.Distance(transform.position, endPoint.transform.position);
+                            if (distance > farthestDistance)
+                            {
+                                farthestDistance = distance;
+                            }
+                            
+                            // 如果有任何终点比当前终点更远，则当前终点不是最远的
+                            if (Vector3.Distance(transform.position, GameManager.Instance.beginPoint.transform.position) 
+                                < Vector3.Distance(endPoint.transform.position, GameManager.Instance.beginPoint.transform.position))
+                            {
+                                isFarthest = false;
+                            }
+                        }
+                    }
+                }
+                
+                // 如果是最远的终点，完成并加载下一关
+                if (isFarthest)
+                {
+                    LevelSelectUI.Instance.CompleteAndLoadNextLevel();
+                }
+                // 否则只重新开始当前关卡
+                else
+                {
+                    LevelSelectUI.Instance.RestartCurrentLevel();
+                }
                 break;
         }
-        
     }
     
  

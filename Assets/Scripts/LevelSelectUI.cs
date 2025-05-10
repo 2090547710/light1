@@ -607,8 +607,11 @@ public class LevelSelectUI : MonoBehaviour
     // 关卡失败方法
     public void OnLevelFailed()
     {
-        // 重启当前关卡
-        RestartCurrentLevel();
+        // 开始新游戏
+        // 创建新的存档数据
+        CreateNewSaveData();
+        // 加载第一关
+        LoadLevel(0);
         // 显示失败消息（可选，根据需求添加UI显示）
         MessageManager.instance.SendMessage("时间用完了噼！", PlayerPathfinding.Instance.transform, MessageType.Auto, 1f);
     }

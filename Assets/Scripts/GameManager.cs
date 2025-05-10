@@ -13,8 +13,8 @@ public class GameManager : MonoBehaviour
     public Vector2 size=new Vector2(100,100);  
     public Vector2 center=Vector2.zero;
     public GameObject prefab; 
-    public GameObject beginPoint; // 新增开始点对象引用
-    public GameObject endPoint; // 新增结束点对象引用
+    public GameObject beginPoint; // 开始点对象引用
+    public List<GameObject> endPoints = new List<GameObject>(); // 修改为多个终点引用
 
     void Awake()
     {

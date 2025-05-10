@@ -51,7 +51,8 @@ Shader "Custom/SquareMinimapUnlit"
             uniform float4 _HeightmapParams;
             uniform float3 _PlayerWorldPos;
             uniform float3 _BeginPointPos;
-            uniform float3 _EndPointPos;
+            uniform float3 _EndPointPositions[64];
+            uniform int _EndPointCount;
             uniform float _ShowBeginPoint;
             uniform float _ShowEndPoint;
             
@@ -302,26 +303,29 @@ Shader "Custom/SquareMinimapUnlit"
                 
                 // 计算终点在地图上的位置（如果激活）
                 if (_ShowEndPoint > 0.5) {
-                    // 计算终点相对于玩家的偏移
-                    float2 endPos = float2(_EndPointPos.x, _EndPointPos.z);
-                    float2 playerPos = float2(_PlayerWorldPos.x, _PlayerWorldPos.z);
-                    float2 endPointOffset = endPos - playerPos;
-                    
-                    // 应用旋转
-                    endPointOffset = RotatePoint(endPointOffset, float2(0, 0), rotationRad);
-                    
-                    // 转换为UV坐标偏移
-                    endPointOffset = endPointOffset / adjustedMapSize / _MapScale;
-                    float2 endPointUV = float2(0.5, 0.5) + endPointOffset;
-                    
-                    // 检查终点是否在地图范围内
-                    if (abs(endPointUV.x - 0.5) < 0.5 && abs(endPointUV.y - 0.5) < 0.5) {
-                        // 绘制终点方块（带描边）
-                        if (IsInsideSquareOutline(i.uv, endPointUV, _PointSize/25.0, (_PointSize+_PointOutlineSize)/25.0)) {
-                            return _PointOutlineColor;
-                        }
-                        if (IsInsideSquare(i.uv, endPointUV, _PointSize/25.0)) {
-                            return _EndPointColor;
+                    // 遍历所有终点
+                    for (int e = 0; e < _EndPointCount; e++) {
+                        // 计算终点相对于玩家的偏移
+                        float2 endPos = float2(_EndPointPositions[e].x, _EndPointPositions[e].z);
+                        float2 playerPos = float2(_PlayerWorldPos.x, _PlayerWorldPos.z);
+                        float2 endPointOffset = endPos - playerPos;
+                        
+                        // 应用旋转
+                        endPointOffset = RotatePoint(endPointOffset, float2(0, 0), rotationRad);
+                        
+                        // 转换为UV坐标偏移
+                        endPointOffset = endPointOffset / adjustedMapSize / _MapScale;
+                        float2 endPointUV = float2(0.5, 0.5) + endPointOffset;
+                        
+                        // 检查终点是否在地图范围内
+                        if (abs(endPointUV.x - 0.5) < 0.5 && abs(endPointUV.y - 0.5) < 0.5) {
+                            // 绘制终点方块（带描边）
+                            if (IsInsideSquareOutline(i.uv, endPointUV, _PointSize/25.0, (_PointSize+_PointOutlineSize)/25.0)) {
+                                return _PointOutlineColor;
+                            }
+                            if (IsInsideSquare(i.uv, endPointUV, _PointSize/25.0)) {
+                                return _EndPointColor;
+                            }
                         }
                     }
                 }

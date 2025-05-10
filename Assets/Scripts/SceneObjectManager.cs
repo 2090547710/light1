@@ -30,13 +30,19 @@ public class SceneObjectManager : MonoBehaviour
         }
     }
     
+    void Start()
+    {
+        // 预先分配足够大的数组，参考PlantManager中的做法
+        List<Vector4> initialArray = new List<Vector4>(new Vector4[64]);
+        Shader.SetGlobalVectorArray("_EndPointPositions", initialArray);
+    }
+    
     void Update()
     {
         // 将起点和终点坐标传递给shader
         if (GameManager.Instance != null)
         {
             bool hasBeginPoint = GameManager.Instance.beginPoint != null;
-            bool hasEndPoint = GameManager.Instance.endPoint != null;
             
             // 起点坐标
             if (hasBeginPoint)
@@ -50,15 +56,33 @@ public class SceneObjectManager : MonoBehaviour
                 Shader.SetGlobalFloat("_ShowBeginPoint", 0.0f);
             }
             
-            // 终点坐标
-            if (hasEndPoint)
+            // 终点坐标 - 修改为支持多个终点
+            if (GameManager.Instance.endPoints.Count > 0)
             {
-                Vector3 endPos = GameManager.Instance.endPoint.transform.position;
-                Shader.SetGlobalVector("_EndPointPos", endPos);
+                // 最多支持64个终点
+                int endPointCount = Mathf.Min(GameManager.Instance.endPoints.Count, 64);
+                
+                // 创建Vector4数组而不是Vector3数组
+                Vector4[] endPositions = new Vector4[endPointCount];
+                
+                for (int i = 0; i < endPointCount; i++)
+                {
+                    if (GameManager.Instance.endPoints[i] != null)
+                    {
+                        // 将Vector3转换为Vector4，w分量设为0
+                        Vector3 pos = GameManager.Instance.endPoints[i].transform.position;
+                        endPositions[i] = new Vector4(pos.x, pos.y, pos.z, 0);
+                    }
+                }
+                
+                // 设置终点位置数组
+                Shader.SetGlobalVectorArray("_EndPointPositions", endPositions);
+                Shader.SetGlobalInt("_EndPointCount", endPointCount);
                 Shader.SetGlobalFloat("_ShowEndPoint", 1.0f);
             }
             else
             {
+                Shader.SetGlobalInt("_EndPointCount", 0);
                 Shader.SetGlobalFloat("_ShowEndPoint", 0.0f);
             }
         }
@@ -199,10 +223,10 @@ public class SceneObjectManager : MonoBehaviour
                     break;
                 case SceneObjectType.EndPoint:
                     newObject.layer = 10;
-                    // 更新GameManager中的结束点引用
+                    // 更新GameManager中的终点引用
                     if (GameManager.Instance != null)
                     {
-                        GameManager.Instance.endPoint = newObject;
+                        GameManager.Instance.endPoints.Add(newObject);
                     }
                     break;
                 case SceneObjectType.Player:

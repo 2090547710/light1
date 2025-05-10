@@ -662,7 +662,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -404, y: -445}
+  m_AnchoredPosition: {x: -685, y: -445}
   m_SizeDelta: {x: 160, y: 190}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &126764890
@@ -1045,6 +1045,7 @@ GameObject:
   - component: {fileID: 245760286}
   - component: {fileID: 245760285}
   - component: {fileID: 245760284}
+  - component: {fileID: 245760287}
   m_Layer: 5
   m_Name: "\u4FE1\u606F\u67E5\u770B"
   m_TagString: Untagged
@@ -1069,8 +1070,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 284, y: -476}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: 327, y: -445}
+  m_SizeDelta: {x: 160, y: 190}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &245760284
 MonoBehaviour:
@@ -1091,7 +1092,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -1136,8 +1137,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 2a5a6a11062996047a20b34d5e710fe6, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -1154,6 +1155,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 245760282}
   m_CullTransparentMesh: 1
+--- !u!114 &245760287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245760282}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99502fc98069415439a1f3006c16ab47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shakeDirection: {x: 1, y: 0}
+  shakeAmount: 2
+  shakeCount: 1
+  shakeDuration: 0.3
+  enableKeyboardTrigger: 1
+  triggerKey: 113
 --- !u!1 &252152461
 GameObject:
   m_ObjectHideFlags: 0
@@ -1341,6 +1360,7 @@ GameObject:
   - component: {fileID: 297087578}
   - component: {fileID: 297087577}
   - component: {fileID: 297087579}
+  - component: {fileID: 297087580}
   m_Layer: 5
   m_Name: "\u5149\u7167\u8303\u56F4\u663E\u793A"
   m_TagString: Untagged
@@ -1365,8 +1385,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -699, y: -334}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: -875, y: -246}
+  m_SizeDelta: {x: 180, y: 170}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &297087577
 MonoBehaviour:
@@ -1388,8 +1408,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 4b2a317026b3f79459d3898dd4bac102, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -1425,7 +1445,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -1450,6 +1470,24 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &297087580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297087575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99502fc98069415439a1f3006c16ab47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shakeDirection: {x: 0, y: 1}
+  shakeAmount: 2
+  shakeCount: 1
+  shakeDuration: 0.3
+  enableKeyboardTrigger: 1
+  triggerKey: 122
 --- !u!1 &320225766
 GameObject:
   m_ObjectHideFlags: 0
@@ -1779,7 +1817,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 811, y: 379}
+  m_AnchoredPosition: {x: 811, y: 182}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &404813993
@@ -1894,7 +1932,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -154, y: -445}
+  m_AnchoredPosition: {x: -404, y: -445}
   m_SizeDelta: {x: 160, y: 190}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &407237815
@@ -2104,7 +2142,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &419529359
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2800,7 +2838,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &613832706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3267,6 +3305,7 @@ MonoBehaviour:
   fixedAngleWithXZ: 45
   useFixedAngle: 0
   rightMouseEnabled: 1
+  scrollWheelEnabled: 1
 --- !u!81 &668929552
 AudioListener:
   m_ObjectHideFlags: 0
@@ -3627,6 +3666,8 @@ MonoBehaviour:
   panels:
   - {fileID: 2032257916}
   - {fileID: 277657506}
+  toggleButton: {fileID: 1211054305}
+  plantDatabaseUI: {fileID: 1292195683}
 --- !u!1 &786809036
 GameObject:
   m_ObjectHideFlags: 0
@@ -4139,7 +4180,7 @@ MonoBehaviour:
   center: {x: -50, y: -50}
   prefab: {fileID: 5540192311497395315, guid: dc7d33e851d9a1243a632ac428517299, type: 3}
   beginPoint: {fileID: 0}
-  endPoint: {fileID: 0}
+  endPoints: []
   objects:
   - {fileID: 0}
   queryBounds:
@@ -5009,7 +5050,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 484, y: -445}
+  m_AnchoredPosition: {x: 595, y: -445}
   m_SizeDelta: {x: 160, y: 190}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &933184743
@@ -5780,7 +5821,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1094882623
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6489,6 +6530,7 @@ GameObject:
   - component: {fileID: 1211054307}
   - component: {fileID: 1211054306}
   - component: {fileID: 1211054305}
+  - component: {fileID: 1211054308}
   m_Layer: 5
   m_Name: "Note\u56FE\u6807"
   m_TagString: Untagged
@@ -6513,8 +6555,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -692, y: -446}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: -875, y: -49}
+  m_SizeDelta: {x: 180, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1211054305
 MonoBehaviour:
@@ -6535,7 +6577,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -6559,19 +6601,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1211054306}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 786264025}
-        m_TargetAssemblyTypeName: SimpleAnimatorController, Assembly-CSharp
-        m_MethodName: ToggleAllPanels
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1211054306
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6592,8 +6622,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 30bc5c4aec3639348a464ee044eb3da1, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -6610,6 +6640,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1211054303}
   m_CullTransparentMesh: 1
+--- !u!114 &1211054308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1211054303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99502fc98069415439a1f3006c16ab47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shakeDirection: {x: 0, y: 1}
+  shakeAmount: 2
+  shakeCount: 1
+  shakeDuration: 0.3
+  enableKeyboardTrigger: 1
+  triggerKey: 9
 --- !u!1 &1222820821
 GameObject:
   m_ObjectHideFlags: 0
@@ -7008,14 +7056,14 @@ MonoBehaviour:
     seedMappingPath: PlantData/SeedMapping
     saveFilePath: Assets/Resources/test1.json
     plantDataSavePath: Assets/Resources/PlantsDataTest1.json
-    countdownDuration: 600
+    countdownDuration: 500
   - levelID: 1
     levelName: 2
     plantDatabasePath: PlantData/PlantDatabase
     seedMappingPath: PlantData/SeedMapping1
     saveFilePath: Assets/Resources/test2.json
     plantDataSavePath: Assets/Resources/PlantsDataTest1.json
-    countdownDuration: 600
+    countdownDuration: 500
   countdownTimer: {fileID: 1292195684}
   currentLevelNameText: {fileID: 401720404}
 --- !u!114 &1292195686
@@ -7057,6 +7105,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   toggleButton: {fileID: 297087579}
   buttonText: {fileID: 613832706}
+  showLightingSprite: {fileID: 21300000, guid: 96612e20d714db04989fea1555691a3f, type: 3}
+  hideLightingSprite: {fileID: 21300000, guid: 4b2a317026b3f79459d3898dd4bac102, type: 3}
 --- !u!1 &1294236494
 GameObject:
   m_ObjectHideFlags: 0
@@ -7094,7 +7144,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 744, y: -445}
+  m_AnchoredPosition: {x: 841, y: -445}
   m_SizeDelta: {x: 160, y: 190}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1294236496
@@ -9693,6 +9743,7 @@ GameObject:
   - component: {fileID: 2032855852}
   - component: {fileID: 2032855851}
   - component: {fileID: 2032855850}
+  - component: {fileID: 2032855853}
   m_Layer: 5
   m_Name: Esc
   m_TagString: Untagged
@@ -9717,8 +9768,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 788, y: 499}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: 788, y: 457}
+  m_SizeDelta: {x: 160, y: 170}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2032855850
 MonoBehaviour:
@@ -9739,7 +9790,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -9796,8 +9847,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: d5cd69a6ef5d5f14fa35b537d7494083, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -9814,6 +9865,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2032855848}
   m_CullTransparentMesh: 1
+--- !u!114 &2032855853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2032855848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99502fc98069415439a1f3006c16ab47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shakeDirection: {x: 1, y: 0}
+  shakeAmount: 2
+  shakeCount: 1
+  shakeDuration: 0.3
+  enableKeyboardTrigger: 1
+  triggerKey: 27
 --- !u!1 &2035601401
 GameObject:
   m_ObjectHideFlags: 0
@@ -9831,7 +9900,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2035601402
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10190,7 +10259,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 811, y: 442}
+  m_AnchoredPosition: {x: 811, y: 256}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2062106390

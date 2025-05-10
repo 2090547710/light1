@@ -50,7 +50,6 @@ MonoBehaviour:
   lightSourcesData: []
   lightSources: []
   interactionRadius: 2
-  canInteract: 1
   onInteract:
     m_PersistentCalls:
       m_Calls: []
