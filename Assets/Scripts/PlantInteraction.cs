@@ -346,7 +346,7 @@ public class PlantInteraction : MonoBehaviour
                         currentHit = digHit;
                         detectedObject = hitObject;
                         hasValidDetection = true;
-                        Debug.Log("检测到植物，点击左键铲除");
+                        Debug.Log("检测到植物，点击左键铲土");
                         break;
                     }
                 }
@@ -534,7 +534,7 @@ public class PlantInteraction : MonoBehaviour
         {
             FindAndRemoveSeed(detectedObject);
         }
-        else
+        else if (!isAnimationPlaying) // 确保没有动画正在播放
         {
             // 假设为植物对象（layer=13）
             GameObject hitObject = detectedObject;
@@ -546,7 +546,7 @@ public class PlantInteraction : MonoBehaviour
                 {
                     if (plant.currentStage == 1)
                     {
-                        RemovePlant(plant);
+                        ChangePlantSize(plant);
                         break;
                     }
                 }
