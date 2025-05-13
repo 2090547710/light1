@@ -418,7 +418,7 @@ static void SaveCompositeMenuItem()
         Shader.SetGlobalTexture("_CompositeMap", compositeRT);
     }
 
-    // 新增GPU处理方法带加减法参数
+    // 修改ProcessLightingGPU方法
     public static void ProcessLightingGPU(Lighting light, Bounds lightBounds, Texture2D heightMap, float lightHeight, bool isAdditive = true, float rotation = 0f)
     {
         if (instance.lightingComputeShader == null || compositeRT == null || heightMap == null)
@@ -438,47 +438,97 @@ static void SaveCompositeMenuItem()
         Vector3 min = lightBounds.center - lightBounds.extents;
         Vector3 max = lightBounds.center + lightBounds.extents;
         
-        // 修改UV范围计算
+        // 计算原始UV范围（未旋转）
         float uvMinX = (min.x - rootBounds.min.x) / rootBounds.size.x;
         float uvMaxX = (max.x - rootBounds.min.x) / rootBounds.size.x;
         float uvMinY = (min.z - rootBounds.min.z) / rootBounds.size.z;
         float uvMaxY = (max.z - rootBounds.min.z) / rootBounds.size.z;
         
-        // 保存原始UV值用于光照计算，不限制在[0,1]范围内
+        // 保存原始UV范围
         Vector4 lightBoundsRawParam = new Vector4(uvMinX, uvMinY, uvMaxX, uvMaxY);
         
-        // 现在再限制UV在[0,1]范围内，用于确定合成区域
-        uvMinX = Mathf.Clamp01(uvMinX);
-        uvMaxX = Mathf.Clamp01(uvMaxX);
-        uvMinY = Mathf.Clamp01(uvMinY);
-        uvMaxY = Mathf.Clamp01(uvMaxY);
+        // ======== 新增: 计算旋转后的包围盒 ========
+        float radians = rotation * Mathf.Deg2Rad;
+        float cos = Mathf.Cos(radians);
+        float sin = Mathf.Sin(radians);
         
-        Vector4 lightBoundsParam = new Vector4(uvMinX, uvMinY, uvMaxX, uvMaxY);
+        // 计算矩形的中心点
+        Vector2 center = new Vector2(
+            (uvMinX + uvMaxX) * 0.5f,
+            (uvMinY + uvMaxY) * 0.5f
+        );
+        
+        // 计算矩形的半尺寸
+        float halfWidth = (uvMaxX - uvMinX) * 0.5f;
+        float halfHeight = (uvMaxY - uvMinY) * 0.5f;
+        
+        // 计算四个角点
+        Vector2[] corners = new Vector2[4];
+        corners[0] = new Vector2(center.x - halfWidth, center.y - halfHeight); // 左下
+        corners[1] = new Vector2(center.x + halfWidth, center.y - halfHeight); // 右下
+        corners[2] = new Vector2(center.x + halfWidth, center.y + halfHeight); // 右上
+        corners[3] = new Vector2(center.x - halfWidth, center.y + halfHeight); // 左上
+        
+        // 对每个角点应用旋转
+        for (int i = 0; i < 4; i++)
+        {
+            Vector2 localPos = corners[i] - center;
+            Vector2 rotatedPos = new Vector2(
+                localPos.x * cos - localPos.y * sin,
+                localPos.x * sin + localPos.y * cos
+            );
+            corners[i] = rotatedPos + center;
+        }
+        
+        // 计算旋转后包围盒的边界
+        float rotatedMinX = float.MaxValue;
+        float rotatedMinY = float.MaxValue;
+        float rotatedMaxX = float.MinValue;
+        float rotatedMaxY = float.MinValue;
+        
+        foreach (var corner in corners)
+        {
+            rotatedMinX = Mathf.Min(rotatedMinX, corner.x);
+            rotatedMinY = Mathf.Min(rotatedMinY, corner.y);
+            rotatedMaxX = Mathf.Max(rotatedMaxX, corner.x);
+            rotatedMaxY = Mathf.Max(rotatedMaxY, corner.y);
+        }
+        
+        // 使用扩展后的包围盒边界
+        Vector4 lightBoundsParam = new Vector4(rotatedMinX, rotatedMinY, rotatedMaxX, rotatedMaxY);
+        
+        // 限制在[0,1]范围内，用于确定合成区域
+        float clampedMinX = Mathf.Clamp01(rotatedMinX);
+        float clampedMaxX = Mathf.Clamp01(rotatedMaxX);
+        float clampedMinY = Mathf.Clamp01(rotatedMinY);
+        float clampedMaxY = Mathf.Clamp01(rotatedMaxY);
+        Vector4 clampedLightBoundsParam = new Vector4(clampedMinX, clampedMinY, clampedMaxX, clampedMaxY);
+        
         Vector4 rootBoundsParam = new Vector4(rootCenter.x, rootCenter.y, rootSize.x, rootSize.y);
         
         // 根据光源是否为障碍物决定使用的kernel
         int kernel = light.isObstacle ? kernelObstacle : kernelNormal;
         instance.lightingComputeShader.SetTexture(kernel, "_HeightMap", heightMap);
         instance.lightingComputeShader.SetTexture(kernel, "_CompositeMap", compositeRT);
-        instance.lightingComputeShader.SetVector("_LightBounds", lightBoundsParam);
+        // 使用扩展后的边界
+        instance.lightingComputeShader.SetVector("_LightBounds", clampedLightBoundsParam);
         instance.lightingComputeShader.SetVector("_RootBounds", rootBoundsParam);
         instance.lightingComputeShader.SetFloat("_IsObstacle", light.isObstacle ? 1 : 0);
         instance.lightingComputeShader.SetFloat("_LightHeight", lightHeight + centerHeight);
-        // 添加加减操作标记
         instance.lightingComputeShader.SetFloat("_IsAdditive", isAdditive ? 1 : 0);
-        // 新增：传递旋转角度参数
         instance.lightingComputeShader.SetFloat("_Rotation", rotation);
         
-        // ===== 计算合成区域（反向映射） =====
-        // compositeRT为正方形，尺寸为 compositeSize
+        // 计算合成区域（使用扩展后的边界）
         int compSize = compositeSize;
-        // 计算在合成图上对应光源UV区域的像素边界
-        int compositeOffsetX = Mathf.FloorToInt(lightBoundsParam.x * (compSize - 1));
-        int compositeOffsetY = Mathf.FloorToInt(lightBoundsParam.y * (compSize - 1));
-        int compositeXEnd = Mathf.CeilToInt(lightBoundsParam.z * (compSize - 1));
-        int compositeYEnd = Mathf.CeilToInt(lightBoundsParam.w * (compSize - 1));
+        int compositeOffsetX = Mathf.FloorToInt(clampedLightBoundsParam.x * (compSize - 1));
+        int compositeOffsetY = Mathf.FloorToInt(clampedLightBoundsParam.y * (compSize - 1));
+        int compositeXEnd = Mathf.CeilToInt(clampedLightBoundsParam.z * (compSize - 1));
+        int compositeYEnd = Mathf.CeilToInt(clampedLightBoundsParam.w * (compSize - 1));
         int regionWidth = compositeXEnd - compositeOffsetX + 1;
         int regionHeight = compositeYEnd - compositeOffsetY + 1;
+        
+        // 传递原始UV范围（用于在着色器中正确映射回原始纹理）
+        instance.lightingComputeShader.SetVector("_LightBoundsRaw", lightBoundsRawParam);
         
         // 将计算好的区域参数传递给Compute Shader
         instance.lightingComputeShader.SetInts("_CompositeOffset", new int[] { compositeOffsetX, compositeOffsetY });
@@ -487,9 +537,6 @@ static void SaveCompositeMenuItem()
         // 计算Dispatch所需的组数（每组16×16线程）
         int threadGroupsX = Mathf.CeilToInt(regionWidth / 16.0f);
         int threadGroupsY = Mathf.CeilToInt(regionHeight / 16.0f);
-        
-        // 发送原始UV值到Compute Shader
-        instance.lightingComputeShader.SetVector("_LightBoundsRaw", lightBoundsRawParam);
         
         // 派发计算
         instance.lightingComputeShader.Dispatch(kernel, threadGroupsX, threadGroupsY, 1);

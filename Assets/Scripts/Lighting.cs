@@ -74,7 +74,7 @@ public class Lighting : MonoBehaviour
     [SerializeField] private bool isDirty = true; // 默认为脏，确保首次应用
     public bool IsDirty => isDirty;
 
-    // 新增哈希表记录重叠的光源
+    // 新增字典记录重叠的光源
     [Header("重叠光源信息")]
     [SerializeField] private Dictionary<int, Lighting> overlappingLights = new Dictionary<int, Lighting>();
     
