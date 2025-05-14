@@ -71,8 +71,8 @@ public class ButtonShaker : MonoBehaviour
     {
         isShaking = true;
         
-        // 保存原始位置
-        originalPosition = rectTransform.anchoredPosition;
+        // 用于存储抖动的偏移量，而不是绝对位置
+        Vector2 shakeOffset = Vector2.zero;
         
         // 归一化抖动方向
         Vector2 direction = shakeDirection.normalized;
@@ -85,27 +85,43 @@ public class ButtonShaker : MonoBehaviour
             float elapsed = 0f;
             while (elapsed < timePerShake)
             {
+                // 获取当前位置作为基准
+                Vector2 basePosition = rectTransform.anchoredPosition - shakeOffset;
                 float t = elapsed / timePerShake;
                 float offset = Mathf.Sin(t * Mathf.PI) * shakeAmount;
-                rectTransform.anchoredPosition = originalPosition + direction * offset;
+                
+                // 计算新的偏移量
+                shakeOffset = direction * offset;
+                
+                // 应用位置 = 基础位置 + 抖动偏移
+                rectTransform.anchoredPosition = basePosition + shakeOffset;
+                
                 elapsed += Time.deltaTime;
                 yield return null;
             }
             
-            // 向反方向抖动回来
+            // 向反方向抖动
             elapsed = 0f;
             while (elapsed < timePerShake)
             {
+                // 获取当前位置作为基准
+                Vector2 basePosition = rectTransform.anchoredPosition - shakeOffset;
                 float t = elapsed / timePerShake;
                 float offset = Mathf.Sin(t * Mathf.PI) * shakeAmount;
-                rectTransform.anchoredPosition = originalPosition - direction * offset;
+                
+                // 计算新的偏移量
+                shakeOffset = -direction * offset;
+                
+                // 应用位置 = 基础位置 + 抖动偏移
+                rectTransform.anchoredPosition = basePosition + shakeOffset;
+                
                 elapsed += Time.deltaTime;
                 yield return null;
             }
         }
         
-        // 确保回到原始位置
-        rectTransform.anchoredPosition = originalPosition;
+        // 移除最后的偏移量
+        rectTransform.anchoredPosition -= shakeOffset;
         isShaking = false;
     }
 

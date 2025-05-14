@@ -384,7 +384,7 @@ MonoBehaviour:
   showPathfindingDebug: 0
   baseHeight: 1.2
   keyboardMoveSpeed: 5
-  maxHeightDifference: 0.3
+  maxHeightDifference: 0.35
   expressionTransform: {fileID: 251579978915965405}
   expressionFixedZOffset: -0.05
   expressionLookIntensity: 5

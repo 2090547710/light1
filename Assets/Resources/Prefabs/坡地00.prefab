@@ -48,11 +48,11 @@ MonoBehaviour:
   objectType: 1
   prefabPath: "Prefabs/\u5761\u573000"
   lightSourcesData:
-  - size: 7.9
+  - size: 8.7
     isObstacle: 1
     isSeed: 0
     lightHeight: 0
-    heightMap: {fileID: 2800000, guid: 720bab58ab96bb3439226c0b0cdf6fd4, type: 3}
+    heightMap: {fileID: 2800000, guid: a113e04f937c6b0419154570909091ef, type: 3}
     edgeHeightMap: {fileID: 0}
     rotation: 0
   lightSources: []
