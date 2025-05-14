@@ -1264,7 +1264,7 @@ public class QuadTree
     private bool IsHeightAccessible(QuadTreeNode from, QuadTreeNode to)
     {
         // 定义最大可攀爬高度差
-        float maxClimbableHeight = 0.01f; // 可以根据需要调整
+        float maxClimbableHeight = 0.3f; // 可以根据需要调整
         
         // 计算高度差
         float heightDifference = Mathf.Abs(from.Height - to.Height);

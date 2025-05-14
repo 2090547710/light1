@@ -77,12 +77,14 @@ public class Plant : MonoBehaviour
 
     public float growthTimer = 0f; // 生长计时器
     public float witherTimer = 0f; // 枯萎计时器
+
+    // 新增火光源检测相关字段
+    private float fireCheckTimer = 0f; // 火光源检测计时器
     #endregion
    
     #region Unity生命周期方法
     void Start()
     {
-         // 检查植物是否在火光源范围内
          //阶段0会直接生长为种子
         if(currentStage==0){
             plantID=0;
@@ -100,7 +102,6 @@ public class Plant : MonoBehaviour
             if (growthStages.Count > 0 && currentStage <= growthStages.Count)
             {
                 Grow();
-                CheckIfInFireLight();
             }
          }
         // 创建并设置名称显示
@@ -122,6 +123,14 @@ public class Plant : MonoBehaviour
             }
         }
         
+        // 使用定时器每1秒调用一次CheckIfInFireLight
+        fireCheckTimer += Time.deltaTime;
+        if (fireCheckTimer >= 1.0f)
+        {
+            CheckIfInFireLight();
+            fireCheckTimer = 0f;
+        }
+
         // 生长计时器
         if (currentStage > 0 && growthRate > 0 && currentStage<3)
         {

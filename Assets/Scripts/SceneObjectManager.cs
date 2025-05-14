@@ -205,16 +205,16 @@ public class SceneObjectManager : MonoBehaviour
             switch (property.objectType)
             {
                 case SceneObjectType.Map:
-                    newObject.layer = 8;
+                    SetLayerRecursively(newObject, 8);
                     break;
                 case SceneObjectType.Obstacle:
-                    newObject.layer = 7;
+                    SetLayerRecursively(newObject, 7);
                     break;
                 case SceneObjectType.Water:
-                    newObject.layer = 9;
+                    SetLayerRecursively(newObject, 9);
                     break;
                 case SceneObjectType.BeginPoint:
-                    newObject.layer = 11;
+                    SetLayerRecursively(newObject, 11);
                     // 更新GameManager中的开始点引用
                     if (GameManager.Instance != null)
                     {
@@ -222,7 +222,7 @@ public class SceneObjectManager : MonoBehaviour
                     }
                     break;
                 case SceneObjectType.EndPoint:
-                    newObject.layer = 10;
+                    SetLayerRecursively(newObject, 10);
                     // 更新GameManager中的终点引用
                     if (GameManager.Instance != null)
                     {
@@ -230,7 +230,7 @@ public class SceneObjectManager : MonoBehaviour
                     }
                     break;
                 case SceneObjectType.Player:
-                    newObject.layer = 11;
+                    SetLayerRecursively(newObject, 11);
                     break;
             }
             
@@ -265,6 +265,15 @@ public class SceneObjectManager : MonoBehaviour
         }
         
         sceneObjects.Clear();
+    }
+
+    private void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
+        {
+            SetLayerRecursively(child.gameObject, layer);
+        }
     }
 }
 

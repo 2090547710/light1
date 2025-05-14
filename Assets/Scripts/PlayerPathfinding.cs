@@ -49,7 +49,7 @@ public class PlayerPathfinding : MonoBehaviour
     // 新增键盘移动设置
     [Header("键盘移动设置")]
     public float keyboardMoveSpeed = 3f; // 键盘移动速度
-    public float maxHeightDifference = 0.01f; // 最大可行走高度差
+    public float maxHeightDifference = 0.3f; // 最大可行走高度差
 
     // 当前玩家所在节点
     private QuadTree.QuadTreeNode currentPlayerNode;
@@ -480,7 +480,7 @@ public class PlayerPathfinding : MonoBehaviour
             Vector3 newPosition = transform.position;
             newPosition.y = hit.point.y + baseHeight;
             transform.position = newPosition;
-            
+            UnityEngine.Debug.Log("更新玩家高度：" + newPosition.y);
             // 更新四叉树中的位置
             quadTree.Remove(playerObject);
             InsertToQuadTree();
