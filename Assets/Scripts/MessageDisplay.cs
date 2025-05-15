@@ -389,6 +389,12 @@ public class MessageDisplay : MonoBehaviour
             yield return null;
         }
         canvasGroup.alpha = 0f;
+        
+        // 如果alpha为0，禁用自身
+        if (canvasGroup.alpha == 0f)
+        {
+            gameObject.SetActive(false);
+        }
     }
     
     private void UpdateBackgroundSize()
