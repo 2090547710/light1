@@ -277,6 +277,9 @@ public class MessageDisplay : MonoBehaviour
             buttonShaker.SetAutoShake(false);
         }
         
+        // 自动消息不阻挡射线
+        canvasGroup.blocksRaycasts = false;
+        
         // 淡入
         float startTime = Time.time;
         while (Time.time < startTime + fadeTime)
@@ -341,6 +344,9 @@ public class MessageDisplay : MonoBehaviour
             {
                 buttonShaker.SetAutoShake(true);
             }
+            
+            // 点击消息打开射线阻挡
+            canvasGroup.blocksRaycasts = currentMessage.Type == MessageType.Click;
             
             // 淡入
             float startTime = Time.time;
@@ -455,6 +461,7 @@ public class MessageDisplay : MonoBehaviour
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 0;
+            canvasGroup.blocksRaycasts = false;
         }
         
         // 设置按钮为不可交互且不可见

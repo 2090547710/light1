@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 8406453424131690356}
   - component: {fileID: 2508800630246947485}
   - component: {fileID: 3253980996550476635}
+  - component: {fileID: -1874917706163549797}
   m_Layer: 5
   m_Name: "\u63D0\u793A\u4FE1\u606F\u9884\u5236\u4F53"
   m_TagString: Untagged
@@ -68,7 +69,7 @@ MonoBehaviour:
   backgroundImage: {fileID: 8755285600600530768}
   closeButton: {fileID: 2508800630246947485}
   textComponent: {fileID: 6837006135385562514}
-  minMessageWidth: 100
+  minMessageWidth: 150
   minMessageHeight: 60
   buttonShaker: {fileID: 3253980996550476635}
   targetTransform: {fileID: 0}
@@ -162,6 +163,18 @@ MonoBehaviour:
   triggerKey: 0
   enableAutoShake: 0
   autoShakeInterval: 1.5
+--- !u!225 &-1874917706163549797
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257366257890364420}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &5976883892109719986
 GameObject:
   m_ObjectHideFlags: 0

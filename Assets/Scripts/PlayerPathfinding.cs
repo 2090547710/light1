@@ -111,7 +111,7 @@ public class PlayerPathfinding : MonoBehaviour
 
     void Start()
     {
-
+        MessageManager.instance.SendMessage("噼", PlayerPathfinding.Instance.transform, MessageType.Click);
     }
 
     void Update()
