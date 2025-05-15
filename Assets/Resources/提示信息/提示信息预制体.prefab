@@ -154,7 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shakeDirection: {x: 0, y: 1}
-  shakeAmount: 8
+  shakeAmount: 30
   shakeCount: 1
   shakeDuration: 0.3
   enableKeyboardTrigger: 1

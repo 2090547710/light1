@@ -45,6 +45,10 @@ public class PlayerPathfinding : MonoBehaviour
     
     [Header("高度设置")]
     public float baseHeight = 1.5f; // 基础高度
+    public float heightChangeThreshold = 1.0f; // 高度变化阈值
+    public float heightSmoothSpeed = 8.0f; // 高度平滑速度
+    private float targetHeight; // 目标高度
+    private bool heightInitialized = false; // 高度是否已初始化
 
     // 新增键盘移动设置
     [Header("键盘移动设置")]
@@ -72,6 +76,9 @@ public class PlayerPathfinding : MonoBehaviour
         InsertToQuadTree(); // 初始插入
 
         stoppingDistance=quadTree.MinNodeSize.x/2-0.05f;
+        
+        // 初始化目标高度
+        targetHeight = transform.position.y;
         
         // 保存表情的默认位置偏移（相对于父对象）
         if (expressionTransform != null)
@@ -473,32 +480,51 @@ public class PlayerPathfinding : MonoBehaviour
         int terrainLayer = 7;
         int terrainLayerMask = 1 << terrainLayer;
         
+        float newHeight = transform.position.y; // 默认保持当前高度
+        bool foundHeight = false;
+        
         // 尝试与地形层碰撞
         if (Physics.Raycast(ray, out hit, 20f, terrainLayerMask))
         {
-            // 将玩家高度设置为碰撞点高度加上基础高度
+            newHeight = hit.point.y + baseHeight;
+            foundHeight = true;
+        }
+        else if (Physics.Raycast(ray, out hit, 20f, mapLayer))
+        {
+            // 如果没有检测到地形层碰撞，则尝试与mapLayer进行射线检测
+            newHeight = hit.point.y + baseHeight;
+            foundHeight = true;
+        }
+        
+        // 仅在找到有效高度时更新
+        if (foundHeight)
+        {
+            // 初始化高度或检查高度差是否超过阈值
+            if (!heightInitialized)
+            {
+                targetHeight = newHeight;
+                heightInitialized = true;
+            }
+            else if (Mathf.Abs(newHeight - targetHeight) > heightChangeThreshold)
+            {
+                // 高度变化超过阈值，不设置目标高度
+                UnityEngine.Debug.Log("高度变化超过阈值，不设置目标高度");
+                return; 
+            }
+            else
+            {
+                // 高度变化在阈值内，更新目标高度
+                targetHeight = newHeight;
+            }
+            
+            // 平滑过渡到目标高度
             Vector3 newPosition = transform.position;
-            newPosition.y = hit.point.y + baseHeight;
+            newPosition.y = Mathf.Lerp(transform.position.y, targetHeight, Time.deltaTime * heightSmoothSpeed);
             transform.position = newPosition;
-            UnityEngine.Debug.Log("更新玩家高度：" + newPosition.y);
+            
             // 更新四叉树中的位置
             quadTree.Remove(playerObject);
             InsertToQuadTree();
-        }
-        else
-        {
-            // 如果没有检测到地形层碰撞，则尝试与mapLayer进行射线检测
-            if (Physics.Raycast(ray, out hit, 20f, mapLayer))
-            {
-                // 将玩家高度设置为碰撞点高度加上基础高度
-                Vector3 newPosition = transform.position;
-                newPosition.y = hit.point.y + baseHeight;
-                transform.position = newPosition;
-                
-                // 更新四叉树中的位置
-                quadTree.Remove(playerObject);
-                InsertToQuadTree();
-            }
         }
     }
 } 
