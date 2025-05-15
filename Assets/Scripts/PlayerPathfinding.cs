@@ -14,11 +14,6 @@ public class PlayerPathfinding : MonoBehaviour
     private int currentPathIndex;
     private Coroutine moveCoroutine;
     
-    [Header("Marker Settings")]
-    public GameObject markerPrefab;  // 拖入预制体
-    public float markerScale = 0.2f; // 标记缩放比例
-    public float markerDuration = 1.0f; // 标记存在时间
-    
     // 新增玩家对象引用
     private GameObject playerObject;
     
@@ -68,6 +63,14 @@ public class PlayerPathfinding : MonoBehaviour
     public float expressionLookIntensity = 0.2f; // 表情看向移动方向的强度
     public float expressionSmoothSpeed = 5f; // 表情恢复中心位置的平滑速度
     private Vector3 currentExpressionOffset; // 当前表情偏移值
+
+    // 新增圆圈设置
+    [Header("圆圈设置")]
+    public float circleRadius = 1.0f; // 圆圈半径
+    public Color circleColor = Color.green; // 圆圈颜色
+    public float circleDuration = 1.0f; // 圆圈持续时间
+    public int circleSegments = 32; // 圆圈段数
+    public float circleWidth = 0.05f; // 圆圈线宽
 
     private void Awake()
     {
@@ -281,17 +284,12 @@ public class PlayerPathfinding : MonoBehaviour
         }
         if (validHit)
         {
+            // 在击中点绘制圆圈
+            CreateCircleAtHitPoint(mapHit.point);
+            
             // 保持玩家当前高度
             Vector3 targetPos = mapHit.point;
             targetPos.y = transform.position.y;
-            
-            // 生成并配置标记
-            if(markerPrefab)
-            {
-                GameObject marker = Instantiate(markerPrefab, targetPos+new Vector3(0,0.5f,0), Quaternion.identity);
-                marker.transform.localScale = Vector3.one * markerScale;
-                Destroy(marker, markerDuration);
-            }
             
             // 请求路径
             var path = quadTree.FindPath(transform.position, targetPos);
@@ -330,6 +328,40 @@ public class PlayerPathfinding : MonoBehaviour
                 }
             }
         }
+    }
+    
+    // 创建圆圈的新方法
+    private void CreateCircleAtHitPoint(Vector3 hitPoint)
+    {
+        // 创建圆圈游戏对象
+        GameObject circleObj = new GameObject("ClickCircle");
+        circleObj.transform.position = hitPoint;
+        
+        // 创建线渲染器组件
+        LineRenderer lineRenderer = circleObj.AddComponent<LineRenderer>();
+        lineRenderer.useWorldSpace = false;
+        lineRenderer.startWidth = circleWidth;
+        lineRenderer.endWidth = circleWidth;
+        lineRenderer.startColor = circleColor;
+        lineRenderer.endColor = circleColor;
+        lineRenderer.positionCount = circleSegments + 1;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        
+        // 生成圆圈的点
+        float angle = 0f;
+        float angleStep = 2f * Mathf.PI / circleSegments;
+        
+        for (int i = 0; i <= circleSegments; i++)
+        {
+            float x = Mathf.Sin(angle) * circleRadius;
+            float z = Mathf.Cos(angle) * circleRadius;
+            Vector3 pos = new Vector3(x, 0, z); // Y轴为0，使圆圈垂直于Y轴
+            lineRenderer.SetPosition(i, pos);
+            angle += angleStep;
+        }
+        
+        // 销毁圆圈对象
+        Destroy(circleObj, circleDuration);
     }
     
     // 更新着色器参数

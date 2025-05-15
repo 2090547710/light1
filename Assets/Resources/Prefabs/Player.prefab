@@ -370,9 +370,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   stoppingDistance: 0.2
-  markerPrefab: {fileID: 1323435036065331973, guid: d903664912025734989e641f0cb73d56, type: 3}
-  markerScale: 0.3
-  markerDuration: 1
   rotationSpeed: 10
   smoothRotation: 1
   mapLayer:
@@ -391,6 +388,11 @@ MonoBehaviour:
   expressionFixedZOffset: -0.05
   expressionLookIntensity: 5
   expressionSmoothSpeed: 5
+  circleRadius: 0.2
+  circleColor: {r: 0, g: 0, b: 0, a: 1}
+  circleDuration: 0.2
+  circleSegments: 32
+  circleWidth: 0.05
 --- !u!114 &4471405134082509040
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -423,9 +425,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7806d095a50d89244b6d6362c3a4fdad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spriteRenderers:
-  - {fileID: 0}
-  enableFlip: 1
 --- !u!114 &6295127167694923034
 MonoBehaviour:
   m_ObjectHideFlags: 0
