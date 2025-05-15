@@ -51,7 +51,7 @@ public class QuadTree
             Height = 0;
             IsIlluminated = false;
             Brightness = 0;
-            BrightnessThreshold = 0.7f;
+            BrightnessThreshold = 0.3f;
             ;
         }
 

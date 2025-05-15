@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System.Linq;
 
 public class MessageManager : MonoBehaviour
 {
@@ -78,39 +79,42 @@ public class MessageManager : MonoBehaviour
             activeMessageDisplays.Add(display);
             
             // 如果有目标transform，将其添加到映射中
-            if (display.TargetTransform != null && !transformToDisplayMap.ContainsKey(display.TargetTransform))
+            if (display.targetTransform != null && !transformToDisplayMap.ContainsKey(display.targetTransform))
             {
-                transformToDisplayMap.Add(display.TargetTransform, display);
+                transformToDisplayMap.Add(display.targetTransform, display);
             }
         }
     }
 
     public void UnregisterMessageDisplay(MessageDisplay display)
     {
+        if (display == null) return;
+
         if (activeMessageDisplays.Contains(display))
         {
             activeMessageDisplays.Remove(display);
-            
-            // 从映射中移除
-            if (display.TargetTransform != null && transformToDisplayMap.ContainsKey(display.TargetTransform))
+        }
+
+        // 从映射中移除所有指向这个显示器的条目
+        foreach (var kvp in transformToDisplayMap.ToList())
+        {
+            if (kvp.Value == display)
             {
-                transformToDisplayMap.Remove(display.TargetTransform);
+                transformToDisplayMap.Remove(kvp.Key);
             }
-            
-            // 将对象归还到池中
-            GameObject displayObj = display.gameObject;
-            if (messageObjectPool.Count < maxPoolSize)
-            {
-                // 重置对象状态
-                display.ResetState();
-                displayObj.SetActive(false);
-                messageObjectPool.Enqueue(displayObj);
-            }
-            else
-            {
-                // 如果池已满，则销毁对象
-                Destroy(displayObj);
-            }
+        }
+
+        // 将对象归还到池中
+        GameObject displayObj = display.gameObject;
+        if (messageObjectPool.Count < maxPoolSize)
+        {
+            display.ResetState();
+            displayObj.SetActive(false);
+            messageObjectPool.Enqueue(displayObj);
+        }
+        else
+        {
+            Destroy(displayObj);
         }
     }
 
@@ -118,38 +122,48 @@ public class MessageManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(message)) return;
 
-        MessageDisplay messageDisplay;
-        
-        // 如果目标transform已经有关联的消息显示器，则使用现有的
-        if (targetTransform != null && transformToDisplayMap.TryGetValue(targetTransform, out messageDisplay))
+        // 如果目标transform已经有关联的消息显示器，先检查它是否真的属于这个transform
+        if (targetTransform != null && transformToDisplayMap.TryGetValue(targetTransform, out MessageDisplay existingDisplay))
         {
-            // 将消息添加到现有的队列中 - 移除消息分割
-            messageDisplay.AddMessage(message, type, duration);
-        }
-        else
-        {
-            // 创建新的消息对象
-            GameObject messageObj = GetMessageObjectFromPool(targetTransform);
-            if (messageObj == null) return;
-            
-            messageDisplay = messageObj.GetComponent<MessageDisplay>();
-            if (messageDisplay == null) return;
-            
-            // 设置跟踪目标
-            if (targetTransform != null)
+            // 检查这个显示器的目标transform是否真的匹配
+            if (existingDisplay != null && 
+                existingDisplay.gameObject.activeInHierarchy && 
+                existingDisplay.targetTransform == targetTransform)
             {
-                messageDisplay.SetTargetTransform(targetTransform, positionOffset);
-                
-                // 添加到映射中
-                if (!transformToDisplayMap.ContainsKey(targetTransform))
+                existingDisplay.AddMessage(message, type, duration);
+                return;
+            }
+            else
+            {
+                // 如果显示器无效或目标不匹配，从映射中移除
+                transformToDisplayMap.Remove(targetTransform);
+            }
+        }
+
+        // 创建新的消息对象
+        GameObject messageObj = GetMessageObjectFromPool(targetTransform);
+        if (messageObj == null) return;
+
+        MessageDisplay messageDisplay = messageObj.GetComponent<MessageDisplay>();
+        if (messageDisplay == null) return;
+
+        // 设置跟踪目标
+        if (targetTransform != null)
+        {
+            // 确保在设置新目标之前，从任何现有的映射中移除这个显示器
+            foreach (var kvp in transformToDisplayMap.ToList())
+            {
+                if (kvp.Value == messageDisplay)
                 {
-                    transformToDisplayMap.Add(targetTransform, messageDisplay);
+                    transformToDisplayMap.Remove(kvp.Key);
                 }
             }
-            
-            // 删除日志和消息分割代码
-            messageDisplay.Initialize(message, messageCanvas.transform, type, duration);
+
+            messageDisplay.SetTargetTransform(targetTransform, positionOffset);
+            transformToDisplayMap[targetTransform] = messageDisplay;
         }
+
+        messageDisplay.Initialize(message, messageCanvas.transform, type, duration);
     }
 
     private GameObject GetMessageObjectFromPool(Transform targetTransform)

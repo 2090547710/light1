@@ -114,8 +114,8 @@ public class Fire : Plant
  
         Grow();
         Debug.Log($"火植物成功开花！");
-        // 火成长后，检查所有植物是否在火光源范围内
-        PlantManager.Instance.CheckPlantsInFireLight(this);
+        MessageManager.instance.SendMessage("(̳ˆ_  ̫ _ˆ ̳)", transform, MessageType.Auto, 3f);
+
     }
 
     // 在Fire类中添加保存特有参数的逻辑

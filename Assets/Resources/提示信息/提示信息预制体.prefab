@@ -68,8 +68,8 @@ MonoBehaviour:
   backgroundImage: {fileID: 8755285600600530768}
   closeButton: {fileID: 2508800630246947485}
   textComponent: {fileID: 6837006135385562514}
-  minClickMessageWidth: 200
-  minClickMessageHeight: 120
+  minMessageWidth: 100
+  minMessageHeight: 60
   buttonShaker: {fileID: 3253980996550476635}
 --- !u!114 &-4876141945041353701
 MonoBehaviour:

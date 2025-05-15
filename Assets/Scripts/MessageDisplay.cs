@@ -59,20 +59,18 @@ public class MessageDisplay : MonoBehaviour
     [SerializeField] private Image backgroundImage;
     [SerializeField] private Button closeButton;
     [SerializeField] private TMP_Text textComponent;
-    [SerializeField] private float minClickMessageWidth = 100f;  // 点击类消息最小宽度
-    [SerializeField] private float minClickMessageHeight = 50f;  // 点击类消息最小高度
+    [SerializeField] private float minMessageWidth = 100f;  // 点击类消息最小宽度
+    [SerializeField] private float minMessageHeight = 50f;  // 点击类消息最小高度
     [SerializeField] private ButtonShaker buttonShaker;  // 添加ButtonShaker引用
     
     private CanvasGroup canvasGroup;
     private Queue<MessageEvent> messageQueue = new Queue<MessageEvent>();
     private Coroutine displayCoroutine;
     private bool isDisplaying = false;
-    private Transform targetTransform;
+    public Transform targetTransform;
     private Vector3 positionOffset;
     private MessageEvent currentMessage;
     
-    // 添加目标Transform的公共访问器
-    public Transform TargetTransform => targetTransform;
     
     private void Awake()
     {
@@ -404,12 +402,9 @@ public class MessageDisplay : MonoBehaviour
             float backgroundWidth = textWidth + padding.left + padding.right;
             float backgroundHeight = textHeight + padding.top + padding.bottom;
             
-            // 为点击类型的消息，确保背景足够大以容纳关闭按钮
-            if (currentMessage != null && currentMessage.Type == MessageType.Click)
-            {
-                backgroundWidth = Mathf.Max(backgroundWidth, minClickMessageWidth);  // 使用属性
-                backgroundHeight = Mathf.Max(backgroundHeight, minClickMessageHeight); // 使用属性
-            }
+            // 确保背景尺寸不小于最小尺寸（对所有类型的消息都生效）
+            backgroundWidth = Mathf.Max(backgroundWidth, minMessageWidth);
+            backgroundHeight = Mathf.Max(backgroundHeight, minMessageHeight);
             
             // 更新背景图像尺寸
             RectTransform bgRectTransform = backgroundImage.rectTransform;
@@ -454,7 +449,15 @@ public class MessageDisplay : MonoBehaviour
         currentMessage = null;
         
         // 重置目标跟踪
-        targetTransform = null;
+        if (targetTransform != null)
+        {
+            // 从MessageManager的映射中移除
+            if (MessageManager.instance != null)
+            {
+                MessageManager.instance.UnregisterMessageDisplay(this);
+            }
+            targetTransform = null;
+        }
         
         // 重置透明度
         if (canvasGroup != null)

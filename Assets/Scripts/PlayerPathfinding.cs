@@ -108,8 +108,7 @@ public class PlayerPathfinding : MonoBehaviour
 
     void Start()
     {
-        MessageManager.instance.SendMessage("Hello, World!", transform, MessageType.Click, 3f);
-        MessageManager.instance.SendMessage("Hello!", transform, MessageType.Click, 3f);
+
     }
 
     void Update()

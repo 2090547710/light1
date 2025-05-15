@@ -1547,10 +1547,16 @@ void Update()
                 }
             }
         }
-        
-        // 传递普通植物位置给shader
-        Shader.SetGlobalVectorArray("_PlantPositions", plantPositionsV4);
-        Shader.SetGlobalInt("_PlantCount", plantPositionsV4.Count);
+        if(plantPositionsV4.Count > 0)
+        {
+            // 传递普通植物位置给shader
+            Shader.SetGlobalVectorArray("_PlantPositions", plantPositionsV4);
+            Shader.SetGlobalInt("_PlantCount", plantPositionsV4.Count);
+        }
+        else
+        {
+            Shader.SetGlobalInt("_PlantCount", 0);
+        }
         
         // 只有当有火植物时才传递火植物坐标
         if (firePositionsV4.Count > 0)

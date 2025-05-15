@@ -39,10 +39,13 @@ public class Plant : MonoBehaviour
     public int maxStages = 3;
     public bool isWithered;
     [SerializeField] private bool isImmortal = false; // 添加不会枯萎标记，默认为false
+    private bool isInFireLight = false; // 添加是否在火光源范围内的标记
+    private float lastFireHeight = 0f; // 记录上次火光源的高度值
     
 
     public bool IsWithered => isWithered;
     public bool IsImmortal => isImmortal; // 添加公共属性用于访问不会枯萎标记
+    public bool IsInFireLight => isInFireLight; // 添加公共属性用于访问是否在火光源范围内
 
     [Header("阶段配置")]
     public List<PlantStage> growthStages = new List<PlantStage>();
@@ -149,7 +152,7 @@ public class Plant : MonoBehaviour
         }
         
         // 枯萎计时器
-        if (currentStage > 0 && witherRate > 0 && !isWithered)
+        if (currentStage > 1 && witherRate > 0 && !isWithered)
         {
             witherTimer += Time.deltaTime;
             float witherInterval = 60f / witherRate; // 每分钟调用TryWither的次数转换为时间间隔
@@ -310,6 +313,8 @@ public class Plant : MonoBehaviour
             nameText.text = isWithered ? plantName + " (已枯萎)" : plantName;
         }
         
+        
+
         // 如果存在当前的模型对象，先将其销毁
         if (stageModelObject != null)
         {
@@ -324,9 +329,10 @@ public class Plant : MonoBehaviour
             Destroy(l);
         });
         lightSources.Clear();
+
+        
         
         LoadPrefabAndCreateLights(stage);
-     
     }
 
     // 加载预制体和创建光源的方法
@@ -361,6 +367,13 @@ public class Plant : MonoBehaviour
             if (this != null && gameObject != null)
             {
                 var newLight = gameObject.AddComponent<Lighting>();
+                
+                // 如果不是障碍物光源，计算朝向最远终点的旋转角度
+                if (!data.isObstacle)
+                {
+                    data.rotation = CalculateLightRotation();
+                }
+                
                 newLight.InitializeFromData(data);
                 lightSources.Add(newLight); // 添加到光源列表
             }
@@ -371,6 +384,48 @@ public class Plant : MonoBehaviour
             LightingManager.tree.Insert(gameObject);
             LightingManager.UpdateDirtyLights(); // 更新所有脏标记的光源
         }
+    }
+
+    // 计算光源朝向最远终点的旋转角度
+    private float CalculateLightRotation()
+    {
+        if (GameManager.Instance == null || GameManager.Instance.beginPoint == null || GameManager.Instance.endPoints.Count == 0)
+        {
+            return 0f;
+        }
+
+        Vector3 plantPosition = transform.position;
+        Vector3 beginPosition = GameManager.Instance.beginPoint.transform.position;
+        
+        // 找到距离起点最远的终点
+        GameObject farthestEndPoint = null;
+        float maxDistance = 0f;
+        
+        foreach (var endPoint in GameManager.Instance.endPoints)
+        {
+            if (endPoint == null) continue;
+            
+            float distance = Vector3.Distance(beginPosition, endPoint.transform.position);
+            if (distance > maxDistance)
+            {
+                maxDistance = distance;
+                farthestEndPoint = endPoint;
+            }
+        }
+        
+        if (farthestEndPoint == null)
+        {
+            return 0f;
+        }
+        
+        // 计算从植物位置到最远终点的方向向量（在XZ平面上）
+        Vector3 direction = farthestEndPoint.transform.position - plantPosition;
+        direction.y = 0f; // 确保只在XZ平面上计算
+        
+        // 计算旋转角度（以度为单位）
+        float angle = Mathf.Atan2(direction.z, direction.x) * Mathf.Rad2Deg;
+        
+        return -angle;
     }
 
     public void TryWither()
@@ -388,6 +443,7 @@ public class Plant : MonoBehaviour
         if (UnityEngine.Random.value < 1 - brightnessRatio)
         {
             Debug.Log($"植物 {plantName} 尝试枯萎成功。亮度比例: {brightnessRatio:F2}, 枯萎概率: {1-brightnessRatio:F2}");
+            MessageManager.instance.SendMessage("T - T", transform, MessageType.Auto, 3f);
             Wither();
         }
         else
@@ -445,6 +501,7 @@ public class Plant : MonoBehaviour
             }
             
             Debug.Log($"种子成功开花！亮度比例: {brightnessRatio:F2}, 开花概率: {brightnessRatio:F2}");
+            MessageManager.instance.SendMessage("(̳ˆ_  ̫ _ˆ ̳)", transform, MessageType.Auto, 3f);
 
             // 尝试通过植物名称获取更新后的植物阶段
             PlantStage updatedStage = PlantManager.Instance.GetPlantStageBySeedFromName(plantName);
@@ -484,7 +541,7 @@ public class Plant : MonoBehaviour
                 return;
             }
             Debug.Log($"花朵成功结果！亮度比例: {brightnessRatio:F2}, 结果概率: {brightnessRatio:F2}");
-            
+            MessageManager.instance.SendMessage("(̳ˆ_  ̫ _ˆ ̳)", transform, MessageType.Auto, 3f);
             // 添加更新后的植物阶段
             growthStages.Add(updatedStage);
             maxStages = growthStages.Count;
@@ -1025,9 +1082,19 @@ public class Plant : MonoBehaviour
             }
         }
         
-        // 如果没有火光源，直接返回
+        // 如果没有火光源，重置标记并返回
         if (fireLights.Count == 0)
         {
+            if (isInFireLight)
+            {
+                isInFireLight = false;
+                lastFireHeight = 0f;
+                // 将growthRate重置为当前阶段的默认值
+                if (currentStage > 0 && currentStage <= growthStages.Count)
+                {
+                    growthRate = growthStages[currentStage - 1].growthRate;
+                }
+            }
             return;
         }
         
@@ -1037,20 +1104,35 @@ public class Plant : MonoBehaviour
         // 使用QuadTree计算火光源的高度值
         float fireHeight = LightingManager.tree.GetFireLightHeightAtPosition(plantPosition, fireLights);
         
-        // 如果高度值大于0，表示在火光源范围内，调整生长速度
-        if (fireHeight > 0)
+        // 检查火光高度的变化
+        bool statusChanged = (fireHeight > 0) != isInFireLight || Mathf.Abs(fireHeight - lastFireHeight) > 0.1f;
+        
+        // 只有当状态改变时才调整生长速度
+        if (statusChanged)
         {
-            // 根据高度值调整生长速度：基础倍数2 + 高度值
-            growthRate *= (2f + fireHeight);
-            // 限制在最大值60
-            growthRate = Mathf.Min(growthRate, 60f);
-        }
-        else
-        {
-            // 将growthRate设置为currentStage的growthRate
-            if (currentStage > 0 && currentStage <= growthStages.Count)
+            // 更新标记和上次高度值
+            isInFireLight = fireHeight > 0;
+            lastFireHeight = fireHeight;
+            
+            if (isInFireLight)
             {
-                growthRate = growthStages[currentStage - 1].growthRate;
+                // 根据高度值调整生长速度：基础倍数2 + 高度值
+                float baseGrowthRate = currentStage > 0 && currentStage <= growthStages.Count 
+                    ? growthStages[currentStage - 1].growthRate : 1.0f;
+                growthRate = baseGrowthRate * (2f + fireHeight);
+                // 限制在最大值60
+                growthRate = Mathf.Min(growthRate, 60f);
+                
+                Debug.Log($"植物 {plantName} 进入火光范围，生长速度调整为: {growthRate:F2}");
+            }
+            else
+            {
+                // 将growthRate设置为currentStage的growthRate
+                if (currentStage > 0 && currentStage <= growthStages.Count)
+                {
+                    growthRate = growthStages[currentStage - 1].growthRate;
+                    Debug.Log($"植物 {plantName} 离开火光范围，生长速度重置为: {growthRate:F2}");
+                }
             }
         }
     }
