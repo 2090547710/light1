@@ -379,10 +379,12 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   playerLightRange: 5
-  playerLightIntensity: 0.3
+  playerLightIntensity: 0.2
   interactiveLayer: 6
   showPathfindingDebug: 0
   baseHeight: 1.2
+  heightChangeThreshold: 1
+  heightSmoothSpeed: 8
   keyboardMoveSpeed: 5
   maxHeightDifference: 0.35
   expressionTransform: {fileID: 251579978915965405}

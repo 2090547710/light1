@@ -1417,7 +1417,7 @@ public class QuadTree
         }
     }
 
-    public List<Vector4> GetSimplifiedBoundarySegments(float targetSegmentLength = 1.0f)
+    public List<Vector4> GetSimplifiedBoundarySegments(float targetSegmentLength = 1.0f, int minContourPoints = 30)
     {
         // 第一步：获取原始边界线段
         List<Vector4> originalSegments = GetIlluminatedAreaBoundarySegments();
@@ -1425,6 +1425,9 @@ public class QuadTree
         
         // 第二步：构建连接的轮廓
         List<List<Vector2>> contours = BuildContours(originalSegments);
+        
+        // 过滤掉点数过少的轮廓
+        contours = contours.Where(contour => contour.Count >= minContourPoints).ToList();
         
         // 第三步：对每个轮廓进行等长细分
         List<Vector4> simplifiedSegments = new List<Vector4>();

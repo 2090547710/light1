@@ -8,8 +8,8 @@ Shader "Custom/LightingUnlit"
         _OutlineColor ("Outline Color", Color) = (0,0,0,1)
         _MinBrightness ("Min Brightness", Range(0,1)) = 0.2
         _BrightnessMultiplier ("Brightness Multiplier", Range(0.1,3.0)) = 1.0
-        _PlayerLightRange ("玩家光照范围", Range(1.0, 20.0)) = 5.0
-        _PlayerLightIntensity ("玩家光照强度", Range(0.1, 2.0)) = 1.0
+        // _PlayerLightRange ("玩家光照范围", Range(1.0, 20.0)) = 5.0
+        // _PlayerLightIntensity ("玩家光照强度", Range(0.1, 2.0)) = 0.01
     }
     SubShader
     {
@@ -48,8 +48,8 @@ Shader "Custom/LightingUnlit"
             half _MinBrightness;
             half _BrightnessMultiplier;
             uniform float3 _PlayerWorldPos; // 玩家世界坐标
-            float _PlayerLightRange; // 玩家光照范围
-            float _PlayerLightIntensity; // 玩家光照强度
+            uniform float _PlayerLightRange; // 玩家光照范围
+            uniform float _PlayerLightIntensity; // 玩家光照强度
 
             v2f vert (appdata v)
             {

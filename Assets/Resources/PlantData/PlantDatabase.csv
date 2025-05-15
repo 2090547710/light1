@@ -1,5 +1,5 @@
 植物ID,阶段类型,植物名称,植物介绍,预览图路径,prefab,开始标记,size,isObstacle,isSeed,lightHeight,heightMap,edgeHeightMap,size,isObstacle,isSeed,lightHeight,heightMap,edgeHeightMap,开始标记,GrowthRate,WitherRate,开始标记,要求植物ID,权重（数量）,要求植物ID,权重（数量）,开始标记,更新植物,权重,更新植物,权重
-1,Flower,玫瑰,23,章鱼噼/身体00,,li,5,FALSE,FALSE,0.5,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,,,,,up,2,10,6,1
+1,Flower,圆圆,23,章鱼噼/身体00,Prefabs/圆圆,li,5,FALSE,FALSE,0.5,圆圆hm,圆圆ehm,,,,,,,gr,0.1,0.1,pre,,,,,up,2,10,6,1
 2,Fruit,玫瑰果,13,章鱼噼/身体00,,li,10,FALSE,FALSE,0.7,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,1,2,5,2,up,,,,
 3,Flower,向日葵,213,章鱼噼/身体00,Prefabs/测试植物,li,5,FALSE,FALSE,0.8,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,,,,,up,4,1,,
 4,Fruit,向日葵籽,123,章鱼噼/身体00,,li,7,FALSE,FALSE,0.9,test9,,1,TRUE,FALSE,0.5,obstacle1,,gr,12,0.6,pre,,,3,2,up,,,,

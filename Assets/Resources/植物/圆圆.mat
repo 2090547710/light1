@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: "\u706B"
+  m_Name: "\u5706\u5706"
   m_Shader: {fileID: 4800000, guid: 6dc627caed811ca418b669f6635fa42b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -46,7 +46,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 927d35060f08e3e4eaf7c02bacc0d275, type: 3}
+        m_Texture: {fileID: 2800000, guid: f5cbcd0b24e0cb6438e76243937fc6f0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
