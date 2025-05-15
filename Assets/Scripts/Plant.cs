@@ -105,7 +105,7 @@ public class Plant : MonoBehaviour
             }
          }
         // 创建并设置名称显示
-        CreateNameDisplay();
+        // CreateNameDisplay();
     }
     
     void Update()
@@ -348,7 +348,6 @@ public class Plant : MonoBehaviour
                 stageModelObject = Instantiate(prefab, transform);
                 stageModelObject.transform.localPosition = Vector3.zero;
                 stageModelObject.transform.localRotation = Quaternion.identity;
-                stageModelObject.transform.localScale = Vector3.one;
             }
             else
             {

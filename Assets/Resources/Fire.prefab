@@ -28,7 +28,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -45.852394, y: -1.849282, z: -49.516006}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -62,7 +62,7 @@ MonoBehaviour:
     prerequisiteWeights: []
     updatePlantIDs: 
     updateWeights: []
-    prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+    prefabPath: Prefabs/Seed
   - stageType: 1
     associatedLights:
     - size: 7.5
@@ -82,7 +82,7 @@ MonoBehaviour:
     prerequisiteWeights: []
     updatePlantIDs: 
     updateWeights: []
-    prefabPath: "Prefabs/\u6D4B\u8BD5\u690D\u7269"
+    prefabPath: "Prefabs/\u706B"
   stageModelObject: {fileID: 0}
   growthEffectPrefabPath: "\u70DF/\u70DF"
   growthRate: 1

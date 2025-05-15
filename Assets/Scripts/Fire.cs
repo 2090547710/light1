@@ -39,7 +39,7 @@ public class Fire : Plant
         }
         
         // 创建并设置名称显示
-        CreateNameDisplay();
+        // CreateNameDisplay();
     }
     
     // 重载Grow方法

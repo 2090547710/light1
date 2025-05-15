@@ -115,7 +115,7 @@ Shader "Custom/LightingUnlitTransparent"
                 fixed4 mainTex = tex2D(_MainTex, safeUV) * _Color;
                 
                 // 丢弃透明部分
-                if(mainTex.a < 0.8)
+                if(mainTex.a < 0.4)
                     discard;
                     
                 // 简单返回白色（但由于ColorMask 0，颜色不会被写入）

@@ -280,7 +280,7 @@ public class PlantInteraction : MonoBehaviour
         }
     }
 
-    // 执行射线检测并高亮显示可选择的对象
+    // 执行射线检测
     private void PerformDetection()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
