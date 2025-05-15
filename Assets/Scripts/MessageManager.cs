@@ -96,12 +96,12 @@ public class MessageManager : MonoBehaviour
         }
 
         // 从映射中移除所有指向这个显示器的条目
-        foreach (var kvp in transformToDisplayMap.ToList())
+        var keysToRemove = transformToDisplayMap.Where(kvp => kvp.Value == display)
+                                              .Select(kvp => kvp.Key)
+                                              .ToList();
+        foreach (var key in keysToRemove)
         {
-            if (kvp.Value == display)
-            {
-                transformToDisplayMap.Remove(kvp.Key);
-            }
+            transformToDisplayMap.Remove(key);
         }
 
         // 将对象归还到池中

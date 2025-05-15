@@ -55,7 +55,7 @@ public static class MessageEventSystem
 public class MessageDisplay : MonoBehaviour
 {
     [SerializeField] private int maxMessages = 5;
-    [SerializeField] private float fadeTime = 0.5f;
+    [SerializeField] private float fadeTime = 0.1f;
     [SerializeField] private Image backgroundImage;
     [SerializeField] private Button closeButton;
     [SerializeField] private TMP_Text textComponent;
@@ -449,15 +449,7 @@ public class MessageDisplay : MonoBehaviour
         currentMessage = null;
         
         // 重置目标跟踪
-        if (targetTransform != null)
-        {
-            // 从MessageManager的映射中移除
-            if (MessageManager.instance != null)
-            {
-                MessageManager.instance.UnregisterMessageDisplay(this);
-            }
-            targetTransform = null;
-        }
+        targetTransform = null;
         
         // 重置透明度
         if (canvasGroup != null)

@@ -96,6 +96,9 @@ public class PlantInteraction : MonoBehaviour
     // 添加一个新的布尔变量来跟踪是否正在退出检测模式
     private bool isExitingDetectionMode = false;
 
+    // 添加一个控制Billboard翻转的字段
+    private bool shouldFlipSprites = false;
+
     private void Awake()
     {
         // 设置单例
@@ -151,6 +154,9 @@ public class PlantInteraction : MonoBehaviour
         // 在检测状态下
         if (isInDetectionMode)
         {
+            // 检查鼠标位置并决定是否翻转精灵
+            CheckMousePositionForFlip();
+            
             // 执行射线检测
             PerformDetection();
             
@@ -232,6 +238,29 @@ public class PlantInteraction : MonoBehaviour
         if (useRangeIndicator && rangeIndicator != null)
         {
             UpdateRangeIndicator();
+        }
+    }
+    
+    // 新增方法：检查鼠标位置并决定是否翻转精灵
+    private void CheckMousePositionForFlip()
+    {
+        // 获取屏幕宽度
+        float screenWidth = Screen.width;
+        
+        // 如果鼠标在屏幕右半部分，则应该翻转
+        bool shouldFlip = Input.mousePosition.x > screenWidth / 2;
+        
+        // 如果翻转状态发生变化
+        if (shouldFlip != shouldFlipSprites)
+        {
+            shouldFlipSprites = shouldFlip;
+            
+            // 查找场景中所有Billboard组件并应用翻转
+            Billboard[] billboards = FindObjectsOfType<Billboard>();
+            foreach (Billboard billboard in billboards)
+            {
+                billboard.FlipSprites(shouldFlip);
+            }
         }
     }
     
@@ -472,6 +501,10 @@ public class PlantInteraction : MonoBehaviour
         hasValidDetection = false;
         detectedObject = null;
         isExitingDetectionMode = false; // 重置标志位
+        
+        // 重置所有Billboard的翻转状态
+        ResetAllBillboardFlips();
+        
         Debug.Log($"退出{GetModeName(currentDetectionMode)}模式");
         // 触发事件通知其他组件
         OnDetectionModeChanged?.Invoke(false, currentDetectionMode);
@@ -480,6 +513,20 @@ public class PlantInteraction : MonoBehaviour
         if (useRangeIndicator && rangeIndicator != null)
         {
             rangeIndicator.SetActive(false);
+        }
+    }
+    
+    // 新增方法：重置所有Billboard的翻转状态
+    private void ResetAllBillboardFlips()
+    {
+        // 重置翻转标志
+        shouldFlipSprites = false;
+        
+        // 查找场景中所有Billboard组件并重置翻转
+        Billboard[] billboards = FindObjectsOfType<Billboard>();
+        foreach (Billboard billboard in billboards)
+        {
+            billboard.ResetFlip();
         }
     }
     

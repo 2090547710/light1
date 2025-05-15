@@ -423,6 +423,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7806d095a50d89244b6d6362c3a4fdad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderers:
+  - {fileID: 0}
+  enableFlip: 1
 --- !u!114 &6295127167694923034
 MonoBehaviour:
   m_ObjectHideFlags: 0

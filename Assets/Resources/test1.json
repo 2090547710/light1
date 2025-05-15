@@ -47,28 +47,6 @@
         {
             "objectType": "SceneObject",
             "sceneObjectType": 2,
-            "prefabPath": "Prefabs/Water（wave）",
-            "position": {
-                "x": -40.79999923706055,
-                "y": 0.009999999776482582,
-                "z": -66.80000305175781
-            },
-            "rotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            },
-            "scale": {
-                "x": 4.090000152587891,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "lightSourcesData": []
-        },
-        {
-            "objectType": "SceneObject",
-            "sceneObjectType": 2,
             "prefabPath": "Prefabs/Water",
             "position": {
                 "x": -59.71165466308594,
@@ -116,7 +94,7 @@
             "prefabPath": "Prefabs/Water（wave）",
             "position": {
                 "x": -57.0,
-                "y": 0.009999999776482582,
+                "y": -0.10000000149011612,
                 "z": -21.5
             },
             "rotation": {
@@ -138,7 +116,7 @@
             "prefabPath": "Prefabs/Water（wave）",
             "position": {
                 "x": -71.69999694824219,
-                "y": 0.009999999776482582,
+                "y": -0.10000000149011612,
                 "z": -39.20000076293945
             },
             "rotation": {
@@ -160,7 +138,7 @@
             "prefabPath": "Prefabs/Water（wave）",
             "position": {
                 "x": -26.100000381469728,
-                "y": 0.009999999776482582,
+                "y": -0.10000000149011612,
                 "z": -39.900001525878909
             },
             "rotation": {
@@ -181,15 +159,15 @@
             "sceneObjectType": 5,
             "prefabPath": "Prefabs/Player",
             "position": {
-                "x": -64.20980834960938,
+                "x": -63.67314529418945,
                 "y": 1.2000000476837159,
-                "z": -62.566246032714847
+                "z": -59.42706298828125
             },
             "rotation": {
-                "x": 0.1831250935792923,
-                "y": 0.7259271144866943,
-                "z": -0.21158857643604279,
-                "w": 0.628271758556366
+                "x": 0.14568102359771729,
+                "y": 0.8497128486633301,
+                "z": -0.40301936864852908,
+                "w": 0.307149201631546
             },
             "scale": {
                 "x": 0.20000000298023225,
@@ -215,6 +193,138 @@
             },
             "scale": {
                 "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 0,
+            "prefabPath": "Prefabs/duancao",
+            "position": {
+                "x": -63.06428146362305,
+                "y": 9.5367431640625e-7,
+                "z": -59.74030303955078
+            },
+            "rotation": {
+                "x": 0.14568102359771729,
+                "y": 0.8497128486633301,
+                "z": -0.40301936864852908,
+                "w": 0.307149201631546
+            },
+            "scale": {
+                "x": 2.0,
+                "y": 2.0,
+                "z": 2.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 0,
+            "prefabPath": "Prefabs/duancao",
+            "position": {
+                "x": -63.1743049621582,
+                "y": 0.0,
+                "z": -60.590576171875
+            },
+            "rotation": {
+                "x": 0.14568102359771729,
+                "y": 0.8497128486633301,
+                "z": -0.40301936864852908,
+                "w": 0.307149201631546
+            },
+            "scale": {
+                "x": 2.0,
+                "y": 2.0,
+                "z": 2.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 0,
+            "prefabPath": "Prefabs/duancao",
+            "position": {
+                "x": -61.674339294433597,
+                "y": -9.5367431640625e-7,
+                "z": -57.505313873291019
+            },
+            "rotation": {
+                "x": 0.14568102359771729,
+                "y": 0.8497128486633301,
+                "z": -0.40301936864852908,
+                "w": 0.307149201631546
+            },
+            "scale": {
+                "x": 2.0,
+                "y": 2.0,
+                "z": 2.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 0,
+            "prefabPath": "Prefabs/duancao",
+            "position": {
+                "x": -56.563560485839847,
+                "y": -9.5367431640625e-7,
+                "z": -58.661521911621097
+            },
+            "rotation": {
+                "x": 0.14568102359771729,
+                "y": 0.8497128486633301,
+                "z": -0.40301936864852908,
+                "w": 0.307149201631546
+            },
+            "scale": {
+                "x": 2.0,
+                "y": 2.0,
+                "z": 2.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 0,
+            "prefabPath": "Prefabs/duancao",
+            "position": {
+                "x": -62.18226623535156,
+                "y": 0.0,
+                "z": -53.88909149169922
+            },
+            "rotation": {
+                "x": 0.14568102359771729,
+                "y": 0.8497128486633301,
+                "z": -0.40301936864852908,
+                "w": 0.307149201631546
+            },
+            "scale": {
+                "x": 2.0,
+                "y": 2.0,
+                "z": 2.0
+            },
+            "lightSourcesData": []
+        },
+        {
+            "objectType": "SceneObject",
+            "sceneObjectType": 2,
+            "prefabPath": "Prefabs/Water（wave）",
+            "position": {
+                "x": -40.79999923706055,
+                "y": -0.10000000149011612,
+                "z": -66.80000305175781
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 4.090000152587891,
                 "y": 1.0,
                 "z": 1.0
             },
